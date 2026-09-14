@@ -1,0 +1,333 @@
+import { useEffect, useState } from "react";
+import { fetchStatusApplicantProfile } from "../../../api/client"; // adjust path to your client.ts
+import type { StatusModalProfileData } from "../../../hooks/types"; // adjust path to your types file
+import { CloseButton } from "../../../components/buttons/CloseButton"; // adjust path to your components dir
+
+interface StatusModalProfileProps {
+  open: boolean;
+  onClose: () => void;
+  applicantId: number | string | null;
+  applicationType: "access-pass" | "vehicle-sticker" | null;
+}
+
+const STATUS_STYLES: Record<string, { dot: string; text: string; bg: string }> =
+  {
+    Approved: { dot: "#10b981", text: "text-emerald-700", bg: "bg-emerald-50" },
+    Completed: {
+      dot: "#10b981",
+      text: "text-emerald-700",
+      bg: "bg-emerald-50",
+    },
+    Rejected: { dot: "#ef4444", text: "text-red-700", bg: "bg-red-50" },
+    "Incomplete/Returned": {
+      dot: "#f59e0b",
+      text: "text-amber-700",
+      bg: "bg-amber-50",
+    },
+    Submitted: { dot: "#3b82f6", text: "text-blue-700", bg: "bg-blue-50" },
+    "Under Review": { dot: "#3b82f6", text: "text-blue-700", bg: "bg-blue-50" },
+  };
+
+function StatusBadge({ status }: { status: string }) {
+  const style = STATUS_STYLES[status] ?? {
+    dot: "#6b7280",
+    text: "text-gray-600",
+    bg: "bg-gray-100",
+  };
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold ${style.bg} ${style.text}`}
+    >
+      <span
+        className="h-1.5 w-1.5 rounded-full"
+        style={{ backgroundColor: style.dot }}
+      />
+      {status}
+    </span>
+  );
+}
+
+function initials(name: string | null) {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0][0]?.toUpperCase() ?? "?";
+  return `${parts[0][0] ?? ""}${parts[parts.length - 1][0] ?? ""}`.toUpperCase();
+}
+
+function formatDate(value: string | null) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+/* ---------------------------------------------------------------------
+ * Small line icons for each detail field.
+ * ------------------------------------------------------------------- */
+const FieldIcon = {
+  card: (
+    <path d="M3.5 6h17A1.5 1.5 0 0122 7.5v9a1.5 1.5 0 01-1.5 1.5h-17A1.5 1.5 0 012 16.5v-9A1.5 1.5 0 013.5 6zM2 10h20" />
+  ),
+  car: (
+    <path d="M4 16.5V13l1.6-4.8A2 2 0 017.5 7h9a2 2 0 011.9 1.2L20 13v3.5M4 16.5a1.5 1.5 0 003 0M17 16.5a1.5 1.5 0 003 0M4 16.5h16M6.5 13h11" />
+  ),
+  user: <path d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 21a8 8 0 0116 0" />,
+  mail: (
+    <path d="M3 6.5h18v11a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 17.5v-11zM3 7l9 6 9-6" />
+  ),
+  phone: (
+    <path d="M6.5 3h3l1.5 4-2 1.5a11 11 0 005 5l1.5-2 4 1.5v3a1.5 1.5 0 01-1.6 1.5A17.5 17.5 0 015 4.6 1.5 1.5 0 016.5 3z" />
+  ),
+} as const;
+
+function FieldIconSvg({ icon }: { icon: keyof typeof FieldIcon }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {FieldIcon[icon]}
+    </svg>
+  );
+}
+
+function FieldRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: keyof typeof FieldIcon;
+  label: string;
+  value: string | null;
+}) {
+  const hasValue = value != null && value.trim() !== "";
+  return (
+    <div className="group flex items-start gap-3 border-b border-gray-100 py-3.5 transition-colors last:border-0 hover:border-[#fb923c]/30">
+      <div
+        className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors group-hover:bg-[#fff2e8] group-hover:text-[#c2410c]"
+        style={{ backgroundColor: "#eaf1fb", color: "#0038a8" }}
+      >
+        <FieldIconSvg icon={icon} />
+      </div>
+      <div className="min-w-0">
+        <div className="text-xs font-medium text-gray-400">{label}</div>
+        <div
+          className={`mt-0.5 truncate text-sm font-semibold ${
+            hasValue ? "text-gray-800" : "text-gray-400"
+          }`}
+        >
+          {hasValue ? value : "—"}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SidebarMeta({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 text-xs">
+      <span className="text-white/45">{label}</span>
+      <span className="font-medium text-white/85">{value}</span>
+    </div>
+  );
+}
+
+export function StatusModalProfile({
+  open,
+  onClose,
+  applicantId,
+  applicationType,
+}: StatusModalProfileProps) {
+  const [data, setData] = useState<StatusModalProfileData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open || applicantId == null || !applicationType) return;
+
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    setData(null);
+
+    fetchStatusApplicantProfile(applicantId, applicationType)
+      .then((res) => {
+        if (!cancelled) setData(res);
+      })
+      .catch(() => {
+        if (!cancelled) setError("Couldn't load this applicant's profile.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, applicantId, applicationType]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open, onClose]);
+
+  // Body scroll lock — freezes the page underneath while the modal is
+  // open. Restores whatever the previous overflow value was on
+  // close/unmount rather than assuming it was "".
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
+  if (!open) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f1f33]/60 p-4 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
+      onClick={onClose}
+      role="presentation"
+    >
+      <div
+        className="relative flex w-full max-w-3xl flex-col overflow-hidden rounded-[28px] bg-white animate-[scaleIn_180ms_ease-out]"
+        style={{
+          boxShadow:
+            "0 0 0 1px rgba(0,56,168,0.08), 0 24px 48px -12px rgba(0,30,90,0.35)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Applicant profile"
+      >
+        <div className="absolute right-4 top-4 z-10">
+          <CloseButton onClick={onClose} />
+        </div>
+
+        {loading && (
+          <div className="flex w-full flex-col items-center justify-center gap-3 py-20">
+            <span className="h-6 w-6 animate-spin rounded-full border-2 border-gray-200 border-t-[#0038a8]" />
+            <span className="text-sm text-gray-500">Loading profile…</span>
+          </div>
+        )}
+
+        {!loading && error && (
+          <div className="w-full py-20 text-center text-sm font-medium text-red-600">
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && data && (
+          <>
+            <div className="sm:flex">
+              {/* Identity sidebar */}
+              <div
+                className="relative shrink-0 overflow-hidden px-7 py-8 sm:w-64"
+                style={{
+                  background: "linear-gradient(160deg, #0038a8 0%, #00246b 100%)",
+                }}
+              >
+                <div
+                  className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full opacity-[0.09]"
+                  style={{ background: "#fcd116" }}
+                  aria-hidden="true"
+                />
+                <div
+                  className="absolute inset-y-0 left-0 w-1"
+                  style={{
+                    background: "linear-gradient(180deg, #fcd116 0%, #ce1126 100%)",
+                  }}
+                  aria-hidden="true"
+                />
+
+                <div className="relative">
+                  {data.photo_path ? (
+                    <img
+                      src={data.photo_path}
+                      alt={data.full_name ?? "Applicant photo"}
+                      className="h-20 w-20 rounded-2xl object-cover ring-2 ring-white/15"
+                    />
+                  ) : (
+                    <div
+                      className="flex h-20 w-20 items-center justify-center rounded-2xl text-xl font-bold text-white ring-2 ring-white/15"
+                      style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+                    >
+                      {initials(data.full_name)}
+                    </div>
+                  )}
+
+                  <div className="mt-5">
+                    <div className="break-words text-lg font-bold leading-snug text-white">
+                      {data.full_name ?? "—"}
+                    </div>
+                    <div className="mt-1 font-mono text-[11px] font-medium text-white/50">
+                      {data.application_id}
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <StatusBadge status={data.status} />
+                  </div>
+
+                  <div className="mt-6 flex flex-col gap-2.5 border-t border-white/10 pt-5">
+                    <SidebarMeta label="Submitted" value={formatDate(data.date_submitted)} />
+                    <SidebarMeta label="Reviewed" value={formatDate(data.date_reviewed)} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Details */}
+              <div className="min-w-0 flex-1 px-7 py-8 sm:px-8">
+                {data.application_type === "access-pass" ? (
+                  <FieldRow
+                    icon="card"
+                    label="Application type"
+                    value={data.applicant_type}
+                  />
+                ) : (
+                  <FieldRow icon="car" label="Plate number" value={data.plate_number} />
+                )}
+                <FieldRow icon="user" label="Sex" value={data.sex} />
+                <FieldRow icon="mail" label="Email" value={data.email} />
+                <FieldRow
+                  icon="phone"
+                  label="Contact number"
+                  value={data.contact_number}
+                />
+              </div>
+            </div>
+
+            {/* Modal footer */}
+            <div className="flex items-center justify-between border-t border-gray-100 px-7 py-3.5 sm:px-8">
+              <span className="text-[11px] font-medium text-gray-400">
+                Record verified · House of Representatives
+              </span>
+              <div className="flex h-1.5 w-16 overflow-hidden rounded-full">
+                <span className="flex-[2]" style={{ backgroundColor: "#0038a8" }} />
+                <span className="flex-1" style={{ backgroundColor: "#fcd116" }} />
+                <span className="flex-1" style={{ backgroundColor: "#ce1126" }} />
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

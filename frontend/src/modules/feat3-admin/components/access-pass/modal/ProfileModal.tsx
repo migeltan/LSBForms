@@ -1,0 +1,247 @@
+import { useEffect, useRef, useState } from "react";
+import type { ApplicantDetail } from "../../../../../hooks/types";
+import { STORAGE_BASE } from "../../../../../hooks/apiConfig";
+import {
+  ApprovedDeclineModal,
+  type ApprovedDeclineModalState,
+} from "../../../../../components/modals/ApprovedDeclineModal";
+import { ApplicantIdPreviewModal } from "../../../../../components/modals/ApplicantIdPreviewModal";
+import { ApplicantIdTestPreview } from "../../../../../components/modals/ApplicantIdTestPreview";
+import { ApplicantIdDownloadModal } from "../../../../../components/modals/ApplicantIdDownloadModal";
+import { useAccessPassIdPdf } from "../../../../../hooks/useAccessPassIdPdf";
+
+const STATUS_STYLES: Record<string, string> = {
+  Approved: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+  Rejected: "bg-red-50 text-red-700 ring-1 ring-red-200",
+  Submitted: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+  Pending: "bg-gray-100 text-gray-600 ring-1 ring-gray-200",
+};
+
+function StatusBadge({ status }: { status: string | null | undefined }) {
+  const label = status || "Pending";
+  const style = STATUS_STYLES[label] ?? STATUS_STYLES.Pending;
+  return (
+    <span
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold tracking-wide uppercase ${style}`}
+    >
+      {label}
+    </span>
+  );
+}
+
+function PersonIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className="h-8 w-8 text-[var(--smart-navy,#1e3a5f)]/40"
+    >
+      <path
+        d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Z"
+        fill="currentColor"
+      />
+      <path
+        d="M4 20.25a8 8 0 0 1 16 0 .75.75 0 0 1-.75.75H4.75a.75.75 0 0 1-.75-.75Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+function EyeIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+      <path d="M10 3.5c-4.5 0-7.5 4.5-7.5 6.5s3 6.5 7.5 6.5 7.5-4.5 7.5-6.5-3-6.5-7.5-6.5Zm0 10.5a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z" />
+      <path d="M10 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" />
+    </svg>
+  );
+}
+
+// "preview-id" is a standalone entry point into the same preview modal —
+// separate from the "preview" step that only fires after an approve.
+type FlowState =
+  | { step: "idle" }
+  | { step: ApprovedDeclineModalState }
+  | { step: "preview-id" }
+  | { step: "preview" }
+  | { step: "downloaded" };
+
+export function ProfileModal({
+  detail,
+  onApprove,
+  onDecline,
+  reviewing,
+  reviewError,
+}: {
+  detail: ApplicantDetail;
+  onApprove: () => Promise<void>;
+  onDecline: () => Promise<void>;
+  reviewing: boolean;
+  reviewError: string | null;
+}) {
+  const p = detail.personal_information;
+  const [flow, setFlow] = useState<FlowState>({ step: "idle" });
+  const prevReviewing = useRef(reviewing);
+
+  useEffect(() => {
+    if (prevReviewing.current && !reviewing) {
+      if (flow.step === "approving") {
+        setFlow(reviewError ? { step: "error" } : { step: "approved" });
+      } else if (flow.step === "declining") {
+        setFlow(reviewError ? { step: "error" } : { step: "declined" });
+      }
+    }
+    prevReviewing.current = reviewing;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reviewing]);
+
+  function handlePreviewIdClick() {
+    setFlow({ step: "preview-id" });
+  }
+
+  function handleApproveClick() {
+    setFlow({ step: "approving" });
+    onApprove();
+  }
+
+  function handleDeclineClick() {
+    setFlow({ step: "decline-confirm" });
+  }
+
+  function handleConfirmDecline() {
+    setFlow({ step: "declining" });
+    onDecline();
+  }
+
+  function closeEverything() {
+    setFlow({ step: "idle" });
+  }
+
+  const applicantId = detail.profile.applicant_id;
+  const { previewUrl, downloadUrl, fileName } = useAccessPassIdPdf(
+    applicantId,
+    detail.profile.application_id
+  );
+
+  const busy =
+    reviewing || flow.step === "approving" || flow.step === "declining";
+
+  return (
+    <>
+      <div className="flex flex-col gap-4 pb-5 border-b border-gray-200 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-4 min-w-0">
+          <div className="h-16 w-16 shrink-0 rounded-xl overflow-hidden border border-gray-200 bg-[var(--smart-navy,#1e3a5f)]/5 flex items-center justify-center">
+            {detail.profile.photo_path ? (
+              <img
+                src={`${STORAGE_BASE}/${detail.profile.photo_path}`}
+                alt={detail.profile.full_name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <PersonIcon />
+            )}
+          </div>
+
+          <div className="min-w-0">
+            <h3 className="text-lg font-bold text-[var(--smart-navy,#1e3a5f)] leading-tight truncate">
+              {detail.profile.full_name}
+            </h3>
+            <div className="flex flex-wrap items-center gap-2 mt-1">
+              <span className="text-xs font-medium text-gray-500">
+                {detail.profile.application_id}
+              </span>
+              <span className="text-gray-300 text-xs">&middot;</span>
+              <StatusBadge status={p.status} />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-start gap-1.5 sm:items-end shrink-0">
+          <div className="flex gap-2">
+            <button
+              onClick={handlePreviewIdClick}
+              disabled={busy}
+              className="inline-flex items-center gap-1.5 rounded-md bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold px-4 py-2 shadow-sm transition-colors"
+            >
+              <EyeIcon />
+              Preview ID
+            </button>
+            <button
+              onClick={handleApproveClick}
+              disabled={busy}
+              className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold px-4 py-2 shadow-sm transition-colors"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                <path
+                  fillRule="evenodd"
+                  d="M16.7 5.3a1 1 0 0 1 0 1.4l-7.5 7.5a1 1 0 0 1-1.4 0l-3.5-3.5a1 1 0 1 1 1.4-1.4l2.8 2.79 6.8-6.79a1 1 0 0 1 1.4 0Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Approve
+            </button>
+            <button
+              onClick={handleDeclineClick}
+              disabled={busy}
+              className="inline-flex items-center gap-1.5 rounded-md bg-white hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed text-[var(--smart-red,#c0392b)] text-sm font-semibold px-4 py-2 ring-1 ring-inset ring-[var(--smart-red,#c0392b)]/30 transition-colors"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                <path
+                  fillRule="evenodd"
+                  d="M10 8.59 6.7 5.29a1 1 0 0 0-1.41 1.42L8.59 10l-3.3 3.29a1 1 0 1 0 1.41 1.42L10 11.41l3.29 3.3a1 1 0 0 0 1.42-1.42L11.41 10l3.3-3.29a1 1 0 0 0-1.42-1.42L10 8.59Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Decline
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {(flow.step === "approving" ||
+        flow.step === "approved" ||
+        flow.step === "decline-confirm" ||
+        flow.step === "declining" ||
+        flow.step === "declined" ||
+        flow.step === "error") && (
+        <ApprovedDeclineModal
+          state={flow.step}
+          errorMessage={reviewError}
+          onContinueAfterApprove={() => setFlow({ step: "preview" })}
+          onConfirmDecline={handleConfirmDecline}
+          onDismissDeclineConfirm={closeEverything}
+          onCloseDeclined={closeEverything}
+          onCloseError={closeEverything}
+        />
+      )}
+
+      {flow.step === "preview-id" && (
+        <ApplicantIdTestPreview
+          type="access-pass"
+          downloadUrl={downloadUrl}
+          fileName={fileName}
+          onClose={closeEverything}
+          onDownloaded={() => setFlow({ step: "downloaded" })}
+        />
+      )}
+
+      {flow.step === "preview" && (
+        <ApplicantIdPreviewModal
+          type="access-pass"
+          previewUrl={previewUrl}
+          downloadUrl={downloadUrl}
+          fileName={fileName}
+          onClose={closeEverything}
+          onDownloaded={() => setFlow({ step: "downloaded" })}
+        />
+      )}
+
+      {flow.step === "downloaded" && (
+        <ApplicantIdDownloadModal
+          label="Access Pass ID"
+          onClose={closeEverything}
+        />
+      )}
+    </>
+  );
+}

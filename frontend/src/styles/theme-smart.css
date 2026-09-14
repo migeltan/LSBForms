@@ -1,0 +1,485 @@
+/* ==========================================================================
+   THEME-SMART.CSS
+   SMART Portal design system — ported from the original theme-smart.css.
+   Imported once from src/index.css, after Tailwind, so these custom
+   properties and components are available everywhere via plain class names
+   (e.g. className="hero-govt") alongside Tailwind utilities.
+   ========================================================================== */
+
+@import url("./access-pass.css");
+@import url("./vehicle-sticker.css");
+@import url("./admin-status-idcard.css");
+@import url("./admin-modal.css");
+
+@import url("https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap");
+
+/* --------------------------------------------------------------------
+   1. Design tokens
+   -------------------------------------------------------------------- */
+:root {
+  /* --- Brand colors --- */
+  --smart-blue: #225aa7;
+  --smart-blue-dark: #163d73;
+  --smart-blue-light: #eaf1fb;
+  --smart-red: #ef3b4c;
+  --smart-red-dark: #a4212d;
+  --smart-red-light: #fdecee;
+  --smart-yellow: #f5b400;
+  --smart-yellow-dark: #8a6d1d;
+  --smart-yellow-light: #fff8e1;
+  --smart-green: #1e8f5f;
+  --smart-green-dark: #146341;
+  --smart-green-light: #e9f7f0;
+
+  /* --- Neutrals --- */
+  --smart-ink: #1c1f26;
+  --smart-muted: #5b6270;
+  --smart-border: #d9dce1;
+  --smart-surface: #ffffff;
+  --smart-bg: #f7f7f5;
+
+  /* --- Typography --- */
+  --smart-font-sans: "Public Sans", -apple-system, sans-serif;
+  --smart-font-serif: "Source Serif 4", Georgia, serif;
+
+  --smart-fs-xs: 0.72rem;
+  --smart-fs-sm: 0.82rem;
+  --smart-fs-base: 0.92rem;
+  --smart-fs-md: 1rem;
+  --smart-fs-lg: 1.15rem;
+  --smart-fs-xl: 1.3rem;
+  --smart-fs-2xl: clamp(1.5rem, 3vw, 2.1rem);
+
+  /* --- Spacing scale --- */
+  --smart-space-1: 0.25rem;
+  --smart-space-2: 0.5rem;
+  --smart-space-3: 0.75rem;
+  --smart-space-4: 1rem;
+  --smart-space-5: 1.5rem;
+  --smart-space-6: 1.75rem;
+  --smart-space-7: 2rem;
+  --smart-space-8: 2.5rem;
+
+  /* --- Radius / shadow / motion --- */
+  --smart-radius-sm: 6px;
+  --smart-radius-md: 8px;
+  --smart-radius-lg: 10px;
+  --smart-radius-pill: 999px;
+
+  --smart-shadow-sm: 0 1px 2px rgba(28, 31, 38, 0.06);
+  --smart-shadow-md: 0 6px 18px rgba(22, 61, 115, 0.12);
+  --smart-shadow-lg: 0 12px 34px rgba(22, 61, 115, 0.18);
+
+  --smart-transition-fast: 0.15s ease;
+  --smart-transition-base: 0.25s ease;
+
+  --smart-focus-ring: 0 0 0 0.2rem rgba(34, 90, 167, 0.15);
+  --smart-focus-ring-danger: 0 0 0 0.2rem rgba(239, 59, 76, 0.12);
+}
+
+/* --------------------------------------------------------------------
+   2. Base / layout scaffolding
+   -------------------------------------------------------------------- */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--smart-bg);
+  color: var(--smart-ink);
+  font-family: var(--smart-font-sans);
+  font-size: var(--smart-fs-base);
+}
+
+.app-shell {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+main#mainContent {
+  flex: 1 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+h1,
+h2,
+h3,
+.display-heading {
+  font-family: var(--smart-font-serif);
+  font-weight: 700;
+  color: var(--smart-blue-dark);
+  letter-spacing: -0.01em;
+}
+
+.text-danger {
+  color: var(--smart-red) !important;
+}
+
+/* --------------------------------------------------------------------
+   3. Navbar
+   -------------------------------------------------------------------- */
+.navbar-govt {
+  background-color: var(--smart-blue-dark);
+  border-bottom: 3px solid var(--smart-yellow);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+.navbar-govt .navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--smart-space-2);
+  font-family: var(--smart-font-serif);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: #fff;
+  text-decoration: none;
+}
+.navbar-govt .navbar-brand-logo {
+  height: 40px;
+  width: auto;
+}
+.navbar-govt .nav-link {
+  color: #d9e2f1;
+  font-size: var(--smart-fs-base);
+  text-decoration: none;
+  transition: color var(--smart-transition-fast);
+}
+.navbar-govt .nav-link:hover {
+  color: #ffffff;
+}
+.navbar-govt .nav-link-admin {
+  color: var(--smart-yellow);
+  font-weight: 600;
+}
+.navbar-govt .nav-link.active {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------
+   4. Hero / landing
+   -------------------------------------------------------------------- */
+.hero-govt {
+  background: linear-gradient(135deg, var(--smart-blue-dark) 0%, var(--smart-blue) 100%);
+  color: #fff;
+  border-radius: var(--smart-radius-sm);
+  padding: var(--smart-space-7) var(--smart-space-8);
+  margin-bottom: var(--smart-space-8);
+  position: relative;
+  overflow: hidden;
+}
+.hero-corner-shape {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 160px;
+  height: 100%;
+  pointer-events: none;
+}
+.hero-corner-shape::before,
+.hero-corner-shape::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+}
+.hero-corner-shape::before {
+  background: var(--smart-yellow);
+  clip-path: polygon(100% 0, 100% 100%, 55% 100%);
+  opacity: 0.9;
+}
+.hero-corner-shape::after {
+  background: var(--smart-red);
+  clip-path: polygon(100% 0, 85% 0, 40% 100%, 55% 100%);
+  opacity: 0.85;
+}
+.hero-govt-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--smart-space-7);
+  position: relative;
+  z-index: 1;
+}
+.hero-logo-badge {
+  flex-shrink: 0;
+}
+.hero-logo-img {
+  width: clamp(80px, 12vw, 140px);
+  height: auto;
+}
+.hero-govt .eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: var(--smart-fs-sm);
+  color: var(--smart-yellow);
+  font-weight: 600;
+}
+.hero-govt h1 {
+  color: #fff;
+  font-size: var(--smart-fs-2xl);
+  margin: 0.4rem 0 0.6rem;
+}
+.hero-govt p.lead {
+  color: #c9d4e6;
+  max-width: 620px;
+}
+
+@media (max-width: 767.98px) {
+  .hero-govt-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--smart-space-4);
+  }
+}
+
+/* --------------------------------------------------------------------
+   5. Application choice cards (landing page)
+   -------------------------------------------------------------------- */
+.app-choice-card {
+  border: 1px solid var(--smart-border);
+  border-radius: var(--smart-radius-md);
+  padding: var(--smart-space-6);
+  height: 100%;
+  background: var(--smart-surface);
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--smart-transition-fast), transform var(--smart-transition-fast);
+}
+.app-choice-card:hover {
+  transform: translateY(-2px);
+}
+.app-choice-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 36px;
+  height: 36px;
+  clip-path: polygon(100% 0, 100% 100%, 0 0);
+}
+.app-choice-card.corner-accent-blue::before {
+  background: var(--smart-blue);
+}
+.app-choice-card.corner-accent-red::before {
+  background: var(--smart-red);
+}
+.app-choice-card .card-index {
+  font-family: var(--smart-font-serif);
+  font-size: var(--smart-fs-sm);
+  color: var(--smart-yellow-dark);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+.app-choice-card h3 {
+  font-size: var(--smart-fs-xl);
+  margin: 0.35rem 0 0.6rem;
+}
+.app-choice-card p {
+  color: var(--smart-muted);
+  font-size: var(--smart-fs-base);
+}
+
+/* --------------------------------------------------------------------
+   6. Generic section card
+   -------------------------------------------------------------------- */
+.form-section-card {
+  background: var(--smart-surface);
+  border: 1px solid var(--smart-border);
+  border-radius: var(--smart-radius-md);
+  padding: var(--smart-space-6);
+  margin-bottom: var(--smart-space-5);
+  position: relative;
+  overflow: hidden;
+}
+.form-section-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  clip-path: polygon(100% 0, 100% 100%, 0 0);
+}
+.form-section-card.corner-accent-blue::before {
+  background: var(--smart-blue);
+}
+.form-section-card.corner-accent-yellow::before {
+  background: var(--smart-yellow);
+}
+.form-section-card.corner-accent-red::before {
+  background: var(--smart-red);
+}
+.form-section-card .section-label {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: var(--smart-fs-xs);
+  color: var(--smart-yellow-dark);
+  font-weight: 700;
+  margin-bottom: var(--smart-space-1);
+}
+.form-section-card h2 {
+  font-size: var(--smart-fs-lg);
+  margin-bottom: var(--smart-space-5);
+}
+
+/* --------------------------------------------------------------------
+   7. Buttons
+   -------------------------------------------------------------------- */
+.btn {
+  display: inline-block;
+  font-weight: 500;
+  font-size: var(--smart-fs-base);
+  padding: 0.5rem 1.1rem;
+  border-radius: var(--smart-radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--smart-transition-fast), color var(--smart-transition-fast), border-color var(--smart-transition-fast);
+}
+.btn-sm {
+  padding: 0.35rem 0.85rem;
+  font-size: var(--smart-fs-sm);
+}
+.btn-govt-primary {
+  background-color: var(--smart-red);
+  border-color: var(--smart-red);
+  color: #fff;
+}
+.btn-govt-primary:hover {
+  background-color: var(--smart-red-dark);
+  border-color: var(--smart-red-dark);
+  color: #fff;
+}
+.btn-govt-outline {
+  border-color: var(--smart-blue);
+  color: var(--smart-blue);
+  background: transparent;
+}
+.btn-govt-outline:hover {
+  background-color: var(--smart-blue);
+  color: #fff;
+}
+
+/* --------------------------------------------------------------------
+   8. Footer
+   -------------------------------------------------------------------- */
+.footer-govt {
+  border-top: 1px solid var(--smart-border);
+  background: var(--smart-surface);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  z-index: 1;
+}
+.footer-logo-img {
+  height: clamp(48px, 6vw, 72px);
+  width: auto;
+}
+.footer-link {
+  color: var(--smart-muted);
+  text-decoration: none;
+}
+.footer-link:hover {
+  color: var(--smart-blue);
+}
+.footer-link-sep {
+  margin: 0 0.4rem;
+  color: var(--smart-border);
+}
+.footer-corner-shape {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 90px;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+.footer-corner-shape::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--smart-blue);
+  clip-path: polygon(0 0, 60% 0, 0 60%);
+  opacity: 0.15;
+}
+
+/* --------------------------------------------------------------------
+   9. Decorative page background shapes
+   -------------------------------------------------------------------- */
+.page-bg-decor {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.bg-shape {
+  position: absolute;
+  opacity: 0.07;
+}
+.bg-shape-blue {
+  background: linear-gradient(135deg, var(--smart-blue) 0%, var(--smart-blue-dark) 100%);
+}
+.bg-shape-yellow {
+  background: linear-gradient(135deg, var(--smart-yellow) 0%, #d99a00 100%);
+}
+.bg-shape-red {
+  background: linear-gradient(135deg, var(--smart-red) 0%, var(--smart-red-dark) 100%);
+}
+
+.bg-shape-1 {
+  width: 780px;
+  height: 780px;
+  top: -260px;
+  right: -280px;
+  clip-path: polygon(30% 0%, 100% 0%, 100% 70%, 65% 100%, 15% 85%, 0% 40%);
+  opacity: 0.06;
+}
+.bg-shape-2 {
+  width: 520px;
+  height: 620px;
+  top: 22%;
+  left: -260px;
+  clip-path: polygon(0% 10%, 60% 0%, 100% 25%, 85% 75%, 40% 100%, 0% 80%);
+  opacity: 0.05;
+}
+.bg-shape-3 {
+  width: 560px;
+  height: 560px;
+  bottom: -220px;
+  right: -160px;
+  clip-path: polygon(20% 0%, 100% 15%, 90% 90%, 30% 100%, 0% 55%);
+  opacity: 0.055;
+}
+.bg-shape-4 {
+  width: 300px;
+  height: 300px;
+  bottom: 4%;
+  left: -110px;
+  clip-path: polygon(0% 0%, 80% 20%, 100% 80%, 30% 100%, 0% 55%);
+  opacity: 0.05;
+}
+
+@media (max-width: 991.98px) {
+  .bg-shape-1 { width: 520px; height: 520px; top: -180px; right: -200px; }
+  .bg-shape-2 { width: 340px; height: 420px; }
+  .bg-shape-3 { width: 380px; height: 380px; }
+  .bg-shape-4 { display: none; }
+}
+
+@media (max-width: 575.98px) {
+  .bg-shape-1 { width: 380px; height: 380px; }
+  .bg-shape-2 { display: none; }
+  .bg-shape-3 { width: 280px; height: 280px; }
+}

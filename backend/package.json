@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "puppeteer": "^25.10.0"
+  },
+  "scripts": {
+    "build": "tailwindcss -i ./resources/css/id-cards.css -o ./public/css/id-cards-compiled.css --minify",
+    "watch": "tailwindcss -i ./resources/css/id-cards.css -o ./public/css/id-cards-compiled.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.19"
+  }
+}
