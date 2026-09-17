@@ -524,6 +524,12 @@
       "license": [
         "LGPL-2.1"
       ],
+      "authors": [
+        {
+          "name": "The Dompdf Community",
+          "homepage": "https://github.com/dompdf/dompdf/blob/master/AUTHORS.md"
+        }
+      ],
       "description": "DOMPDF is a CSS 2.1 compliant HTML to PDF converter",
       "homepage": "https://github.com/dompdf/dompdf",
       "support": {
@@ -8132,5 +8138,5 @@
     "php": "^8.2"
   },
   "platform-dev": {},
-  "plugin-api-version": "2.6.0"
+  "plugin-api-version": "2.9.0"
 }
