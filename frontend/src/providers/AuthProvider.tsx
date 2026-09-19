@@ -9,7 +9,7 @@ import { api } from "../api/client";
 
 export interface AuthUser {
   id: number;
-  username: string;
+  hrep_id: string;
   full_name: string;
   role: "admin" | "reviewer";
 }
@@ -17,7 +17,7 @@ export interface AuthUser {
 interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (hrepId: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -32,8 +32,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return raw ? (JSON.parse(raw) as AuthUser) : null;
   });
 
-  const login = useCallback(async (username: string, password: string) => {
-    const { data } = await api.post("/auth/login", { username, password });
+  const login = useCallback(async (hrepId: string, password: string) => {
+    const { data } = await api.post("/auth/login", {
+      hrep_id: hrepId,
+      password,
+    });
     sessionStorage.setItem(TOKEN_KEY, data.token);
     sessionStorage.setItem(USER_KEY, JSON.stringify(data.user));
     setUser(data.user);

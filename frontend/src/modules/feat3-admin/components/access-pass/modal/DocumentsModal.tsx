@@ -63,7 +63,6 @@ function VerificationStatusCell({ status }: { status: string }) {
 
 function FileActionCell({
   documentId,
-  filePath,
   fileName,
   editing,
   uploading,
@@ -72,7 +71,6 @@ function FileActionCell({
   onReplace,
 }: {
   documentId: number;
-  filePath: string;
   fileName: string;
   editing: boolean;
   uploading: boolean;
@@ -80,7 +78,6 @@ function FileActionCell({
   onView: () => void;
   onReplace: (file: File) => void;
 }) {
-  const fileUrl = STORAGE_BASE + "/" + filePath;
   const downloadUrl = `${BASE}/api/access-pass/documents/${documentId}/download`;
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -276,7 +273,7 @@ export function DocumentsModal({
           method: "POST",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
           body: formData,
-        }
+        },
       );
       if (!res.ok) throw new Error("Upload failed");
       const updated: DocumentRow = await res.json();
@@ -333,7 +330,6 @@ export function DocumentsModal({
               <VerificationStatusCell status={doc.verification_status} />
               <FileActionCell
                 documentId={doc.id}
-                filePath={doc.file_path}
                 fileName={doc.file_name}
                 editing={editing}
                 uploading={uploadingId === doc.id}

@@ -254,7 +254,7 @@ class AdminController extends Controller
                 'status' => $application?->status,
                 'date_submitted' => $application?->date_submitted?->format('Y-m-d H:i:s'),
                 'date_reviewed' => $application?->date_reviewed?->format('Y-m-d H:i:s'),
-                'reviewed_by' => $application?->reviewer?->name,
+                'reviewed_by' => $application?->reviewer?->full_name,
                 'remarks' => $application?->remarks,
                 'declaration_name' => $application?->declaration_name,
                 'declaration_date' => $application?->declaration_date?->format('Y-m-d'),
@@ -464,7 +464,7 @@ class AdminController extends Controller
                 'status' => $application?->status,
                 'date_submitted' => $application?->date_submitted?->format('Y-m-d H:i:s'),
                 'date_reviewed' => $application?->date_reviewed?->format('Y-m-d H:i:s'),
-                'reviewed_by' => $application?->reviewer?->name,
+                'reviewed_by' => $application?->reviewer?->full_name,
                 'remarks' => $application?->remarks,
             ],
             'vehicle_information' => [

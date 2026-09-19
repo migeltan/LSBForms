@@ -6,6 +6,16 @@
    (e.g. className="hero-govt") alongside Tailwind utilities.
    ========================================================================== */
 
+@font-face {
+  font-family: "Old English Text MT";
+  src: url("/images/fonts/oldenglishtextmt.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@import url("https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap");
 @import url("./access-pass.css");
 @import url("./vehicle-sticker.css");
 @import url("./admin-status-idcard.css");
@@ -120,52 +130,94 @@ h3,
 }
 
 /* --------------------------------------------------------------------
-   3. Navbar
+   3. Header
    -------------------------------------------------------------------- */
-.navbar-govt {
-  background-color: var(--smart-blue-dark);
-  border-bottom: 3px solid var(--smart-yellow);
+.gov-header {
+  position: relative;
+  background: #245ba6;
+  border-bottom: 4px solid var(--smart-yellow);
+  overflow: hidden;
   position: sticky;
   top: 0;
   z-index: 40;
-}
-.navbar-govt .navbar-brand {
-  display: flex;
-  align-items: center;
-  gap: var(--smart-space-2);
-  font-family: var(--smart-font-serif);
-  font-weight: 600;
-  font-size: 1.05rem;
-  color: #fff;
-  text-decoration: none;
-}
-.navbar-govt .navbar-brand-logo {
-  height: 40px;
-  width: auto;
-}
-.navbar-govt .nav-link {
-  color: #d9e2f1;
-  font-size: var(--smart-fs-base);
-  text-decoration: none;
-  transition: color var(--smart-transition-fast);
-}
-.navbar-govt .nav-link:hover {
-  color: #ffffff;
-}
-.navbar-govt .nav-link-admin {
-  color: var(--smart-yellow);
-  font-weight: 600;
-}
-.navbar-govt .nav-link.active {
-  color: #ffffff;
-  font-weight: 600;
+  min-height: 88px;
 }
 
+.gov-header-pattern {
+  position: absolute;
+  inset: 0;
+  background-image: url("/images/rattan-pattern-raw.svg");
+  background-repeat: repeat;
+  background-size: 220px;
+  opacity: 0.12;
+  pointer-events: none;
+}
+.gov-header-inner {
+  position: relative;
+  z-index: 10;
+}
+.gov-brand-logo img {
+  height: 5.75rem;
+  width: 5.75rem;
+  object-fit: contain;
+}
+.gov-brand-title {
+  font-family: "Old English Text MT", serif;
+  font-size: 2.4rem;
+  line-height: 1.1;
+  color: #ffffff;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.35);
+  display: block;
+}
+.gov-brand-subtitle-1 {
+  font-family: var(--smart-font-serif);
+  font-weight: 300;
+  font-size: 1.25rem;
+  color: #ffffff;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.35);
+  display: block;
+}
+.gov-brand-subtitle-2 {
+  font-family: var(--smart-font-serif);
+  font-weight: 650;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.35);
+  display: block;
+}
+.gov-nav {
+  font-family: var(--smart-font-sans);
+}
+
+.gov-nav-link {
+  font-weight: 400;
+  font-size: var(--smart-fs-base);
+  color: rgba(255, 255, 255, 0.8);
+  padding-bottom: 6px;
+  border-bottom: 2px solid transparent;
+  text-decoration: none;
+  transition:
+    color var(--smart-transition-fast),
+    border-color var(--smart-transition-fast);
+}
+
+.gov-nav-link:hover {
+  color: #ffffff;
+}
+.gov-nav-link.is-active {
+  font-weight: 700;
+  color: #ffffff;
+  border-bottom-color: var(--smart-red);
+}
 /* --------------------------------------------------------------------
    4. Hero / landing
    -------------------------------------------------------------------- */
 .hero-govt {
-  background: linear-gradient(135deg, var(--smart-blue-dark) 0%, var(--smart-blue) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--smart-blue-dark) 0%,
+    var(--smart-blue) 100%
+  );
   color: #fff;
   border-radius: var(--smart-radius-sm);
   padding: var(--smart-space-7) var(--smart-space-8);
@@ -250,7 +302,9 @@ h3,
   background: var(--smart-surface);
   position: relative;
   overflow: hidden;
-  transition: border-color var(--smart-transition-fast), transform var(--smart-transition-fast);
+  transition:
+    border-color var(--smart-transition-fast),
+    transform var(--smart-transition-fast);
 }
 .app-choice-card:hover {
   transform: translateY(-2px);
@@ -341,7 +395,10 @@ h3,
   border: 1px solid transparent;
   cursor: pointer;
   text-decoration: none;
-  transition: background-color var(--smart-transition-fast), color var(--smart-transition-fast), border-color var(--smart-transition-fast);
+  transition:
+    background-color var(--smart-transition-fast),
+    color var(--smart-transition-fast),
+    border-color var(--smart-transition-fast);
 }
 .btn-sm {
   padding: 0.35rem 0.85rem;
@@ -429,13 +486,21 @@ h3,
   opacity: 0.07;
 }
 .bg-shape-blue {
-  background: linear-gradient(135deg, var(--smart-blue) 0%, var(--smart-blue-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--smart-blue) 0%,
+    var(--smart-blue-dark) 100%
+  );
 }
 .bg-shape-yellow {
   background: linear-gradient(135deg, var(--smart-yellow) 0%, #d99a00 100%);
 }
 .bg-shape-red {
-  background: linear-gradient(135deg, var(--smart-red) 0%, var(--smart-red-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--smart-red) 0%,
+    var(--smart-red-dark) 100%
+  );
 }
 
 .bg-shape-1 {
@@ -472,14 +537,35 @@ h3,
 }
 
 @media (max-width: 991.98px) {
-  .bg-shape-1 { width: 520px; height: 520px; top: -180px; right: -200px; }
-  .bg-shape-2 { width: 340px; height: 420px; }
-  .bg-shape-3 { width: 380px; height: 380px; }
-  .bg-shape-4 { display: none; }
+  .bg-shape-1 {
+    width: 520px;
+    height: 520px;
+    top: -180px;
+    right: -200px;
+  }
+  .bg-shape-2 {
+    width: 340px;
+    height: 420px;
+  }
+  .bg-shape-3 {
+    width: 380px;
+    height: 380px;
+  }
+  .bg-shape-4 {
+    display: none;
+  }
 }
 
 @media (max-width: 575.98px) {
-  .bg-shape-1 { width: 380px; height: 380px; }
-  .bg-shape-2 { display: none; }
-  .bg-shape-3 { width: 280px; height: 280px; }
+  .bg-shape-1 {
+    width: 380px;
+    height: 380px;
+  }
+  .bg-shape-2 {
+    display: none;
+  }
+  .bg-shape-3 {
+    width: 280px;
+    height: 280px;
+  }
 }

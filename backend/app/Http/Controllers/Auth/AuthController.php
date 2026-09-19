@@ -17,7 +17,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'username' => ['required', 'string'],
+            'hrep_id' => ['required', 'string'],
             'password' => ['required', 'string'],
         ]);
 
@@ -25,10 +25,10 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid input.', 'errors' => $validator->errors()], 422);
         }
 
-        $user = User::where('username', $request->input('username'))->first();
+        $user = User::where('hrep_id', $request->input('hrep_id'))->first();
 
         if (! $user || ! $user->is_active || ! Hash::check($request->input('password'), $user->password_hash)) {
-            return response()->json(['message' => 'Invalid username or password.'], 401);
+            return response()->json(['message' => 'Invalid HREP ID or password.'], 401);
         }
 
         $token = $user->createToken('smart-portal-admin')->plainTextToken;
@@ -37,7 +37,7 @@ class AuthController extends Controller
             'token' => $token,
             'user' => [
                 'id' => $user->id,
-                'username' => $user->username,
+                'hrep_id' => $user->hrep_id,
                 'full_name' => $user->full_name,
                 'role' => $user->role,
             ],

@@ -11,7 +11,7 @@ class AdminUserSeeder extends Seeder
     /**
      * Creates a default admin account for local development.
      *
-     * Username: admin
+     * HREP ID: HREP-2024-0001
      * Password: ChangeMe123!
      *
      * IMPORTANT: change this password (or delete/replace this seeder)
@@ -20,7 +20,7 @@ class AdminUserSeeder extends Seeder
     public function run(): void
     {
         User::updateOrCreate(
-            ['username' => 'admin'],
+            ['hrep_id' => 'HREP-2024-0001'],
             [
                 'password_hash' => Hash::make('Password123'),
                 'full_name' => 'System Administrator',

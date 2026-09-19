@@ -3,8 +3,8 @@ import type { AccessPassRow } from "../../../../hooks/types";
 import { StatusBadge } from "../StatusBadge";
 import { ApplicantDetailModal } from "./ApplicantDetailModal";
 import { TOKEN_KEY } from "../../../../providers/AuthProvider";
-
-const ENDPOINT = "http://localhost:8000/api/admin/access-pass";
+import { BASE } from "../../../../hooks/apiConfig";
+const ENDPOINT = `${BASE}/api/admin/access-pass`;
 
 function PentagonCorner({ className }: { className?: string }) {
   return (
@@ -41,7 +41,7 @@ export function AccessPassTable() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedApplicantId, setSelectedApplicantId] = useState<number | null>(
-    null
+    null,
   );
 
   useEffect(() => {

@@ -1,8 +1,6 @@
 // Header.tsx
 import { NavLink } from "react-router-dom";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
 const navItems = [
   { to: "/", label: "Home", end: true },
   { to: "/access-pass", label: "Access Pass" },
@@ -12,51 +10,54 @@ const navItems = [
 
 export function Header() {
   return (
-    <header>
-      <nav className="navbar-govt">
-        <div className="max-w-6xl px-4 mx-auto">
-          <div className="flex min-h-[68px] flex-wrap items-center justify-between gap-y-2 py-2">
-            <NavLink to="/" className="navbar-brand">
+    <header className="gov-header">
+      <div className="gov-header-pattern" aria-hidden="true" />
+      <div className="gov-header-inner max-w-6xl px-4 mx-auto">
+        <div className="flex min-h-[88px] flex-wrap items-center justify-between gap-y-5 py-7">
+          <NavLink to="/" className="flex items-center gap-3">
+            <span className="gov-brand-logo">
               <img
-                src={`${API_URL}/images/House_of_Representatives_Logo.png`}
-                alt="House of Representatives seal"
-                className="navbar-brand-logo"
+                src="/images/hrep-seal.png"
+                alt="House of Representatives Seal"
               />
-              <span className="leading-tight">
-                <span className="hidden sm:inline">
-                  House of Representatives &mdash; Internal Security Group
-                </span>
-                <span className="sm:hidden">
-                  hob &middot; Internal Security Group
-                </span>
+            </span>
+            <span className="leading-tight">
+              <span className="gov-brand-subtitle-1">
+                Legislative Security Bureau
               </span>
-            </NavLink>
+              <span className="gov-brand-title">House of Representatives</span>
+            </span>
+          </NavLink>
 
-            <ul className="items-center hidden gap-6 md:flex">
-              {navItems.map((item) => (
-                <li key={item.to}>
-                  <NavLink
-                    to={item.to}
-                    end={item.end}
-                    className={({ isActive }) =>
-                      `nav-link${isActive ? " active" : ""}`
-                    }
-                  >
-                    {item.label}
-                  </NavLink>
-                </li>
-              ))}
-              <li>
-                <NavLink to="/admin" className="nav-link nav-link-admin">
-                  Admin
+          <ul className="gov-nav items-center hidden gap-6 md:flex">
+            {navItems.map((item) => (
+              <li key={item.to}>
+                <NavLink
+                  to={item.to}
+                  end={item.end}
+                  className={({ isActive }) =>
+                    `gov-nav-link${isActive ? " is-active" : ""}`
+                  }
+                >
+                  {item.label}
                 </NavLink>
               </li>
-            </ul>
+            ))}
+            <li>
+              <NavLink
+                to="/admin"
+                className={({ isActive }) =>
+                  `gov-nav-link${isActive ? " is-active" : ""}`
+                }
+              >
+                Admin
+              </NavLink>
+            </li>
+          </ul>
 
-            <MobileMenu />
-          </div>
+          <MobileMenu />
         </div>
-      </nav>
+      </div>
     </header>
   );
 }
@@ -99,7 +100,7 @@ function MobileMenu() {
                 {item.label}
               </NavLink>
             </li>
-          )
+          ),
         )}
       </ul>
     </details>
