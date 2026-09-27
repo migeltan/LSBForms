@@ -20,10 +20,13 @@ export function Header() {
               />
             </span>
             <span className="leading-tight">
+              <span className="gov-brand-title">House of Representatives</span>
               <span className="gov-brand-subtitle-1">
                 Legislative Security Bureau
               </span>
-              <span className="gov-brand-title">House of Representatives</span>
+              <span className="gov-brand-subtitle-2">
+                Internal Security Group
+              </span>
             </span>
           </NavLink>
 

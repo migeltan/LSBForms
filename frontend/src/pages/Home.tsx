@@ -1,7 +1,13 @@
 // Home.tsx
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search } from "lucide-react";
+import {
+  Search,
+  ChevronDown,
+  ClipboardList,
+  FileCheck2,
+  ArrowUpRight,
+} from "lucide-react";
 import { FormsSearch } from "../components/FormsSearch";
 import { ContactSection } from "../components/ContactSection";
 import { AVAILABLE_FORMS, type FormDefinition } from "../data/forms";
@@ -13,6 +19,10 @@ export function Home() {
   const { ref: bentoRef, inView: bentoInView } = useInView<HTMLDivElement>();
   const { ref: beforeBeginRef, inView: beforeBeginInView } =
     useInView<HTMLDivElement>({ threshold: 0.05 });
+  const { ref: instructionsPanelRef, inView: instructionsPanelInView } =
+    useInView<HTMLDivElement>();
+  const { ref: docsPanelRef, inView: docsPanelInView } =
+    useInView<HTMLDivElement>();
   const { ref: contactRef, inView: contactInView } =
     useInView<HTMLDivElement>();
   const { ref: logoRef, inView: logoInView } = useInView<HTMLDivElement>();
@@ -50,7 +60,7 @@ export function Home() {
           </div>
         </div>
         <div className="hero-landing-scroll-cue" aria-hidden="true">
-          <span />
+          <ChevronDown strokeWidth={2.5} />
         </div>
       </section>
 
@@ -62,7 +72,7 @@ export function Home() {
       >
         <FormsSearch />
 
-        <div className="grid grid-cols-1 gap-4 mt-6 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           {AVAILABLE_FORMS.map((form) => (
             <ApplicationCard key={form.id} form={form} />
           ))}
@@ -85,9 +95,15 @@ export function Home() {
         </div>
 
         <div className="before-begin-panels">
-          <div className="before-begin-panel form-section-card landing-card corner-accent-blue">
-            <div className="section-label">Instructions</div>
-            <ul className="mb-0 list-disc space-y-1 pl-4 text-sm text-[var(--smart-muted)]">
+          <div
+            className={`before-begin-panel form-section-card landing-card corner-accent-blue reveal${instructionsPanelInView ? " is-visible" : ""}`}
+            ref={instructionsPanelRef}
+          >
+            <div className="section-label">
+              <ClipboardList size={18} aria-hidden="true" />
+              Instructions
+            </div>
+            <ul className="mb-0 list-disc space-y-1 pl-6 text-[var(--smart-muted)]">
               <li>
                 Prepare <strong>clear scans</strong> of photos of your documents
               </li>
@@ -100,24 +116,37 @@ export function Home() {
               </li>
               <li>[OFFICIAL PROCESSING TIME TO BE CONFIRMED]</li>
             </ul>
+            <button type="button" className="btn btn-govt-info">
+              View Reference Files
+              <ArrowUpRight size={16} aria-hidden="true" />
+            </button>
           </div>
 
-          <div className="before-begin-panel form-section-card landing-card corner-accent-red">
-            <div className="section-label">Required Documents</div>
-            <ul className="mb-0 list-disc space-y-1 pl-4 text-sm text-[var(--smart-muted)]">
+          <div
+            className={`before-begin-panel form-section-card landing-card corner-accent-red reveal${docsPanelInView ? " is-visible" : ""}`}
+            ref={docsPanelRef}
+          >
+            <div className="section-label">
+              <FileCheck2 size={18} aria-hidden="true" />
+              Required Documents
+            </div>
+            <ul className="mb-0 list-disc space-y-1 pl-6 text-[var(--smart-muted)]">
               <li>Letter request addressed to the Sergeant-at-Arms</li>
               <li>Two (2) copies of a valid ID</li>
               <li>NBI Clearance (non-plantilla applicants)</li>
               <li>Contract of Consultancy (consultant applicants)</li>
               <li>OR/CR, and Deed of Sale if applicable (vehicle sticker)</li>
             </ul>
-            <p className="mb-0 mt-2 text-sm text-[var(--smart-muted)]">
+            <p className="mb-0 mt-2 text-[var(--smart-muted)]">
               [OFFICIAL DOCUMENT REQUIREMENT LIST TO BE CONFIRMED]
             </p>
+            <button type="button" className="btn btn-govt-info">
+              View Reference Files
+              <ArrowUpRight size={16} aria-hidden="true" />
+            </button>
           </div>
         </div>
       </section>
-
       {/* CONTACT */}
       <div
         ref={contactRef}
@@ -181,6 +210,7 @@ function ApplicationCard({ form }: { form: FormDefinition }) {
         className="block btn btn-govt-primary sm:inline-block"
       >
         Start Application
+        <ArrowUpRight size={16} aria-hidden="true" />
       </Link>
     </div>
   );
@@ -207,8 +237,8 @@ function StatusCheckCard() {
     >
       <div className="status-check-text">
         <div className="section-label">Already Applied?</div>
-        <h2 style={{ fontSize: "1.1rem" }}>Check Application Status</h2>
-        <p className="mb-0 text-sm text-[var(--smart-muted)]">
+        <h2>Check Application Status</h2>
+        <p className="mb-0 text-[var(--smart-muted)]">
           Enter your <strong>application reference number</strong> to see where
           your application stands.
         </p>

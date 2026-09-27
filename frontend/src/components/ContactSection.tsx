@@ -28,8 +28,8 @@ export function ContactSection() {
   return (
     <div className="contact-section form-section-card landing-card corner-accent-yellow">
       <div className="section-label">Need Help?</div>
-      <h2 style={{ fontSize: "1.1rem" }}>Contact / Inquiries</h2>
-      <p className="mb-0 text-sm text-[var(--smart-muted)]">
+      <h2>Contact / Inquiries</h2>
+      <p className="mb-0 text-[var(--smart-muted)]">
         Reach the Internal Security Group directly for questions about your
         application.
       </p>

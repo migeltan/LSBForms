@@ -49,7 +49,7 @@
   --smart-bg: #f7f7f5;
 
   /* --- Typography --- */
-  --smart-font-sans: "Public Sans", -apple-system, sans-serif;
+  --smart-font-sans: "Source Sans 3", -apple-system, sans-serif;
   --smart-font-serif: "Source Serif 4", Georgia, serif;
 
   --smart-fs-xs: 0.72rem;
@@ -136,7 +136,6 @@ h3,
   position: relative;
   background: #245ba6;
   border-bottom: 4px solid var(--smart-yellow);
-  overflow: hidden;
   position: sticky;
   top: 0;
   z-index: 40;
@@ -168,21 +167,28 @@ h3,
   color: #ffffff;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.35);
   display: block;
+  margin: 0 0 2px;
 }
 .gov-brand-subtitle-1 {
-  font-family: var(--smart-font-serif);
-  font-weight: 300;
-  font-size: 1.25rem;
+  font-family: var(--smart-font-sans);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 26px;
+  letter-spacing: 0;
   color: #ffffff;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.35);
+  margin: 0;
   display: block;
 }
 .gov-brand-subtitle-2 {
-  font-family: var(--smart-font-serif);
+  font-family: var(--smart-font-sans);
+  font-size: 18px;
   font-weight: 650;
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.85);
+  line-height: 26px;
+  letter-spacing: 0;
+  color: #ffffff;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.35);
+  margin: 0;
   display: block;
 }
 .gov-nav {
@@ -190,8 +196,11 @@ h3,
 }
 
 .gov-nav-link {
-  font-weight: 400;
+  display: inline-flex;
+  align-items: center;
+  font-weight: 600;
   font-size: var(--smart-fs-base);
+  line-height: 1;
   color: rgba(255, 255, 255, 0.8);
   padding-bottom: 6px;
   border-bottom: 2px solid transparent;
@@ -240,58 +249,57 @@ h3,
 }
 .hero-landing-title-eyebrow {
   display: block;
-  font-size: clamp(1.9rem, 4vw, 2.6rem);
-  font-weight: 800;
+  font-size: clamp(2.2rem, 4.6vw, 3rem);
+  font-weight: 700;
   color: var(--smart-ink);
   letter-spacing: -0.01em;
 }
 .hero-landing-title-main {
   display: block;
-  font-size: clamp(2rem, 4.4vw, 2.9rem);
-  font-weight: 800;
+  font-size: clamp(2.8rem, 6vw, 4rem);
+  font-weight: 700;
   color: var(--smart-blue);
   letter-spacing: -0.01em;
 }
 .hero-landing-lead {
   color: var(--smart-muted);
-  font-size: var(--smart-fs-md);
-  line-height: 1.6;
-  max-width: 34rem;
+  font-size: var(--smart-fs-lg);
+  line-height: 1.65;
+  max-width: 36rem;
 }
 .hero-landing-lead strong {
   color: var(--smart-ink);
 }
 .hero-landing-graphic {
   flex-shrink: 0;
-  width: clamp(140px, 18vw, 220px);
-  height: clamp(140px, 18vw, 220px);
-  overflow: hidden;
+  width: clamp(200px, 24vw, 300px);
+  height: clamp(200px, 24vw, 300px);
   border-radius: var(--smart-radius-lg);
 }
 .hero-landing-graphic-img {
   width: 100%;
-  height: 145%;
-  object-fit: cover;
-  object-position: top center;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  transition: transform var(--smart-transition-base);
+}
+.hero-landing-graphic:hover .hero-landing-graphic-img {
+  transform: scale(1.08) rotate(-2deg);
 }
 .hero-landing-scroll-cue {
   position: absolute;
   left: 50%;
   bottom: var(--smart-space-4);
   transform: translateX(-50%);
-  width: 22px;
-  height: 34px;
-  border: 2px solid var(--smart-border);
-  border-radius: var(--smart-radius-pill);
-}
-.hero-landing-scroll-cue span {
-  display: block;
-  width: 4px;
-  height: 8px;
-  margin: 5px auto 0;
-  border-radius: var(--smart-radius-pill);
-  background: var(--smart-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--smart-blue);
   animation: hero-scroll-cue-bounce 1.6s ease-in-out infinite;
+}
+.hero-landing-scroll-cue svg {
+  width: 24px;
+  height: 24px;
 }
 @keyframes hero-scroll-cue-bounce {
   0%,
@@ -336,8 +344,13 @@ h3,
 .app-choice-card {
   border: 1px solid var(--smart-border);
   border-radius: var(--smart-radius-lg);
-  padding: var(--smart-space-6);
+  padding: 2.25rem;
+  min-height: clamp(240px, 26vh, 320px);
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
   background: var(--smart-surface);
   position: relative;
   overflow: hidden;
@@ -352,7 +365,7 @@ h3,
 }
 .app-choice-card .card-index {
   font-family: var(--smart-font-serif);
-  font-size: var(--smart-fs-sm);
+  font-size: var(--smart-fs-base);
   color: var(--smart-blue);
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -364,13 +377,13 @@ h3,
   font-family: var(--smart-font-sans);
   font-weight: 800;
   color: var(--smart-ink);
-  font-size: var(--smart-fs-xl);
-  margin: 0.35rem 0 0.6rem;
+  font-size: clamp(1.4rem, 2vw, 1.65rem);
+  margin: 0.5rem 0 0.75rem;
 }
 .app-choice-card p {
   color: var(--smart-muted);
-  font-size: var(--smart-fs-base);
-  line-height: 1.55;
+  font-size: var(--smart-fs-lg);
+  line-height: 1.6;
 }
 .app-choice-card p strong {
   color: var(--smart-ink);
@@ -451,7 +464,9 @@ h3,
    7. Buttons
    -------------------------------------------------------------------- */
 .btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   font-weight: 500;
   font-size: var(--smart-fs-base);
   padding: 0.5rem 1.1rem;
@@ -751,6 +766,7 @@ h3,
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
+  line-height: 1;
   background: none;
   border: none;
   padding-bottom: 6px;
@@ -816,6 +832,12 @@ h3,
    13. Bento section wrapper (landing page)
    -------------------------------------------------------------------- */
 .bento-section {
+  min-height: calc(100vh - 88px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--smart-space-6);
+  margin-top: var(--smart-space-8);
   margin-bottom: var(--smart-space-8);
 }
 
@@ -828,11 +850,28 @@ h3,
   align-items: center;
   justify-content: space-between;
   gap: var(--smart-space-5);
-  margin-top: var(--smart-space-4);
+  padding: 2.25rem;
+  margin-top: 0;
   margin-bottom: 0;
 }
+.status-check-text {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+.status-check-text .section-label {
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-size: var(--smart-fs-base);
+}
 .status-check-text h2 {
-  margin-bottom: 0.25rem;
+  font-family: var(--smart-font-sans);
+  font-weight: 800;
+  color: var(--smart-ink);
+  font-size: clamp(1.4rem, 2vw, 1.65rem);
+  margin-bottom: 0.5rem;
+}
+.status-check-text p {
+  font-size: var(--smart-fs-lg);
 }
 .status-check-text p strong {
   color: var(--smart-ink);
@@ -841,6 +880,7 @@ h3,
   display: flex;
   align-items: center;
   gap: 0.6rem;
+  flex: 0 0 auto;
   flex-wrap: wrap;
 }
 .status-check-input-wrap {
@@ -855,11 +895,11 @@ h3,
   pointer-events: none;
 }
 .status-check-input-wrap input {
-  padding: 0.6rem 0.9rem 0.6rem 2.4rem;
+  padding: 0.8rem 1rem 0.8rem 2.6rem;
   border: 1px solid var(--smart-border);
   border-radius: var(--smart-radius-pill);
-  font-size: var(--smart-fs-base);
-  min-width: 15rem;
+  font-size: var(--smart-fs-lg);
+  min-width: 17rem;
 }
 .status-check-input-wrap input:focus {
   outline: none;
@@ -906,19 +946,19 @@ h3,
 .before-begin-section {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
-  gap: var(--smart-space-8);
-  margin-bottom: var(--smart-space-8);
+  gap: var(--smart-space-6);
+  margin-bottom: clamp(4rem, 10vh, 7rem);
 }
 .before-begin-sticky-col {
   position: relative;
 }
 .before-begin-sticky-inner {
   position: sticky;
-  top: calc(88px + var(--smart-space-6));
+  top: calc(88px + var(--smart-space-5));
 }
 .before-begin-kicker {
   font-family: var(--smart-font-serif);
-  font-size: var(--smart-fs-lg);
+  font-size: clamp(1.15rem, 1.6vw, 1.35rem);
   color: var(--smart-ink);
   font-weight: 700;
 }
@@ -926,22 +966,46 @@ h3,
   font-family: var(--smart-font-sans);
   font-weight: 800;
   color: var(--smart-blue);
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  margin: 0.1rem 0 0;
+  font-size: clamp(2rem, 3.6vw, 2.6rem);
+  margin: 0.2rem 0 0;
 }
 .before-begin-panels {
   display: flex;
   flex-direction: column;
-  gap: var(--smart-space-7);
+  gap: var(--smart-space-6);
 }
 .before-begin-panel {
-  min-height: 40vh;
+  min-height: 36vh;
+  padding: 2.25rem;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   justify-content: center;
   margin-bottom: 0;
 }
-
+.before-begin-panel .section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-size: var(--smart-fs-xl);
+  margin-bottom: var(--smart-space-3);
+}
+.before-begin-panel.corner-accent-red .section-label {
+  color: var(--smart-red);
+}
+.before-begin-panel ul,
+.before-begin-panel p {
+  font-size: var(--smart-fs-lg);
+}
+.before-begin-panel li::marker {
+  color: var(--smart-muted);
+}
+.before-begin-panel .btn {
+  margin-top: var(--smart-space-5);
+  border-radius: var(--smart-radius-pill);
+}
 @media (max-width: 900px) {
   .before-begin-section {
     display: block;
@@ -961,6 +1025,21 @@ h3,
 /* --------------------------------------------------------------------
    16. Contact section (landing page)
    -------------------------------------------------------------------- */
+.contact-section .section-label {
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-size: var(--smart-fs-base);
+}
+.contact-section h2 {
+  font-family: var(--smart-font-sans);
+  font-weight: 800;
+  color: var(--smart-ink);
+  font-size: clamp(1.4rem, 2vw, 1.65rem);
+  margin-bottom: 0.5rem;
+}
+.contact-section > p {
+  font-size: var(--smart-fs-lg);
+}
 .contact-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -988,15 +1067,15 @@ h3,
   color: var(--smart-blue);
 }
 .contact-tile-label {
-  font-size: var(--smart-fs-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-size: var(--smart-fs-sm);
+  text-transform: none;
+  letter-spacing: 0.02em;
   color: var(--smart-muted);
   font-weight: 700;
-  margin-bottom: 0.15rem;
+  margin-bottom: 0.2rem;
 }
 .contact-tile-value {
-  font-size: var(--smart-fs-sm);
+  font-size: var(--smart-fs-base);
   color: var(--smart-ink);
 }
 
