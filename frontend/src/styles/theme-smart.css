@@ -212,82 +212,121 @@ h3,
 /* --------------------------------------------------------------------
    4. Hero / landing
    -------------------------------------------------------------------- */
-.hero-govt {
-  background: linear-gradient(
-    135deg,
-    var(--smart-blue-dark) 0%,
-    var(--smart-blue) 100%
-  );
-  color: #fff;
-  border-radius: var(--smart-radius-sm);
-  padding: var(--smart-space-7) var(--smart-space-8);
-  margin-bottom: var(--smart-space-8);
+.hero-landing {
   position: relative;
-  overflow: hidden;
-}
-.hero-corner-shape {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 160px;
-  height: 100%;
-  pointer-events: none;
-}
-.hero-corner-shape::before,
-.hero-corner-shape::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 100%;
-  height: 100%;
-}
-.hero-corner-shape::before {
-  background: var(--smart-yellow);
-  clip-path: polygon(100% 0, 100% 100%, 55% 100%);
-  opacity: 0.9;
-}
-.hero-corner-shape::after {
-  background: var(--smart-red);
-  clip-path: polygon(100% 0, 85% 0, 40% 100%, 55% 100%);
-  opacity: 0.85;
-}
-.hero-govt-inner {
+  min-height: min(78vh, 640px);
   display: flex;
   align-items: center;
+  padding: var(--smart-space-7) 0 var(--smart-space-8);
+}
+.hero-landing-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: var(--smart-space-7);
-  position: relative;
-  z-index: 1;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+  will-change: opacity, transform;
 }
-.hero-logo-badge {
+.hero-landing-text {
+  max-width: 640px;
+}
+.hero-landing-title {
+  margin: 0 0 var(--smart-space-4);
+  font-family: var(--smart-font-sans);
+  line-height: 1.08;
+}
+.hero-landing-title-eyebrow {
+  display: block;
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  font-weight: 800;
+  color: var(--smart-ink);
+  letter-spacing: -0.01em;
+}
+.hero-landing-title-main {
+  display: block;
+  font-size: clamp(2rem, 4.4vw, 2.9rem);
+  font-weight: 800;
+  color: var(--smart-blue);
+  letter-spacing: -0.01em;
+}
+.hero-landing-lead {
+  color: var(--smart-muted);
+  font-size: var(--smart-fs-md);
+  line-height: 1.6;
+  max-width: 34rem;
+}
+.hero-landing-lead strong {
+  color: var(--smart-ink);
+}
+.hero-landing-graphic {
   flex-shrink: 0;
+  width: clamp(140px, 18vw, 220px);
+  height: clamp(140px, 18vw, 220px);
+  overflow: hidden;
+  border-radius: var(--smart-radius-lg);
 }
-.hero-logo-img {
-  width: clamp(80px, 12vw, 140px);
-  height: auto;
+.hero-landing-graphic-img {
+  width: 100%;
+  height: 145%;
+  object-fit: cover;
+  object-position: top center;
 }
-.hero-govt .eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-size: var(--smart-fs-sm);
-  color: var(--smart-yellow);
-  font-weight: 600;
+.hero-landing-scroll-cue {
+  position: absolute;
+  left: 50%;
+  bottom: var(--smart-space-4);
+  transform: translateX(-50%);
+  width: 22px;
+  height: 34px;
+  border: 2px solid var(--smart-border);
+  border-radius: var(--smart-radius-pill);
 }
-.hero-govt h1 {
-  color: #fff;
-  font-size: var(--smart-fs-2xl);
-  margin: 0.4rem 0 0.6rem;
+.hero-landing-scroll-cue span {
+  display: block;
+  width: 4px;
+  height: 8px;
+  margin: 5px auto 0;
+  border-radius: var(--smart-radius-pill);
+  background: var(--smart-blue);
+  animation: hero-scroll-cue-bounce 1.6s ease-in-out infinite;
 }
-.hero-govt p.lead {
-  color: #c9d4e6;
-  max-width: 620px;
+@keyframes hero-scroll-cue-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(8px);
+    opacity: 0.4;
+  }
 }
 
 @media (max-width: 767.98px) {
-  .hero-govt-inner {
+  .hero-landing {
+    min-height: auto;
+    padding: var(--smart-space-6) 0 var(--smart-space-7);
+  }
+  .hero-landing-inner {
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--smart-space-4);
+    gap: var(--smart-space-5);
+  }
+  .hero-landing-graphic {
+    width: 96px;
+    height: 96px;
+    align-self: flex-start;
+  }
+  .hero-landing-scroll-cue {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-landing-scroll-cue span {
+    animation: none;
   }
 }
 
@@ -296,48 +335,49 @@ h3,
    -------------------------------------------------------------------- */
 .app-choice-card {
   border: 1px solid var(--smart-border);
-  border-radius: var(--smart-radius-md);
+  border-radius: var(--smart-radius-lg);
   padding: var(--smart-space-6);
   height: 100%;
   background: var(--smart-surface);
   position: relative;
   overflow: hidden;
+  box-shadow: var(--smart-shadow-sm);
   transition:
-    border-color var(--smart-transition-fast),
-    transform var(--smart-transition-fast);
+    box-shadow var(--smart-transition-base),
+    transform var(--smart-transition-base);
 }
 .app-choice-card:hover {
-  transform: translateY(-2px);
-}
-.app-choice-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 36px;
-  height: 36px;
-  clip-path: polygon(100% 0, 100% 100%, 0 0);
-}
-.app-choice-card.corner-accent-blue::before {
-  background: var(--smart-blue);
-}
-.app-choice-card.corner-accent-red::before {
-  background: var(--smart-red);
+  transform: translateY(-3px);
+  box-shadow: var(--smart-shadow-md);
 }
 .app-choice-card .card-index {
   font-family: var(--smart-font-serif);
   font-size: var(--smart-fs-sm);
-  color: var(--smart-yellow-dark);
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  color: var(--smart-blue);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.app-choice-card.corner-accent-red .card-index {
+  color: var(--smart-red);
 }
 .app-choice-card h3 {
+  font-family: var(--smart-font-sans);
+  font-weight: 800;
+  color: var(--smart-ink);
   font-size: var(--smart-fs-xl);
   margin: 0.35rem 0 0.6rem;
 }
 .app-choice-card p {
   color: var(--smart-muted);
   font-size: var(--smart-fs-base);
+  line-height: 1.55;
+}
+.app-choice-card p strong {
+  color: var(--smart-ink);
+}
+.app-choice-card .btn {
+  margin-top: var(--smart-space-4);
+  border-radius: var(--smart-radius-pill);
 }
 
 /* --------------------------------------------------------------------
@@ -381,6 +421,30 @@ h3,
 .form-section-card h2 {
   font-size: var(--smart-fs-lg);
   margin-bottom: var(--smart-space-5);
+}
+
+/* Flat variant used only on the landing page (Home.tsx) — keeps the
+   corner-triangle look intact everywhere else form-section-card is used
+   (Admin, Status QR scan, NotFound). */
+.form-section-card.landing-card {
+  box-shadow: var(--smart-shadow-sm);
+  transition: box-shadow var(--smart-transition-base);
+}
+.form-section-card.landing-card::before {
+  display: none;
+}
+.form-section-card.landing-card:hover {
+  box-shadow: var(--smart-shadow-md);
+}
+.form-section-card.landing-card h2 {
+  font-family: var(--smart-font-sans);
+  font-weight: 800;
+  color: var(--smart-ink);
+}
+.form-section-card.landing-card .section-label {
+  color: var(--smart-blue);
+  font-family: var(--smart-font-serif);
+  font-weight: 700;
 }
 
 /* --------------------------------------------------------------------
@@ -568,4 +632,383 @@ h3,
     width: 280px;
     height: 280px;
   }
+}
+
+/* --------------------------------------------------------------------
+   10. Scroll-reveal utility
+   Used across the landing page sections (bento grid, before-you-begin,
+   contact, closing logo) to fade/slide in as they enter the viewport.
+   -------------------------------------------------------------------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* --------------------------------------------------------------------
+   11. Forms search bar (landing page)
+   -------------------------------------------------------------------- */
+.forms-search {
+  position: relative;
+  max-width: 30rem;
+}
+.forms-search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.forms-search-icon {
+  position: absolute;
+  left: var(--smart-space-4);
+  color: var(--smart-muted);
+  pointer-events: none;
+}
+.forms-search-bar input {
+  width: 100%;
+  padding: 0.7rem 1rem 0.7rem 2.6rem;
+  border: 1px solid var(--smart-border);
+  border-radius: var(--smart-radius-pill);
+  background: var(--smart-surface);
+  font-size: var(--smart-fs-base);
+  color: var(--smart-ink);
+  box-shadow: var(--smart-shadow-sm);
+  transition:
+    border-color var(--smart-transition-fast),
+    box-shadow var(--smart-transition-fast);
+}
+.forms-search-bar input:focus {
+  outline: none;
+  border-color: var(--smart-blue);
+  box-shadow: var(--smart-focus-ring);
+}
+.forms-search-results {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  right: 0;
+  background: var(--smart-surface);
+  border: 1px solid var(--smart-border);
+  border-radius: var(--smart-radius-md);
+  box-shadow: var(--smart-shadow-lg);
+  overflow: hidden;
+  list-style: none;
+  margin: 0;
+  padding: 0.35rem;
+}
+.forms-search-result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border: none;
+  border-radius: var(--smart-radius-sm);
+  background: transparent;
+  cursor: pointer;
+  transition: background-color var(--smart-transition-fast);
+}
+.forms-search-result:hover,
+.forms-search-result:focus-visible {
+  background: var(--smart-blue-light);
+}
+.forms-search-result-title {
+  font-weight: 700;
+  font-size: var(--smart-fs-base);
+  color: var(--smart-ink);
+}
+.forms-search-result-summary {
+  font-size: var(--smart-fs-sm);
+  color: var(--smart-muted);
+}
+.forms-search-empty {
+  padding: 0.65rem 0.7rem;
+  font-size: var(--smart-fs-sm);
+  color: var(--smart-muted);
+}
+
+/* --------------------------------------------------------------------
+   12. Header "Forms" dropdown
+   -------------------------------------------------------------------- */
+.forms-menu {
+  position: relative;
+}
+.forms-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  padding-bottom: 6px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.forms-menu-chevron {
+  transition: transform var(--smart-transition-fast);
+}
+.forms-menu-chevron.is-open {
+  transform: rotate(180deg);
+}
+.forms-menu-panel {
+  position: absolute;
+  top: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20rem;
+  max-width: 88vw;
+  background: var(--smart-surface);
+  border: 1px solid var(--smart-border);
+  border-radius: var(--smart-radius-md);
+  box-shadow: var(--smart-shadow-lg);
+  padding: 0.5rem;
+  z-index: 50;
+}
+.forms-menu-panel-label {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: var(--smart-fs-xs);
+  font-weight: 700;
+  color: var(--smart-muted);
+  padding: 0.4rem 0.6rem 0.3rem;
+}
+.forms-menu-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.55rem 0.6rem;
+  border: none;
+  border-radius: var(--smart-radius-sm);
+  background: transparent;
+  cursor: pointer;
+  transition: background-color var(--smart-transition-fast);
+}
+.forms-menu-item:hover,
+.forms-menu-item:focus-visible {
+  background: var(--smart-blue-light);
+}
+.forms-menu-item-title {
+  font-weight: 700;
+  font-size: var(--smart-fs-base);
+  color: var(--smart-blue-dark);
+}
+.forms-menu-item-summary {
+  font-size: var(--smart-fs-sm);
+  color: var(--smart-muted);
+}
+
+/* --------------------------------------------------------------------
+   13. Bento section wrapper (landing page)
+   -------------------------------------------------------------------- */
+.bento-section {
+  margin-bottom: var(--smart-space-8);
+}
+
+/* --------------------------------------------------------------------
+   14. Inline "Check Application Status" card (landing page)
+   -------------------------------------------------------------------- */
+.status-check-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--smart-space-5);
+  margin-top: var(--smart-space-4);
+  margin-bottom: 0;
+}
+.status-check-text h2 {
+  margin-bottom: 0.25rem;
+}
+.status-check-text p strong {
+  color: var(--smart-ink);
+}
+.status-check-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.status-check-input-wrap {
+  position: relative;
+}
+.status-check-input-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--smart-muted);
+  pointer-events: none;
+}
+.status-check-input-wrap input {
+  padding: 0.6rem 0.9rem 0.6rem 2.4rem;
+  border: 1px solid var(--smart-border);
+  border-radius: var(--smart-radius-pill);
+  font-size: var(--smart-fs-base);
+  min-width: 15rem;
+}
+.status-check-input-wrap input:focus {
+  outline: none;
+  border-color: var(--smart-blue);
+  box-shadow: var(--smart-focus-ring);
+}
+.btn-govt-info {
+  background-color: var(--smart-blue);
+  border-color: var(--smart-blue);
+  color: #fff;
+  border-radius: var(--smart-radius-pill);
+}
+.btn-govt-info:hover {
+  background-color: var(--smart-blue-dark);
+  border-color: var(--smart-blue-dark);
+}
+
+@media (max-width: 640px) {
+  .status-check-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .status-check-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .status-check-input-wrap input {
+    min-width: 0;
+    width: 100%;
+  }
+  .btn-govt-info {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* --------------------------------------------------------------------
+   15. "Before You Begin" sticky-label section
+   The left label stays pinned via position: sticky while the two
+   panels (Instructions / Required Documents) scroll past it on the
+   right — a single element, not duplicated markup, producing the
+   "swap" effect as the user scrolls.
+   -------------------------------------------------------------------- */
+.before-begin-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+  gap: var(--smart-space-8);
+  margin-bottom: var(--smart-space-8);
+}
+.before-begin-sticky-col {
+  position: relative;
+}
+.before-begin-sticky-inner {
+  position: sticky;
+  top: calc(88px + var(--smart-space-6));
+}
+.before-begin-kicker {
+  font-family: var(--smart-font-serif);
+  font-size: var(--smart-fs-lg);
+  color: var(--smart-ink);
+  font-weight: 700;
+}
+.before-begin-heading {
+  font-family: var(--smart-font-sans);
+  font-weight: 800;
+  color: var(--smart-blue);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  margin: 0.1rem 0 0;
+}
+.before-begin-panels {
+  display: flex;
+  flex-direction: column;
+  gap: var(--smart-space-7);
+}
+.before-begin-panel {
+  min-height: 40vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-bottom: 0;
+}
+
+@media (max-width: 900px) {
+  .before-begin-section {
+    display: block;
+  }
+  .before-begin-sticky-inner {
+    position: static;
+    margin-bottom: var(--smart-space-5);
+  }
+  .before-begin-panels {
+    gap: var(--smart-space-5);
+  }
+  .before-begin-panel {
+    min-height: 0;
+  }
+}
+
+/* --------------------------------------------------------------------
+   16. Contact section (landing page)
+   -------------------------------------------------------------------- */
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--smart-space-4);
+  margin-top: var(--smart-space-5);
+}
+.contact-tile {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: var(--smart-space-4);
+  border: 1px solid var(--smart-border);
+  border-radius: var(--smart-radius-md);
+  background: var(--smart-bg);
+}
+.contact-tile-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  border-radius: var(--smart-radius-pill);
+  background: var(--smart-blue-light);
+  color: var(--smart-blue);
+}
+.contact-tile-label {
+  font-size: var(--smart-fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--smart-muted);
+  font-weight: 700;
+  margin-bottom: 0.15rem;
+}
+.contact-tile-value {
+  font-size: var(--smart-fs-sm);
+  color: var(--smart-ink);
+}
+
+/* --------------------------------------------------------------------
+   17. Closing logo section (landing page)
+   -------------------------------------------------------------------- */
+.landing-logo-section {
+  display: flex;
+  justify-content: center;
+  padding: var(--smart-space-8) 0 var(--smart-space-6);
+}
+.landing-logo-img {
+  width: clamp(180px, 22vw, 260px);
+  height: auto;
 }

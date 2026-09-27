@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useSearchParams } from "react-router-dom";
 import { searchApplications } from "../../../api/client"; // adjust path to your client.ts
 import {
   StatusTabFilter,
@@ -8,8 +9,15 @@ import {
 import { StatusTabTable, type StatusTabSearchState } from "./StatusTabTable";
 
 export function StatusSearch() {
+  // Supports being deep-linked from the landing page's inline
+  // "Check Application" card via /status/search?ref=<applicationId>.
+  const [searchParams] = useSearchParams();
+  const hasAutoSearched = useRef(false);
+
   const [name, setName] = useState("");
-  const [applicationId, setApplicationId] = useState("");
+  const [applicationId, setApplicationId] = useState(
+    () => searchParams.get("ref") ?? "",
+  );
   const [typeFilter, setTypeFilter] = useState<StatusTypeFilter>("");
   const [dateFilter, setDateFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusStatusFilter>("");
@@ -41,6 +49,15 @@ export function StatusSearch() {
     e.preventDefault();
     runSearch();
   }
+
+  useEffect(() => {
+    if (hasAutoSearched.current) return;
+    if (searchParams.get("ref")) {
+      hasAutoSearched.current = true;
+      runSearch();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>

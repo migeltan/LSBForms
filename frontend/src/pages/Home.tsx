@@ -1,126 +1,237 @@
 // Home.tsx
-import { Link } from "react-router-dom";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+import { useState, type FormEvent, type ReactNode } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Search } from "lucide-react";
+import { FormsSearch } from "../components/FormsSearch";
+import { ContactSection } from "../components/ContactSection";
+import { AVAILABLE_FORMS, type FormDefinition } from "../data/forms";
+import { useInView } from "../hooks/useInView";
+import { useScrollProgress } from "../hooks/useScrollProgress";
 
 export function Home() {
+  const [heroRef, heroProgress] = useScrollProgress<HTMLDivElement>();
+  const { ref: bentoRef, inView: bentoInView } = useInView<HTMLDivElement>();
+  const { ref: beforeBeginRef, inView: beforeBeginInView } =
+    useInView<HTMLDivElement>({ threshold: 0.05 });
+  const { ref: contactRef, inView: contactInView } =
+    useInView<HTMLDivElement>();
+  const { ref: logoRef, inView: logoInView } = useInView<HTMLDivElement>();
+
+  const heroInnerStyle = {
+    opacity: Math.max(1 - heroProgress * 1.6, 0),
+    transform: `translateY(${heroProgress * 36}px) scale(${1 - heroProgress * 0.05})`,
+  };
+
   return (
     <>
-      <div className="hero-govt">
-        <span className="hero-corner-shape" aria-hidden="true" />
-        <div className="hero-govt-inner">
-          <div className="hero-logo-badge" aria-hidden="true">
+      {/* HERO — encapsulates the top of the page, fades/settles as the
+          user starts scrolling into the bento grid below. */}
+      <section className="hero-landing" ref={heroRef}>
+        <div className="hero-landing-inner" style={heroInnerStyle}>
+          <div className="hero-landing-text">
+            <h1 className="hero-landing-title">
+              <span className="hero-landing-title-eyebrow">LSBForms:</span>
+              <span className="hero-landing-title-main">
+                Digital Application Form
+              </span>
+            </h1>
+            <p className="hero-landing-lead">
+              Access the online application portal for Legislative Security
+              Bureau concerned documents.{" "}
+              <strong>Anytime, anywhere, in your comfort.</strong>
+            </p>
+          </div>
+          <div className="hero-landing-graphic" aria-hidden="true">
             <img
-              src={`${API_URL}/images/House_of_Representatives_Logo.png`}
+              src="/images/inspire-logo.png"
               alt=""
-              className="hero-logo-img"
+              className="hero-landing-graphic-img"
             />
           </div>
-          <div className="hero-govt-text">
-            <div className="eyebrow">
-              Internal Security Group &middot; Prototype Portal
-            </div>
-            <h1>Digital Access Pass and Vehicle Sticker Application Portal</h1>
-            <p className="lead">
-              Apply for an access pass or vehicle sticker online, upload your
-              supporting documents, and track your application status &mdash;
-              without needing to queue in person for every step.
+        </div>
+        <div className="hero-landing-scroll-cue" aria-hidden="true">
+          <span />
+        </div>
+      </section>
+
+      {/* BENTO GRID — search, the two application cards, and the inline
+          status check, all revealed together as they scroll into view. */}
+      <section
+        className={`bento-section reveal${bentoInView ? " is-visible" : ""}`}
+        ref={bentoRef}
+      >
+        <FormsSearch />
+
+        <div className="grid grid-cols-1 gap-4 mt-6 sm:grid-cols-2">
+          {AVAILABLE_FORMS.map((form) => (
+            <ApplicationCard key={form.id} form={form} />
+          ))}
+        </div>
+
+        <StatusCheckCard />
+      </section>
+
+      {/* BEFORE YOU BEGIN — sticky label on the left, Instructions and
+          Required Documents scroll past it on the right. */}
+      <section
+        className={`before-begin-section reveal${beforeBeginInView ? " is-visible" : ""}`}
+        ref={beforeBeginRef}
+      >
+        <div className="before-begin-sticky-col">
+          <div className="before-begin-sticky-inner">
+            <div className="before-begin-kicker">Before you begin:</div>
+            <h2 className="before-begin-heading">Prepare the following</h2>
+          </div>
+        </div>
+
+        <div className="before-begin-panels">
+          <div className="before-begin-panel form-section-card landing-card corner-accent-blue">
+            <div className="section-label">Instructions</div>
+            <ul className="mb-0 list-disc space-y-1 pl-4 text-sm text-[var(--smart-muted)]">
+              <li>
+                Prepare <strong>clear scans</strong> of photos of your documents
+              </li>
+              <li>
+                <strong>Recent 2x2</strong> photo ready
+              </li>
+              <li>
+                Submitting does not mean automatic approval, this is subject to
+                the <strong>Internal Security Group</strong>
+              </li>
+              <li>[OFFICIAL PROCESSING TIME TO BE CONFIRMED]</li>
+            </ul>
+          </div>
+
+          <div className="before-begin-panel form-section-card landing-card corner-accent-red">
+            <div className="section-label">Required Documents</div>
+            <ul className="mb-0 list-disc space-y-1 pl-4 text-sm text-[var(--smart-muted)]">
+              <li>Letter request addressed to the Sergeant-at-Arms</li>
+              <li>Two (2) copies of a valid ID</li>
+              <li>NBI Clearance (non-plantilla applicants)</li>
+              <li>Contract of Consultancy (consultant applicants)</li>
+              <li>OR/CR, and Deed of Sale if applicable (vehicle sticker)</li>
+            </ul>
+            <p className="mb-0 mt-2 text-sm text-[var(--smart-muted)]">
+              [OFFICIAL DOCUMENT REQUIREMENT LIST TO BE CONFIRMED]
             </p>
           </div>
         </div>
+      </section>
+
+      {/* CONTACT */}
+      <div
+        ref={contactRef}
+        className={`reveal${contactInView ? " is-visible" : ""}`}
+      >
+        <ContactSection />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 mb-10 sm:grid-cols-2">
-        <div className="app-choice-card corner-accent-blue">
-          <div className="card-index">01&nbsp;&nbsp;APPLICATION TYPE</div>
-          <h3>Access Pass Application</h3>
-          <p>
-            For personnel &mdash; plantilla, non-plantilla, or consultant
-            &mdash; applying for an internal access pass / ID.
-          </p>
-          <Link
-            to="/access-pass"
-            className="block btn btn-govt-primary sm:inline-block"
-          >
-            Start Access Pass Application
-          </Link>
-        </div>
-
-        <div className="app-choice-card corner-accent-red">
-          <div className="card-index">02&nbsp;&nbsp;APPLICATION TYPE</div>
-          <h3>Vehicle Sticker Application</h3>
-          <p>
-            For personnel applying for a vehicle sticker to bring a private
-            vehicle onto the premises.
-          </p>
-          <Link
-            to="/vehicle-sticker"
-            className="block btn btn-govt-primary sm:inline-block"
-          >
-            Start Vehicle Sticker Application
-          </Link>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="h-full form-section-card corner-accent-yellow">
-          <div className="section-label">Already Applied?</div>
-          <h2 style={{ fontSize: "1.1rem" }}>Check Application Status</h2>
-          <p className="text-sm text-[var(--smart-muted)]">
-            Enter your application reference number to see where your
-            application stands.
-          </p>
-          <Link
-            to="/status"
-            className="block btn btn-govt-outline btn-sm sm:inline-block"
-          >
-            Check Status
-          </Link>
-        </div>
-
-        <div className="h-full form-section-card corner-accent-blue">
-          <div className="section-label">Before You Begin</div>
-          <h2 style={{ fontSize: "1.1rem" }}>Instructions</h2>
-          <ul className="mb-0 list-disc space-y-1 pl-4 text-sm text-[var(--smart-muted)]">
-            <li>
-              Prepare clear scans or photos of your documents (JPG, PNG, or
-              PDF).
-            </li>
-            <li>
-              Have a recent 2x2 photo ready for the access pass application.
-            </li>
-            <li>
-              Applications are reviewed by Internal Security Group personnel
-              &mdash; submitting does not mean automatic approval.
-            </li>
-            <li>[OFFICIAL PROCESSING TIME TO BE CONFIRMED]</li>
-          </ul>
-        </div>
-
-        <div className="h-full form-section-card corner-accent-red">
-          <div className="section-label">Required Documents</div>
-          <h2 style={{ fontSize: "1.1rem" }}>Typical Requirements</h2>
-          <ul className="mb-0 list-disc space-y-1 pl-4 text-sm text-[var(--smart-muted)]">
-            <li>Letter request addressed to the Sergeant-at-Arms</li>
-            <li>Two (2) copies of a valid ID</li>
-            <li>NBI Clearance (non-plantilla applicants)</li>
-            <li>Contract of Consultancy (consultant applicants)</li>
-            <li>OR/CR, and Deed of Sale if applicable (vehicle sticker)</li>
-          </ul>
-          <p className="mb-0 mt-2 text-sm text-[var(--smart-muted)]">
-            [OFFICIAL DOCUMENT REQUIREMENT LIST TO BE CONFIRMED]
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-4 form-section-card corner-accent-yellow">
-        <div className="section-label">Need Help?</div>
-        <h2 style={{ fontSize: "1.1rem" }}>Contact / Inquiries</h2>
-        <p className="mb-0 text-sm text-[var(--smart-muted)]">
-          [OFFICIAL CONTACT INFORMATION TO BE PROVIDED BY THE INTERNAL SECURITY
-          GROUP]
-        </p>
+      {/* CLOSING LOGO */}
+      <div
+        ref={logoRef}
+        className={`landing-logo-section reveal${logoInView ? " is-visible" : ""}`}
+      >
+        <img
+          src="/images/inspire-logo.png"
+          alt="House of Representatives INSPIRE — Internship for Service, Public Leadership, Innovation, and Research Excellence"
+          className="landing-logo-img"
+        />
       </div>
     </>
+  );
+}
+
+/** Per-form bold-text description, matching the mockup's exact wording.
+ *  Falls back to the plain registry summary for any future form that
+ *  hasn't had custom copy written for it yet. */
+function ApplicationCardDescription({
+  form,
+}: {
+  form: FormDefinition;
+}): ReactNode {
+  if (form.id === "access-pass") {
+    return (
+      <>
+        For Congressional Staff, Consultant, Attached Agencies, Concessionaire,
+        etc. Apply for an <strong>Access Pass.</strong>
+      </>
+    );
+  }
+  if (form.id === "vehicle-sticker") {
+    return (
+      <>
+        For House Employees applying for a <strong>Vehicle Sticker</strong> for
+        their private vehicles in the HRep Premises.
+      </>
+    );
+  }
+  return <>{form.summary}</>;
+}
+
+function ApplicationCard({ form }: { form: FormDefinition }) {
+  return (
+    <div className={`app-choice-card corner-accent-${form.accent}`}>
+      <div className="card-index">{form.index} Application Form</div>
+      <h3>{form.title}</h3>
+      <p>
+        <ApplicationCardDescription form={form} />
+      </p>
+      <Link
+        to={form.href}
+        className="block btn btn-govt-primary sm:inline-block"
+      >
+        Start Application
+      </Link>
+    </div>
+  );
+}
+
+/** Inline reference-number search. Hands off to the existing
+ *  /status/search page + searchApplications logic rather than
+ *  duplicating any lookup behavior on the landing page itself. */
+function StatusCheckCard() {
+  const [reference, setReference] = useState("");
+  const navigate = useNavigate();
+
+  function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    const trimmed = reference.trim();
+    if (!trimmed) return;
+    navigate(`/status/search?ref=${encodeURIComponent(trimmed)}`);
+  }
+
+  return (
+    <form
+      className="status-check-card form-section-card landing-card corner-accent-yellow"
+      onSubmit={handleSubmit}
+    >
+      <div className="status-check-text">
+        <div className="section-label">Already Applied?</div>
+        <h2 style={{ fontSize: "1.1rem" }}>Check Application Status</h2>
+        <p className="mb-0 text-sm text-[var(--smart-muted)]">
+          Enter your <strong>application reference number</strong> to see where
+          your application stands.
+        </p>
+      </div>
+      <div className="status-check-controls">
+        <div className="status-check-input-wrap">
+          <Search
+            size={16}
+            className="status-check-input-icon"
+            aria-hidden="true"
+          />
+          <input
+            type="text"
+            value={reference}
+            onChange={(e) => setReference(e.target.value)}
+            placeholder="Search Reference..."
+            aria-label="Application reference number"
+          />
+        </div>
+        <button type="submit" className="btn btn-govt-info">
+          Check Application
+        </button>
+      </div>
+    </form>
   );
 }

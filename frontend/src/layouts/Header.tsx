@@ -1,12 +1,10 @@
 // Header.tsx
-import { NavLink } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { ChevronDown } from "lucide-react";
+import { AVAILABLE_FORMS } from "../data/forms";
 
-const navItems = [
-  { to: "/", label: "Home", end: true },
-  { to: "/access-pass", label: "Access Pass" },
-  { to: "/vehicle-sticker", label: "Vehicle Sticker" },
-  { to: "/status", label: "Check Status" },
-];
+const navItems = [{ to: "/", label: "Home", end: true }];
 
 export function Header() {
   return (
@@ -44,6 +42,9 @@ export function Header() {
               </li>
             ))}
             <li>
+              <FormsMenu />
+            </li>
+            <li>
               <NavLink
                 to="/admin"
                 className={({ isActive }) =>
@@ -62,6 +63,74 @@ export function Header() {
   );
 }
 
+/**
+ * "Forms" nav item: a popup listing every available application form,
+ * pulled from the shared forms registry. Keeps the header scalable —
+ * adding a new form later only means adding an entry in data/forms.ts,
+ * not touching the header again.
+ */
+function FormsMenu() {
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setIsOpen(false);
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onClickOutside);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
+
+  return (
+    <div className="forms-menu" ref={wrapRef}>
+      <button
+        type="button"
+        className={`gov-nav-link forms-menu-trigger${isOpen ? " is-active" : ""}`}
+        aria-haspopup="true"
+        aria-expanded={isOpen}
+        onClick={() => setIsOpen((open) => !open)}
+      >
+        Forms
+        <ChevronDown
+          size={14}
+          className={`forms-menu-chevron${isOpen ? " is-open" : ""}`}
+          aria-hidden="true"
+        />
+      </button>
+
+      {isOpen && (
+        <div className="forms-menu-panel" role="menu">
+          <div className="forms-menu-panel-label">Application Forms</div>
+          {AVAILABLE_FORMS.map((form) => (
+            <button
+              key={form.id}
+              type="button"
+              role="menuitem"
+              className="forms-menu-item"
+              onClick={() => {
+                setIsOpen(false);
+                navigate(form.href);
+              }}
+            >
+              <span className="forms-menu-item-title">{form.title}</span>
+              <span className="forms-menu-item-summary">{form.summary}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 function MobileMenu() {
   return (
     <details className="relative md:hidden">
@@ -83,25 +152,31 @@ function MobileMenu() {
         </svg>
       </summary>
       <ul className="absolute right-0 top-12 z-50 w-56 rounded-md border border-[var(--smart-border)] bg-white p-2 shadow-lg">
-        {[...navItems, { to: "/admin", label: "Admin", end: false }].map(
-          (item) => (
-            <li key={item.to}>
-              <NavLink
-                to={item.to}
-                end={item.end}
-                className={({ isActive }) =>
-                  `block rounded px-3 py-2 text-sm ${
-                    isActive
-                      ? "bg-[var(--smart-blue-light)] text-[var(--smart-blue-dark)] font-semibold"
-                      : "text-[var(--smart-ink)]"
-                  }`
-                }
-              >
-                {item.label}
-              </NavLink>
-            </li>
-          ),
-        )}
+        {[
+          ...navItems,
+          ...AVAILABLE_FORMS.map((form) => ({
+            to: form.href,
+            label: form.title,
+            end: false,
+          })),
+          { to: "/admin", label: "Admin", end: false },
+        ].map((item) => (
+          <li key={item.to}>
+            <NavLink
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) =>
+                `block rounded px-3 py-2 text-sm ${
+                  isActive
+                    ? "bg-[var(--smart-blue-light)] text-[var(--smart-blue-dark)] font-semibold"
+                    : "text-[var(--smart-ink)]"
+                }`
+              }
+            >
+              {item.label}
+            </NavLink>
+          </li>
+        ))}
       </ul>
     </details>
   );
