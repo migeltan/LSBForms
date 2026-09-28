@@ -25,7 +25,6 @@ export function Home() {
     useInView<HTMLDivElement>();
   const { ref: contactRef, inView: contactInView } =
     useInView<HTMLDivElement>();
-  const { ref: logoRef, inView: logoInView } = useInView<HTMLDivElement>();
 
   const heroInnerStyle = {
     opacity: Math.max(1 - heroProgress * 1.6, 0),
@@ -103,7 +102,7 @@ export function Home() {
               <ClipboardList size={18} aria-hidden="true" />
               Instructions
             </div>
-            <ul className="mb-0 list-disc space-y-1 pl-6 text-[var(--smart-muted)]">
+            <ul className="mb-0 list-disc space-y-1 pl-10 text-[var(--smart-muted)]">
               <li>
                 Prepare <strong>clear scans</strong> of photos of your documents
               </li>
@@ -130,7 +129,7 @@ export function Home() {
               <FileCheck2 size={18} aria-hidden="true" />
               Required Documents
             </div>
-            <ul className="mb-0 list-disc space-y-1 pl-6 text-[var(--smart-muted)]">
+            <ul className="mb-0 list-disc space-y-1 pl-10 text-[var(--smart-muted)]">
               <li>Letter request addressed to the Sergeant-at-Arms</li>
               <li>Two (2) copies of a valid ID</li>
               <li>NBI Clearance (non-plantilla applicants)</li>
@@ -153,18 +152,6 @@ export function Home() {
         className={`reveal${contactInView ? " is-visible" : ""}`}
       >
         <ContactSection />
-      </div>
-
-      {/* CLOSING LOGO */}
-      <div
-        ref={logoRef}
-        className={`landing-logo-section reveal${logoInView ? " is-visible" : ""}`}
-      >
-        <img
-          src="/images/inspire-logo.png"
-          alt="House of Representatives INSPIRE — Internship for Service, Public Leadership, Innovation, and Research Excellence"
-          className="landing-logo-img"
-        />
       </div>
     </>
   );

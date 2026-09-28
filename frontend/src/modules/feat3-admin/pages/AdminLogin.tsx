@@ -4,6 +4,7 @@ import { EyeIcon, EyeOffIcon } from "../../../components/icons/PasswordEyeIcon";
 
 const HREP_SEAL = "/images/hrep-seal.png";
 const INSPIRE_LOGO = "/images/inspire-logo.png";
+const LSB_SEAL = "/images/lsb-seal.png";
 
 function hideOnError(e: React.SyntheticEvent<HTMLImageElement>) {
   e.currentTarget.style.display = "none";
@@ -40,8 +41,8 @@ export function AdminLogin() {
           <div>
             <div className="flex items-center gap-3 mb-6">
               <img
-                src={HREP_SEAL}
-                alt="House of Representatives Seal"
+                src={LSB_SEAL}
+                alt="Legislative Security Bureau Seal"
                 onError={hideOnError}
                 className="object-contain w-20 h-20"
               />

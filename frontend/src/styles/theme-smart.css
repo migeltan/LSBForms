@@ -139,6 +139,14 @@ h3,
   position: sticky;
   top: 0;
   z-index: 40;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+}
+.gov-header.gov-header-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
   min-height: 88px;
 }
 
@@ -507,7 +515,7 @@ h3,
    8. Footer
    -------------------------------------------------------------------- */
 .footer-govt {
-  border-top: 1px solid var(--smart-border);
+  border-top: 4px solid var(--smart-yellow);
   background: var(--smart-surface);
   position: relative;
   overflow: hidden;
@@ -517,6 +525,13 @@ h3,
 .footer-logo-img {
   height: clamp(48px, 6vw, 72px);
   width: auto;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
+}
+.footer-logo-img:hover {
+  transform: translateY(-2px);
+  opacity: 0.85;
 }
 .footer-link {
   color: var(--smart-muted);
@@ -954,7 +969,7 @@ h3,
 }
 .before-begin-sticky-inner {
   position: sticky;
-  top: calc(88px + var(--smart-space-5));
+  top: calc(var(--smart-space-6) * 2 + 5.75rem + 4px + var(--smart-space-5));
 }
 .before-begin-kicker {
   font-family: var(--smart-font-serif);

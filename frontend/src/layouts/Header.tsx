@@ -3,12 +3,15 @@ import { useEffect, useRef, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import { AVAILABLE_FORMS } from "../data/forms";
+import { useScrollDirection } from "../hooks/useScrollDirection";
 
 const navItems = [{ to: "/", label: "Home", end: true }];
 
 export function Header() {
+  const hidden = useScrollDirection();
+
   return (
-    <header className="gov-header">
+    <header className={`gov-header${hidden ? " gov-header-hidden" : ""}`}>
       <div className="gov-header-pattern" aria-hidden="true" />
       <div className="gov-header-inner max-w-6xl px-4 mx-auto">
         <div className="flex min-h-[88px] flex-wrap items-center justify-between gap-y-5 py-7">

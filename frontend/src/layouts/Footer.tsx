@@ -1,55 +1,38 @@
 // Footer.tsx
-import { Link } from "react-router-dom";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
 export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer
-      className="pt-8 pb-6 mt-12 footer-govt"
-      style={{ borderTop: "3px solid var(--smart-yellow)" }}
-    >
+    <footer className="pt-8 pb-6 mt-12 footer-govt">
       <span className="footer-corner-shape" aria-hidden="true" />
       <div className="max-w-6xl px-4 mx-auto">
         <div className="flex flex-col items-center gap-5 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center justify-center gap-4 md:justify-start">
             <img
-              src={`${API_URL}/images/smart-logo2.png`}
-              alt="SMART Program — House of Representatives"
+              src="/images/hrep-seal.png"
+              alt="House of Representatives Seal"
               className="footer-logo-img"
             />
-            <span
-              className="hidden h-8 w-px bg-[var(--smart-border)] sm:block"
-              aria-hidden="true"
+            <img
+              src="/images/inspire-logo.png"
+              alt="INSPIRE — Internship for Service, Public Leadership, Innovation, and Research Excellence"
+              className="footer-logo-img"
             />
-            <div className="items-center hidden gap-3 sm:flex">
-              <img
-                src={`${API_URL}/images/House_of_Representatives_Logo.png`}
-                alt="House of Representatives seal"
-                className="w-8 h-8 shrink-0"
-              />
-              <img
-                src={`${API_URL}/images/Philippine_Logo.webp`}
-                alt="Republic of the Philippines coat of arms"
-                className="w-8 h-8 shrink-0"
-              />
-            </div>
+            {/* LSB seal — not yet public. Once the file is added to
+                frontend/public/images/, uncomment: */}
+            <img
+              src="/images/lsb-seal.png"
+              alt="Legislative Security Bureau Seal"
+              className="footer-logo-img"
+            />
           </div>
 
           <div className="text-center md:text-right">
-            <div className="text-[var(--smart-fs-sm)] text-[var(--smart-muted)]">
-              <Link to="/" className="footer-link">
-                Home
-              </Link>
-              <span className="footer-link-sep">&middot;</span>
-              <Link to="/status" className="footer-link">
-                Check Status
-              </Link>
+            <div className="text-[var(--smart-fs-sm)] font-medium text-[var(--smart-ink)]">
+              Made by Migel H. Tan, 2026 INSPIRE Intern
             </div>
-            <div className="mt-2 text-[var(--smart-fs-sm)] text-[var(--smart-muted)]">
-              &copy; {year} House of Representatives &mdash; Internal Security
+            <div className="mt-1.5 text-[var(--smart-fs-sm)] text-[var(--smart-muted)]">
+              &copy; {year} Legislative Security Bureau, Internal Security
               Group. All rights reserved.
             </div>
           </div>
