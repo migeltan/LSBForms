@@ -39,7 +39,8 @@
   --smart-yellow-light: #fff8e1;
   --smart-green: #1e8f5f;
   --smart-green-dark: #146341;
-  --smart-green-light: #e9f7f0;
+  --smart-magenta: #c81e78;
+  --smart-magenta-dark: #8f1454;
 
   /* --- Neutrals --- */
   --smart-ink: #1c1f26;
@@ -506,9 +507,208 @@ h3,
   color: var(--smart-blue);
   background: transparent;
 }
-.btn-govt-outline:hover {
-  background-color: var(--smart-blue);
+
+/* --------------------------------------------------------------------
+   Admin dashboard — welcome card, application panels, feature teasers
+   -------------------------------------------------------------------- */
+.admin-welcome-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--smart-space-6);
+  flex-wrap: wrap;
+}
+.admin-welcome-main {
+  flex: 1 1 320px;
+}
+.admin-welcome-label {
+  color: var(--smart-blue);
+  font-family: var(--smart-font-serif);
+  font-weight: 700;
+}
+.admin-welcome-heading {
+  font-family: var(--smart-font-sans);
+  font-size: var(--smart-fs-2xl);
+  font-weight: 800;
+  color: var(--smart-ink);
+  margin: var(--smart-space-2) 0 var(--smart-space-3);
+}
+.admin-welcome-body {
+  color: var(--smart-muted);
+  font-size: var(--smart-fs-lg);
+  line-height: 1.6;
+}
+.admin-welcome-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--smart-space-2);
+  flex-shrink: 0;
+}
+.admin-avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--smart-blue-light);
+  color: var(--smart-blue);
+  border: 2px solid var(--smart-blue);
+  font-weight: 800;
+  font-size: var(--smart-fs-2xl);
+}
+.admin-welcome-name {
+  font-size: var(--smart-fs-base);
+  font-weight: 600;
+  color: var(--smart-ink);
+}
+.admin-welcome-actions {
+  display: flex;
+  gap: var(--smart-space-2);
+}
+
+.admin-panel-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--smart-space-6);
+}
+.admin-app-card-wrap {
+  position: relative;
+  flex: 1 1 380px;
+  padding-top: var(--smart-space-5);
+}
+.admin-app-card {
+  background: var(--smart-surface);
+  border: 1px solid var(--smart-border);
+  border-radius: 16px;
+  box-shadow: var(--smart-shadow-md);
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.admin-app-panel {
+  position: absolute;
+  top: 0;
+  left: var(--smart-space-3);
+  right: var(--smart-space-6);
+  border-radius: 12px;
+  padding: var(--smart-space-7) var(--smart-space-6);
   color: #fff;
+  box-shadow: var(--smart-shadow-lg);
+  z-index: 1;
+}
+.admin-app-panel--red {
+  background: var(--smart-red);
+}
+.admin-app-panel--yellow {
+  background: var(--smart-yellow);
+}
+.admin-app-panel h3 {
+  font-family: var(--smart-font-sans);
+  color: #fff;
+  font-size: var(--smart-fs-2xl);
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 0 0 var(--smart-space-4);
+}
+.admin-app-panel-divider {
+  height: 1.5px;
+  background: rgba(255, 255, 255, 0.45);
+  margin-bottom: var(--smart-space-4);
+}
+.admin-app-panel-stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--smart-space-2);
+  font-weight: 600;
+  font-size: var(--smart-fs-lg);
+}
+.admin-app-card-footer {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--smart-border);
+  padding: var(--smart-space-4) var(--smart-space-5);
+}
+.btn-outline-dark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem 1.5rem;
+  font-family: var(--smart-font-sans);
+  font-size: var(--smart-fs-sm);
+  font-weight: 600;
+  background: #fff;
+  color: var(--smart-ink);
+  border: 2px solid var(--smart-ink);
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    background-color var(--smart-transition-fast),
+    color var(--smart-transition-fast);
+}
+.btn-outline-dark:hover {
+  background: var(--smart-ink);
+  color: #fff;
+}
+
+.admin-feature-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--smart-space-5);
+}
+.admin-feature-card-wrap {
+  position: relative;
+  flex: 1 1 220px;
+  padding-top: var(--smart-space-4);
+}
+.admin-feature-card {
+  position: relative;
+  background: var(--smart-surface);
+  border: 1px solid var(--smart-border);
+  border-radius: 14px;
+  box-shadow: var(--smart-shadow-md);
+  min-height: 130px;
+}
+.admin-feature-card-inner {
+  position: absolute;
+  top: 0;
+  left: var(--smart-space-3);
+  right: var(--smart-space-4);
+  border-radius: 10px;
+  min-height: 84px;
+  padding: var(--smart-space-4);
+  display: flex;
+  align-items: flex-end;
+  color: #fff;
+  font-family: var(--smart-font-sans);
+  font-weight: 700;
+  font-size: var(--smart-fs-md);
+  line-height: 1.2;
+  box-shadow: var(--smart-shadow-md);
+  z-index: 1;
+}
+.admin-feature-card-inner--blue {
+  background: var(--smart-blue);
+}
+.admin-feature-card-inner--magenta {
+  background: var(--smart-magenta);
+}
+.admin-feature-card-inner--green {
+  background: var(--smart-green);
+}
+.admin-feature-badge {
+  position: absolute;
+  top: var(--smart-space-2);
+  right: var(--smart-space-2);
+  font-size: var(--smart-fs-xs);
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--smart-ink);
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--smart-radius-pill);
+  z-index: 2;
 }
 
 /* --------------------------------------------------------------------

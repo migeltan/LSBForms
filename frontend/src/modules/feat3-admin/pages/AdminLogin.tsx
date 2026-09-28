@@ -2,7 +2,6 @@ import { useState, type FormEvent } from "react";
 import { useAuth } from "../../../providers/AuthProvider";
 import { EyeIcon, EyeOffIcon } from "../../../components/icons/PasswordEyeIcon";
 
-const HREP_SEAL = "/images/hrep-seal.png";
 const INSPIRE_LOGO = "/images/inspire-logo.png";
 const LSB_SEAL = "/images/lsb-seal.png";
 

@@ -5,6 +5,8 @@ import { AccessPass } from "../pages/AccessPass";
 import { VehicleSticker } from "../pages/VehicleSticker";
 import { Status } from "../pages/Status";
 import { Admin } from "../pages/Admin.tsx";
+import { AdminAccessPassPage } from "../modules/feat3-admin/pages/AdminAccessPassPage";
+import { AdminVehicleStickerPage } from "../modules/feat3-admin/pages/AdminVehicleStickerPage";
 import { NotFound } from "../pages/NotFound";
 import { StatusSearch } from "../modules/feat4-check-status/InputSearch/StatusSearch.tsx";
 import { StatusQrScan } from "../modules/feat4-check-status/QrSearch/StatusQrScan.tsx";
@@ -20,6 +22,11 @@ export function AppRoutes() {
         <Route path="status/search" element={<StatusSearch />} />
         <Route path="status/qr" element={<StatusQrScan />} />
         <Route path="admin" element={<Admin />} />
+        <Route path="admin/access-pass" element={<AdminAccessPassPage />} />
+        <Route
+          path="admin/vehicle-sticker"
+          element={<AdminVehicleStickerPage />}
+        />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
