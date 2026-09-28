@@ -510,91 +510,148 @@ h3,
 
 /* --------------------------------------------------------------------
    Admin dashboard — welcome card, application panels, feature teasers
+
+   Type scale (largest -> smallest, so the eye lands on the welcome
+   card first):  welcome heading 3rem  >  banner title 2.25rem  >
+   feature tab 1.5rem  >  body / stats ~1.15rem.
+   Shared shape language: cards 16px, banners 12px, buttons 6px.
    -------------------------------------------------------------------- */
 .admin-welcome-card {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--smart-space-6);
+  gap: var(--smart-space-7);
   flex-wrap: wrap;
+  margin-bottom: 0; /* spacing between sections comes from the page gap */
+  padding: var(--smart-space-7);
+  border-radius: 16px;
+  box-shadow: var(--smart-shadow-md);
 }
 .admin-welcome-main {
-  flex: 1 1 320px;
+  flex: 1 1 340px;
 }
-.admin-welcome-label {
+/* Selectors are prefixed with .admin-welcome-card so they out-rank the
+   generic `.form-section-card h2` / `.section-label` rules, which were
+   silently overriding these sizes. */
+.admin-welcome-card .admin-welcome-label {
   color: var(--smart-blue);
   font-family: var(--smart-font-serif);
+  font-size: var(--smart-fs-md);
   font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
-.admin-welcome-heading {
+.admin-welcome-card .admin-welcome-heading {
   font-family: var(--smart-font-sans);
-  font-size: var(--smart-fs-2xl);
+  font-size: clamp(1.75rem, 3.6vw, 2.5rem);
   font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
   color: var(--smart-ink);
-  margin: var(--smart-space-2) 0 var(--smart-space-3);
+  margin: var(--smart-space-2) 0 var(--smart-space-5);
 }
-.admin-welcome-body {
-  color: var(--smart-muted);
-  font-size: var(--smart-fs-lg);
+.admin-welcome-card .admin-welcome-body {
+  color: var(--smart-ink);
+  font-size: clamp(1rem, 1.3vw, 1.15rem);
   line-height: 1.6;
+  margin: 0;
 }
 .admin-welcome-side {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--smart-space-2);
+  gap: var(--smart-space-3);
   flex-shrink: 0;
 }
 .admin-avatar {
-  width: 84px;
-  height: 84px;
+  width: 92px;
+  height: 112px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--smart-blue-light);
   color: var(--smart-blue);
-  border: 2px solid var(--smart-blue);
+  border: 3px solid var(--smart-blue);
   font-weight: 800;
-  font-size: var(--smart-fs-2xl);
+  font-size: 2.1rem;
 }
 .admin-welcome-name {
-  font-size: var(--smart-fs-base);
-  font-weight: 600;
+  font-size: var(--smart-fs-md);
+  font-weight: 700;
   color: var(--smart-ink);
 }
 .admin-welcome-actions {
   display: flex;
-  gap: var(--smart-space-2);
+  gap: var(--smart-space-3);
+}
+/* Same size + shape for both buttons */
+.admin-welcome-actions .btn,
+.admin-welcome-actions .btn-outline-dark {
+  padding: 0.5rem 1.25rem;
+  font-size: var(--smart-fs-sm);
+  font-weight: 600;
+  border: 2px solid var(--smart-ink);
+  border-radius: 6px;
+  white-space: nowrap;
+  text-align: center;
+}
+.admin-welcome-actions .btn-govt-info {
+  border-color: var(--smart-blue);
+}
+@media (max-width: 640px) {
+  .admin-welcome-card {
+    padding: var(--smart-space-6);
+  }
+  .admin-welcome-side,
+  .admin-welcome-actions {
+    width: 100%;
+  }
+  .admin-welcome-actions > * {
+    flex: 1;
+  }
 }
 
+/* ---- Application panels (top row) ---- */
 .admin-panel-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--smart-space-6);
 }
+@media (min-width: 768px) {
+  .admin-panel-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* The banner (row 1) and the white card share one grid cell. The card
+   spans row 1 + a footer-sized row 2 and is pushed down by the banner
+   "lift", so the banner overlaps the card's top edge and the footer
+   always sits below the banner, however tall the banner grows. */
 .admin-app-card-wrap {
-  position: relative;
-  flex: 1 1 380px;
-  padding-top: var(--smart-space-5);
+  --admin-footer-h: 4.75rem;
+  --admin-banner-lift: var(--smart-space-5);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto calc(var(--admin-footer-h) + var(--smart-space-4));
 }
 .admin-app-card {
+  grid-area: 1 / 1 / 3 / 2;
+  margin-top: var(--admin-banner-lift);
   background: var(--smart-surface);
   border: 1px solid var(--smart-border);
   border-radius: 16px;
   box-shadow: var(--smart-shadow-md);
-  min-height: 260px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
 }
 .admin-app-panel {
-  position: absolute;
-  top: 0;
-  left: var(--smart-space-3);
-  right: var(--smart-space-6);
+  grid-area: 1 / 1;
+  position: relative;
+  margin: 0 var(--smart-space-6); /* equal inset both sides, as in the mockup */
+  min-height: 12.5rem;
   border-radius: 12px;
-  padding: var(--smart-space-7) var(--smart-space-6);
+  padding: var(--smart-space-6) var(--smart-space-6);
   color: #fff;
   box-shadow: var(--smart-shadow-lg);
   z-index: 1;
@@ -608,9 +665,9 @@ h3,
 .admin-app-panel h3 {
   font-family: var(--smart-font-sans);
   color: #fff;
-  font-size: var(--smart-fs-2xl);
+  font-size: clamp(1.4rem, 2.3vw, 1.9rem);
   font-weight: 800;
-  line-height: 1.25;
+  line-height: 1.15;
   margin: 0 0 var(--smart-space-4);
 }
 .admin-app-panel-divider {
@@ -623,11 +680,14 @@ h3,
   flex-direction: column;
   gap: var(--smart-space-2);
   font-weight: 600;
-  font-size: var(--smart-fs-lg);
+  font-size: var(--smart-fs-md);
 }
 .admin-app-card-footer {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  box-sizing: border-box;
+  min-height: var(--admin-footer-h);
   border-top: 1px solid var(--smart-border);
   padding: var(--smart-space-4) var(--smart-space-5);
 }
@@ -639,10 +699,10 @@ h3,
   font-family: var(--smart-font-sans);
   font-size: var(--smart-fs-sm);
   font-weight: 600;
-  background: #fff;
+  background: var(--smart-surface);
   color: var(--smart-ink);
   border: 2px solid var(--smart-ink);
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   transition:
     background-color var(--smart-transition-fast),
@@ -653,38 +713,46 @@ h3,
   color: #fff;
 }
 
+/* ---- Feature tabs (bottom row) ----
+   All three tabs share the same inset, width and height, matching the
+   mockup (no per-card offsets). */
 .admin-feature-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--smart-space-5);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--smart-space-6);
+}
+@media (min-width: 768px) {
+  .admin-feature-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 .admin-feature-card-wrap {
   position: relative;
-  flex: 1 1 220px;
-  padding-top: var(--smart-space-4);
+  padding-top: var(--smart-space-5);
 }
 .admin-feature-card {
   position: relative;
   background: var(--smart-surface);
   border: 1px solid var(--smart-border);
-  border-radius: 14px;
+  border-radius: 16px;
   box-shadow: var(--smart-shadow-md);
-  min-height: 130px;
+  min-height: 12.5rem;
 }
 .admin-feature-card-inner {
   position: absolute;
   top: 0;
-  left: var(--smart-space-3);
-  right: var(--smart-space-4);
-  border-radius: 10px;
-  min-height: 84px;
-  padding: var(--smart-space-4);
+  left: var(--smart-space-6);
+  box-sizing: border-box;
+  width: 64%;
+  height: 7.25rem; /* fixed so all three tabs match even if a label wraps */
+  border-radius: 12px;
+  padding: var(--smart-space-5);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   color: #fff;
   font-family: var(--smart-font-sans);
   font-weight: 700;
-  font-size: var(--smart-fs-md);
+  font-size: clamp(1.1rem, 1.6vw, 1.3rem);
   line-height: 1.2;
   box-shadow: var(--smart-shadow-md);
   z-index: 1;
@@ -700,8 +768,8 @@ h3,
 }
 .admin-feature-badge {
   position: absolute;
-  top: var(--smart-space-2);
-  right: var(--smart-space-2);
+  bottom: var(--smart-space-3);
+  right: var(--smart-space-4);
   font-size: var(--smart-fs-xs);
   font-weight: 700;
   background: rgba(255, 255, 255, 0.85);
@@ -709,6 +777,58 @@ h3,
   padding: 0.15rem 0.5rem;
   border-radius: var(--smart-radius-pill);
   z-index: 2;
+}
+
+/* ---- Hover / motion ----
+   Card lifts and its shadow deepens; the colored banner rises a little
+   more than the card so it feels like it floats above it. */
+.admin-app-card,
+.admin-app-panel,
+.admin-feature-card,
+.admin-feature-card-inner {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+.admin-app-card-wrap:focus-within .admin-app-card,
+.admin-feature-card-wrap:focus-within .admin-feature-card {
+  transform: translateY(-3px);
+  box-shadow: var(--smart-shadow-lg);
+}
+.admin-app-card-wrap:focus-within .admin-app-panel {
+  transform: translateY(-5px);
+}
+@media (hover: hover) {
+  .admin-app-card-wrap:hover .admin-app-card,
+  .admin-feature-card-wrap:hover .admin-feature-card {
+    transform: translateY(-3px);
+    box-shadow: var(--smart-shadow-lg);
+  }
+  .admin-app-card-wrap:hover .admin-app-panel {
+    transform: translateY(-5px);
+    box-shadow: 0 18px 40px rgba(22, 61, 115, 0.28);
+  }
+  .admin-feature-card-wrap:hover .admin-feature-card-inner {
+    transform: translateY(-6px);
+    box-shadow: var(--smart-shadow-lg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-app-card,
+  .admin-app-panel,
+  .admin-feature-card,
+  .admin-feature-card-inner {
+    transition: none;
+  }
+  .admin-app-card-wrap:hover .admin-app-card,
+  .admin-app-card-wrap:hover .admin-app-panel,
+  .admin-feature-card-wrap:hover .admin-feature-card,
+  .admin-feature-card-wrap:hover .admin-feature-card-inner,
+  .admin-app-card-wrap:focus-within .admin-app-card,
+  .admin-app-card-wrap:focus-within .admin-app-panel,
+  .admin-feature-card-wrap:focus-within .admin-feature-card {
+    transform: none;
+  }
 }
 
 /* --------------------------------------------------------------------

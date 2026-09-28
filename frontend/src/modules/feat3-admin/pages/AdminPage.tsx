@@ -38,12 +38,12 @@ export function AdminPage() {
           </div>
           <div className="admin-welcome-name">{user?.full_name ?? "Admin"}</div>
           <div className="admin-welcome-actions">
-            <button type="button" className="btn btn-govt-outline btn-sm">
+            <button type="button" className="btn-outline-dark">
               Edit Info
             </button>
             <button
               type="button"
-              className="btn btn-govt-primary btn-sm"
+              className="btn btn-govt-info"
               onClick={logout}
             >
               Log out
@@ -59,7 +59,11 @@ export function AdminPage() {
       <div className="admin-panel-grid">
         <div className="admin-app-card-wrap">
           <div className="admin-app-panel admin-app-panel--red">
-            <h3>Access Pass Application</h3>
+            <h3>
+              Access Pass
+              <br />
+              Application
+            </h3>
             <div className="admin-app-panel-divider" />
             <div className="admin-app-panel-stats">
               <div>— Pending Applications</div>
@@ -81,7 +85,11 @@ export function AdminPage() {
 
         <div className="admin-app-card-wrap">
           <div className="admin-app-panel admin-app-panel--yellow">
-            <h3>Vehicle Sticker Application</h3>
+            <h3>
+              Vehicle Sticker
+              <br />
+              Application
+            </h3>
             <div className="admin-app-panel-divider" />
             <div className="admin-app-panel-stats">
               <div>— Pending Applications</div>
