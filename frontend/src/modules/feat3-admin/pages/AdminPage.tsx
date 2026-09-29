@@ -1,5 +1,75 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../providers/AuthProvider";
+import { TOKEN_KEY, useAuth } from "../../../providers/AuthProvider";
+import { BASE } from "../../../hooks/apiConfig";
+import type { ApplicationStatus } from "../../../hooks/types";
+
+// "Pending" = not yet finalised. "To review" = freshly submitted (the badge
+// label for "Submitted" is "For Review").
+const PENDING: ApplicationStatus[] = [
+  "Submitted",
+  "Under Review",
+  "Incomplete/Returned",
+];
+const TO_REVIEW: ApplicationStatus[] = ["Submitted"];
+
+interface Counts {
+  pending: number;
+  toReview: number;
+}
+
+async function fetchCounts(path: string, signal: AbortSignal): Promise<Counts> {
+  const token = sessionStorage.getItem(TOKEN_KEY);
+  const res = await fetch(`${BASE}/api/admin/${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    signal,
+  });
+  if (!res.ok) throw new Error("Request failed");
+  const rows: { status: ApplicationStatus }[] = await res.json();
+  return {
+    pending: rows.filter((r) => PENDING.includes(r.status)).length,
+    toReview: rows.filter((r) => TO_REVIEW.includes(r.status)).length,
+  };
+}
+
+function useCounts(path: string) {
+  const [counts, setCounts] = useState<Counts | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    const ctrl = new AbortController();
+    fetchCounts(path, ctrl.signal)
+      .then(setCounts)
+      .catch(() => {
+        if (!ctrl.signal.aborted) setFailed(true);
+      });
+    return () => ctrl.abort();
+  }, [path]);
+
+  return { counts, failed };
+}
+
+function AppStats({
+  counts,
+  failed,
+}: {
+  counts: Counts | null;
+  failed: boolean;
+}) {
+  const show = (n?: number) => (failed ? "–" : n === undefined ? "…" : n);
+  return (
+    <ul className="admin-app-stats">
+      <li>
+        <span className="admin-app-stat-dot admin-app-stat-dot--blue" />
+        {show(counts?.pending)} Pending Applications
+      </li>
+      <li>
+        <span className="admin-app-stat-dot admin-app-stat-dot--green" />
+        {show(counts?.toReview)} To review
+      </li>
+    </ul>
+  );
+}
 
 function initialsOf(name?: string) {
   if (!name) return "A";
@@ -14,6 +84,8 @@ function initialsOf(name?: string) {
 export function AdminPage() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const access = useCounts("access-pass");
+  const vehicle = useCounts("vehicle-sticker");
 
   return (
     <div className="flex flex-col gap-6">
@@ -65,13 +137,13 @@ export function AdminPage() {
               Application
             </h3>
             <div className="admin-app-panel-divider" />
-            <div className="admin-app-panel-stats">
-              <div>— Pending Applications</div>
-              <div>— To review</div>
-            </div>
+            <p className="admin-app-panel-desc">
+              Review and approve visitor access pass requests.
+            </p>
           </div>
           <div className="admin-app-card">
             <div className="admin-app-card-footer">
+              <AppStats {...access} />
               <button
                 type="button"
                 className="btn-outline-dark"
@@ -91,13 +163,13 @@ export function AdminPage() {
               Application
             </h3>
             <div className="admin-app-panel-divider" />
-            <div className="admin-app-panel-stats">
-              <div>— Pending Applications</div>
-              <div>— To review</div>
-            </div>
+            <p className="admin-app-panel-desc">
+              Review and approve vehicle sticker requests.
+            </p>
           </div>
           <div className="admin-app-card">
             <div className="admin-app-card-footer">
+              <AppStats {...vehicle} />
               <button
                 type="button"
                 className="btn-outline-dark"

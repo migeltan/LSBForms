@@ -13,14 +13,20 @@ import { useAuth } from "../providers/AuthProvider";
  * Footer is suppressed only on the Admin login screen; it reappears
  * once the admin is authenticated, and every other route is unaffected.
  */
+const ADMIN_TABLE_PATHS = ["/admin/access-pass", "/admin/vehicle-sticker"];
+
 export function Layout() {
   const location = useLocation();
   const { isAuthenticated } = useAuth();
   const hideFooter = location.pathname === "/admin" && !isAuthenticated;
 
+  const hideHeader = ADMIN_TABLE_PATHS.includes(
+    location.pathname.replace(/\/$/, ""),
+  );
+
   return (
     <div className="app-shell">
-      <Header />
+      {!hideHeader && <Header />}
       <Body />
       {!hideFooter && <Footer />}
     </div>

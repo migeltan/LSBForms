@@ -523,7 +523,7 @@ h3,
   gap: var(--smart-space-7);
   flex-wrap: wrap;
   margin-bottom: 0; /* spacing between sections comes from the page gap */
-  padding: var(--smart-space-7);
+  padding: var(--smart-space-6);
   border-radius: 16px;
   box-shadow: var(--smart-shadow-md);
 }
@@ -543,7 +543,7 @@ h3,
 }
 .admin-welcome-card .admin-welcome-heading {
   font-family: var(--smart-font-sans);
-  font-size: clamp(1.75rem, 3.6vw, 2.5rem);
+  font-size: clamp(1.5rem, 2.8vw, 2rem);
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.01em;
@@ -552,7 +552,7 @@ h3,
 }
 .admin-welcome-card .admin-welcome-body {
   color: var(--smart-ink);
-  font-size: clamp(1rem, 1.3vw, 1.15rem);
+  font-size: clamp(0.9rem, 1.1vw, 1rem);
   line-height: 1.6;
   margin: 0;
 }
@@ -564,8 +564,8 @@ h3,
   flex-shrink: 0;
 }
 .admin-avatar {
-  width: 92px;
-  height: 112px;
+  width: 76px;
+  height: 92px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -574,7 +574,7 @@ h3,
   color: var(--smart-blue);
   border: 3px solid var(--smart-blue);
   font-weight: 800;
-  font-size: 2.1rem;
+  font-size: 1.7rem;
 }
 .admin-welcome-name {
   font-size: var(--smart-fs-md);
@@ -591,7 +591,8 @@ h3,
   padding: 0.5rem 1.25rem;
   font-size: var(--smart-fs-sm);
   font-weight: 600;
-  border: 2px solid var(--smart-ink);
+  font-weight: 600;
+  border: 1px solid var(--smart-ink);
   border-radius: 6px;
   white-space: nowrap;
   text-align: center;
@@ -616,7 +617,7 @@ h3,
 .admin-panel-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--smart-space-6);
+  gap: var(--smart-space-5);
 }
 @media (min-width: 768px) {
   .admin-panel-grid {
@@ -628,7 +629,7 @@ h3,
    "lift", so the banner overlaps the card's top edge and the footer
    always sits below the banner, however tall the banner grows. */
 .admin-app-card-wrap {
-  --admin-footer-h: 4.75rem;
+  --admin-footer-h: 5rem;
   --admin-banner-lift: var(--smart-space-5);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -649,9 +650,9 @@ h3,
   grid-area: 1 / 1;
   position: relative;
   margin: 0 var(--smart-space-6); /* equal inset both sides, as in the mockup */
-  min-height: 12.5rem;
+  min-height: 9.5rem;
   border-radius: 12px;
-  padding: var(--smart-space-6) var(--smart-space-6);
+  padding: var(--smart-space-5) var(--smart-space-6);
   color: #fff;
   box-shadow: var(--smart-shadow-lg);
   z-index: 1;
@@ -665,8 +666,8 @@ h3,
 .admin-app-panel h3 {
   font-family: var(--smart-font-sans);
   color: #fff;
-  font-size: clamp(1.4rem, 2.3vw, 1.9rem);
-  font-weight: 800;
+  font-size: clamp(1.15rem, 1.7vw, 1.45rem);
+  font-weight: 700;
   line-height: 1.15;
   margin: 0 0 var(--smart-space-4);
 }
@@ -675,21 +676,49 @@ h3,
   background: rgba(255, 255, 255, 0.45);
   margin-bottom: var(--smart-space-4);
 }
-.admin-app-panel-stats {
+.admin-app-panel-desc {
+  margin: 0;
+  font-size: var(--smart-fs-base);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.92);
+}
+.admin-app-stats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--smart-space-2);
+  gap: 0.25rem;
+  font-size: var(--smart-fs-base);
   font-weight: 600;
-  font-size: var(--smart-fs-md);
+  color: var(--smart-ink);
+}
+.admin-app-stats li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.admin-app-stat-dot {
+  flex: none;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+}
+.admin-app-stat-dot--blue {
+  background: var(--smart-blue);
+}
+.admin-app-stat-dot--green {
+  background: var(--smart-green);
 }
 .admin-app-card-footer {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--smart-space-3);
   box-sizing: border-box;
   min-height: var(--admin-footer-h);
-  border-top: 1px solid var(--smart-border);
-  padding: var(--smart-space-4) var(--smart-space-5);
+  padding: var(--smart-space-3) var(--smart-space-6);
 }
 .btn-outline-dark {
   display: inline-flex;
@@ -701,7 +730,7 @@ h3,
   font-weight: 600;
   background: var(--smart-surface);
   color: var(--smart-ink);
-  border: 2px solid var(--smart-ink);
+  border: 1px solid var(--smart-ink);
   border-radius: 6px;
   cursor: pointer;
   transition:
@@ -719,7 +748,7 @@ h3,
 .admin-feature-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--smart-space-6);
+  gap: var(--smart-space-5);
 }
 @media (min-width: 768px) {
   .admin-feature-grid {
@@ -736,7 +765,7 @@ h3,
   border: 1px solid var(--smart-border);
   border-radius: 16px;
   box-shadow: var(--smart-shadow-md);
-  min-height: 12.5rem;
+  min-height: 9rem;
 }
 .admin-feature-card-inner {
   position: absolute;
@@ -744,15 +773,15 @@ h3,
   left: var(--smart-space-6);
   box-sizing: border-box;
   width: 64%;
-  height: 7.25rem; /* fixed so all three tabs match even if a label wraps */
+  height: 5.5rem; /* fixed so all three tabs match even if a label wraps */
   border-radius: 12px;
-  padding: var(--smart-space-5);
+  padding: var(--smart-space-4);
   display: flex;
   align-items: center;
   color: #fff;
   font-family: var(--smart-font-sans);
   font-weight: 700;
-  font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+  font-size: clamp(1rem, 1.3vw, 1.15rem);
   line-height: 1.2;
   box-shadow: var(--smart-shadow-md);
   z-index: 1;
