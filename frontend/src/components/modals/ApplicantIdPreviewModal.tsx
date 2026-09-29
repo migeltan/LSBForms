@@ -25,7 +25,9 @@ export function ApplicantIdPreviewModal({
   fileName = "ID.pdf",
   onClose,
   onDownloaded,
+  onEditLayout,
 }: {
+  onEditLayout?: () => void;
   type: "access-pass" | "vehicle-sticker";
   previewUrl: string;
   downloadUrl: string;
@@ -213,6 +215,6 @@ export function ApplicantIdPreviewModal({
         )}
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

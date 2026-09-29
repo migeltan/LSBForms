@@ -9,6 +9,7 @@ import { ApplicantIdPreviewModal } from "../../../../../components/modals/Applic
 import { ApplicantIdTestPreview } from "../../../../../components/modals/ApplicantIdTestPreview";
 import { ApplicantIdDownloadModal } from "../../../../../components/modals/ApplicantIdDownloadModal";
 import { useAccessPassIdPdf } from "../../../../../hooks/useAccessPassIdPdf";
+import { AccessPassLayoutEditor } from "./AccessPassLayoutEditor";
 
 const STATUS_STYLES: Record<string, string> = {
   Approved: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
@@ -117,10 +118,12 @@ export function ProfileModal({
     setFlow({ step: "idle" });
   }
 
+  const [layoutOpen, setLayoutOpen] = useState(false);
+  const [layoutVersion, setLayoutVersion] = useState(0);
   const applicantId = detail.profile.applicant_id;
   const { previewUrl, downloadUrl, fileName } = useAccessPassIdPdf(
     applicantId,
-    detail.profile.application_id
+    detail.profile.application_id,
   );
 
   const busy =
@@ -228,11 +231,20 @@ export function ProfileModal({
       {flow.step === "preview" && (
         <ApplicantIdPreviewModal
           type="access-pass"
-          previewUrl={previewUrl}
+          previewUrl={`${previewUrl}?v=${layoutVersion}`}
           downloadUrl={downloadUrl}
           fileName={fileName}
           onClose={closeEverything}
           onDownloaded={() => setFlow({ step: "downloaded" })}
+          onEditLayout={() => setLayoutOpen(true)}
+        />
+      )}
+
+      {layoutOpen && (
+        <AccessPassLayoutEditor
+          applicantId={applicantId}
+          onClose={() => setLayoutOpen(false)}
+          onSaved={() => setLayoutVersion((v) => v + 1)}
         />
       )}
 
