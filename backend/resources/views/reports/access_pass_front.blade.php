@@ -7,18 +7,11 @@
 
     <style>
         /*
-         * Physical card size: 74mm x 105mm (see App\Service\IdCardService /
-         * PdfGeneratorService::ACCESS_PASS_*_MM). Built in real mm units
-         * rather than a scaled px canvas — no design-canvas transform
-         * needed since every position below already matches the card's
-         * true physical proportions (measured directly off the reference
-         * artwork in Access_Pass.png).
-         *
-         * This view renders ONE card. The 2x2-per-Letter-sheet layout with
-         * cut marks lives one level up, in reports.access_pass_sheet, which
-         * @includes this view four times inside positioned wrapper cells.
-         * Standalone preview/download of a single card still works — see
-         * $standalone below.
+         * Physical card size: 74mm x 105mm. Field positions/sizes are NOT
+         * hardcoded here anymore — they come from App\Support\AccessPassLayout
+         * (template defaults) merged with the application's saved
+         * layout_overrides (admin layout editor), and are applied as inline
+         * styles on each field below. This CSS only handles look, not place.
          */
         @page {
             size: 74mm 105mm;
@@ -61,10 +54,6 @@
         }
 
         .photo {
-            left: 33.72%;
-            top: 35.29%;
-            width: 32.55%;
-            height: 24.33%;
             background-color: #eef1f5;
             background-size: cover;
             background-position: center;
@@ -77,48 +66,24 @@
         }
 
         .cn-value {
-            left: 6.74%;
-            top: 56.4%;
-            width: 22.97%;
-            height: 3.1%;
             font-family: Georgia, 'Times New Roman', serif;
             font-weight: bold;
-            font-size: 4.6mm;
             color: #1a1a1a;
             letter-spacing: 0.2px;
+            white-space: nowrap;
         }
 
-        .name {
-            left: 17.99%;
-            top: 63.6%;
-            width: 64.52%;
-            height: 6.48%;
-            font-family: 'Bebas Neue', Arial, sans-serif;
-            font-size: 6.4mm;
-            line-height: 1;
-            color: #1a1a1a;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-
+        .name,
         .department {
-            left: 19.94%;
-            top: 70.6%;
-            width: 60.12%;
-            height: 4.69%;
             font-family: 'Bebas Neue', Arial, sans-serif;
-            font-size: 3.6mm;
             line-height: 1;
             color: #1a1a1a;
             letter-spacing: 0.5px;
             text-transform: uppercase;
+            white-space: nowrap;
         }
 
         .signature-img {
-            left: 30%;
-            top: 76.2%;
-            width: 40%;
-            height: 8%;
             justify-content: center;
         }
 
@@ -147,22 +112,36 @@
 
     @php
         $photoStyle = $photoSrc ? "background-image:url('{$photoSrc}');" : '';
+
+        // Template defaults + this application's saved admin tweaks.
+        $layoutSource = ($application ?? $applicant->accessPassApplication)?->layout_overrides;
+        $L = \App\Support\AccessPassLayout::resolve($layoutSource);
+
+        $box = function (string $field) use ($L) {
+            $b = $L[$field];
+            $css = "left:{$b['x']}%;top:{$b['y']}%;width:{$b['w']}%;height:{$b['h']}%;";
+            if (isset($b['font'])) {
+                $css .= "font-size:{$b['font']}mm;";
+            }
+
+            return $css;
+        };
     @endphp
 
     <div class="card">
-        <div class="field photo" style="{{ $photoStyle }}">
+        <div class="field photo" style="{{ $box('photo') }}{{ $photoStyle }}">
             @unless ($photoSrc)
                 NO PHOTO
             @endunless
         </div>
 
-        <div class="field cn-value">{{ $controlNumber ?? '—' }}</div>
+        <div class="field cn-value" style="{{ $box('cn') }}">{{ $controlNumber ?? '—' }}</div>
 
-        <div class="field name">{{ strtoupper($applicant->full_name) }}</div>
+        <div class="field name" style="{{ $box('name') }}">{{ strtoupper($applicant->full_name) }}</div>
 
-        <div class="field department">{{ $department ?? 'Legislative Security Bureau' }}</div>
+        <div class="field department" style="{{ $box('department') }}">{{ $department ?? 'Legislative Security Bureau' }}</div>
 
-        <div class="field signature-img">
+        <div class="field signature-img" style="{{ $box('signature') }}">
             @if ($signatureSrc)
                 <img src="{{ $signatureSrc }}" alt="Signature">
             @endif

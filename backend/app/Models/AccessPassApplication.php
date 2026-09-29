@@ -26,6 +26,7 @@ class AccessPassApplication extends Model
         'applicant_id',
         'status',
         'control_number',
+        'layout_overrides',
         'date_submitted',
         'date_reviewed',
         'reviewed_by',
@@ -41,6 +42,7 @@ class AccessPassApplication extends Model
             'date_submitted' => 'datetime',
             'date_reviewed' => 'datetime',
             'declaration_date' => 'date',
+            'layout_overrides' => 'array',
         ];
     }
 

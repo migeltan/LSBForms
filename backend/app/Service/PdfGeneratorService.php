@@ -42,6 +42,12 @@ class PdfGeneratorService
     private const STICKER_WIDTH_PX = 288;  // 3in * 96dpi
     private const STICKER_HEIGHT_PX = 384; // 4in * 96dpi
 
+    // Access Pass v2: 74mm x 105mm. 96dpi px equivalents, since Puppeteer's
+    // page.pdf({width,height}) (server.js) overrides the view's own @page
+    // rule — these two MUST match the "74mm 105mm" in access_pass_pdf.blade.php.
+    private const ACCESS_PASS_WIDTH_PX = 280;  // 74mm / 25.4 * 96
+    private const ACCESS_PASS_HEIGHT_PX = 397; // 105mm / 25.4 * 96
+
     // Base URL of the local background PDF-render service (node-windows
     // service "PdfRenderService", server.js listening on 127.0.0.1:4488).
     private const PDF_SERVICE_URL = 'http://127.0.0.1:4488/render-pdf';
@@ -65,7 +71,86 @@ class PdfGeneratorService
     public function __construct(
         private readonly QrCodeService $qrCodeService,
     ) {}
+    public function previewAccessPassFrontV2(int $applicantId): Response
+    {
+        $applicant = Applicant::with('accessPassApplication')->findOrFail($applicantId);
+        $application = $applicant->accessPassApplication;
 
+        abort_if(! $application, 404, 'No access pass application found for this applicant.');
+
+        $html = $this->renderIdView('reports.access_pass_front', $applicant, $application, false);
+
+        return response($html, 200)->header('Content-Type', 'text/html; charset=UTF-8');
+    }
+
+    public function previewAccessPassBackV2(int $applicantId): Response
+    {
+        $applicant = Applicant::with('accessPassApplication')->findOrFail($applicantId);
+        $application = $applicant->accessPassApplication;
+
+        abort_if(! $application, 404, 'No access pass application found for this applicant.');
+
+        $html = $this->renderIdBackView($applicant, false);
+
+        return response($html, 200)->header('Content-Type', 'text/html; charset=UTF-8');
+    }
+
+    private function renderIdView(string $view, $applicant, $application, bool $forPdf): string
+    {
+        $idAssets = $this->buildIdCardAssets($application, $forPdf);
+
+        return View::make($view, [
+            'applicant' => $applicant,
+            'application' => $application,
+            'forPdf' => $forPdf,
+            'assets' => $idAssets,
+            'templateSrc' => $idAssets['template'],
+            'photoSrc' => $idAssets['photo'],
+            'controlNumber' => $application->control_number ?? null,
+            'department' => 'Legislative Security Bureau',
+            'category' => 'Security',
+        ])->render();
+    }
+
+    private function renderIdBackView($applicant, bool $forPdf): string
+    {
+        return View::make('reports.access_pass_back', [
+            'applicant' => $applicant,
+            'forPdf' => $forPdf,
+            'sealSrc' => $forPdf
+                ? $this->toDataUri(public_path('images/House_of_Representatives_Logo.png'))
+                : asset('images/House_of_Representatives_Logo.png'),
+        ])->render();
+    }
+
+    private function buildIdCardAssets($application, bool $forPdf): array
+    {
+        $photoPath = $application->photo_path ?? null;
+
+        // Bebas Neue is always embedded as a data: URI, even for the
+        // browser preview — that preview is injected via <iframe srcDoc>,
+        // which gets an opaque origin, and Chrome blocks cross-origin
+        // @font-face loads from that context. A data: URI has no network
+        // request at all, so there's nothing for CORS to block. The
+        // template/photo images are fine as plain asset() URLs either way
+        // — that CORS restriction is specific to fonts (and canvas pixel
+        // reads), not <img>/background-image loads.
+        $bebasFont = $this->toDataUri(public_path('fonts/BebasNeue-Regular.ttf'));
+
+        if ($forPdf) {
+            return [
+                'template' => $this->toDataUri(public_path('images/id-templates/access-pass-blank.png')),
+                'photo' => $photoPath ? $this->toDataUri(storage_path('app/public/'.$photoPath)) : null,
+                'bebasFont' => $bebasFont,
+            ];
+        }
+
+        return [
+            'template' => asset('images/id-templates/access-pass-blank.png'),
+            'photo' => $photoPath ? asset('storage/'.$photoPath) : null,
+            'bebasFont' => $bebasFont,
+        ];
+    }
     public function previewVehicleStickerFrontV2(int $applicantId): Response
     {
         $applicant = Applicant::with('vehicleApplication')->findOrFail($applicantId);
@@ -89,7 +174,7 @@ class PdfGeneratorService
 
         abort_if(! $application, 404, 'No access pass application found for this applicant.');
 
-        $html = $this->renderHtml('reports.access_pass', $applicant, $application, false);
+        $html = $this->renderIdView('reports.access_pass_front', $applicant, $application, false);
 
         return response($html, 200)->header('Content-Type', 'text/html; charset=UTF-8');
     }
@@ -101,14 +186,15 @@ class PdfGeneratorService
 
         abort_if(! $application, 404, 'No access pass application found for this applicant.');
 
-        return $this->generatePdf(
-            'reports.access_pass',
-            $applicant,
-            $application,
-            'AccessPassID',
-            self::PAGE_WIDTH_PX,
-            self::PAGE_HEIGHT_PX,
-        );
+        $idAssets = $this->buildIdCardAssets($application, true);
+        $html = View::make('reports.access_pass_pdf', [
+            'applicant' => $applicant,
+            'application' => $application,
+            'assets' => $idAssets,
+            'sealSrc' => $this->toDataUri(public_path('images/House_of_Representatives_Logo.png')),
+        ])->render();
+
+        return $this->postPdf($html, self::ACCESS_PASS_WIDTH_PX, self::ACCESS_PASS_HEIGHT_PX, 'AccessPassID', $applicant);
     }
 
     public function previewVehicleSticker(int $applicantId): Response
@@ -252,9 +338,26 @@ class PdfGeneratorService
         int $pageWidth = self::PAGE_WIDTH_PX,
         int $pageHeight = self::PAGE_HEIGHT_PX,
     ): Response {
-        set_time_limit(120);
-
         $html = $this->renderHtml($view, $applicant, $application, true);
+
+        return $this->postPdf($html, $pageWidth, $pageHeight, $fileNamePrefix, $applicant);
+    }
+
+    /**
+     * Posts already-rendered HTML to the Puppeteer render service and
+     * returns the resulting PDF as a download response. Split out of
+     * generatePdf() so access-pass v2 (which builds its HTML differently —
+     * a combined front+back doc, not the old QR-based renderHtml()) can
+     * share the same "talk to the Node service" logic.
+     */
+    private function postPdf(
+        string $html,
+        int $pageWidth,
+        int $pageHeight,
+        string $fileNamePrefix,
+        $applicant,
+    ): Response {
+        set_time_limit(120);
 
         try {
             $response = Http::timeout(60)

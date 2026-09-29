@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\VehicleStickerController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Service\PdfGeneratorService;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AccessPassLayoutController;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,6 +65,8 @@ Route::get('/status/{reference}', [ApplicationStatusController::class, 'show']);
 // wildcard above.
 Route::get('/applications/search', [ApplicationStatusController::class, 'search']);
 
+
+
 // --- Admin / reviewer only (src/pages/Admin.tsx) ---
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
     Route::get('/applications', [AdminController::class, 'index']);
@@ -94,4 +97,10 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
 
     Route::get('/vehicle-sticker/documents/{documentId}', [DocumentController::class, 'showVehicle']);
     Route::post('/vehicle-sticker/documents/{documentId}/update', [DocumentController::class, 'updateVehicle']);
+
+
+        Route::get('/access-pass/{applicantId}/layout', [AccessPassLayoutController::class, 'show']);
+    Route::put('/access-pass/{applicantId}/layout', [AccessPassLayoutController::class, 'update']);
+    Route::delete('/access-pass/{applicantId}/layout', [AccessPassLayoutController::class, 'reset']);
+    
 });
