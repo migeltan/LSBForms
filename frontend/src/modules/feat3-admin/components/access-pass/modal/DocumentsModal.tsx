@@ -1,17 +1,33 @@
 import { useRef, useState } from "react";
+import { FileText } from "lucide-react";
 import type { DocumentRow } from "../../../../../hooks/types";
 import { STORAGE_BASE, BASE } from "../../../../../hooks/apiConfig";
 import { TOKEN_KEY } from "../../../../../providers/AuthProvider";
 import { DocumentPreviewModal } from "../../../../../components/modals/DocumentPreviewModal";
 import { DownloadModal } from "../../../../../components/modals/DownloadModal";
 
-function GreenSectionHeader({ children }: { children: React.ReactNode }) {
+const SERIF = { fontFamily: '"Source Serif 4", Georgia, serif' } as const;
+
+function GreenSectionHeader({
+  icon,
+  count,
+  children,
+}: {
+  icon?: React.ReactNode;
+  count?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="flex items-center gap-2 mb-3">
-      <span className="h-2 w-2 rotate-45 shrink-0 bg-emerald-600" />
-      <h3 className="text-xs font-bold uppercase tracking-wide text-emerald-900">
+    <div className="mb-5 flex items-center gap-3 text-[#1f3a6b]">
+      {icon}
+      <h3 className="text-[22px] font-bold leading-none" style={SERIF}>
         {children}
       </h3>
+      {count && (
+        <span className="rounded-full border border-gray-300 bg-gray-100 px-3 py-0.5 text-xs font-semibold text-gray-600">
+          {count}
+        </span>
+      )}
     </div>
   );
 }
@@ -19,46 +35,27 @@ function GreenSectionHeader({ children }: { children: React.ReactNode }) {
 function GreenCell({
   label,
   value,
-  shade,
+  className = "",
 }: {
   label: string;
   value: string | number | null | undefined;
-  shade: "light" | "medium" | "dark";
+  shade?: "light" | "medium" | "dark"; // legacy prop, ignored
+  className?: string;
 }) {
-  const borderShade =
-    shade === "light"
-      ? "border-l-emerald-300"
-      : shade === "medium"
-        ? "border-l-emerald-500"
-        : "border-l-emerald-700";
-
   return (
-    <div
-      className={`rounded-md border border-emerald-100 border-l-4 ${borderShade} bg-emerald-50/50 px-3 py-2`}
-    >
-      <div className="text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+    <div className={`min-w-0 ${className}`}>
+      <div className="mb-2 text-[15px] font-semibold text-gray-900">
         {label}
       </div>
-      <div className="mt-1 text-sm font-semibold text-emerald-950">
-        {value || value === 0 ? value : "—"}
+      <div className="min-h-[46px] break-words rounded-2xl border border-gray-300 bg-gray-100 px-5 py-3 text-[15px] font-semibold text-gray-700">
+        {value || value === 0 ? value : "\u00A0"}
       </div>
     </div>
   );
 }
 
 function VerificationStatusCell({ status }: { status: string }) {
-  return (
-    <div className="rounded-md border border-emerald-100 border-l-4 border-l-emerald-500 bg-emerald-50/50 px-3 py-2">
-      <div className="text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
-        Verification Status
-      </div>
-      <div className="mt-1">
-        <span className="inline-block rounded-full bg-emerald-600 text-white text-xs font-semibold px-3 py-0.5">
-          {status}
-        </span>
-      </div>
-    </div>
-  );
+  return <GreenCell label="Verification Status" value={status} />;
 }
 
 function FileActionCell({

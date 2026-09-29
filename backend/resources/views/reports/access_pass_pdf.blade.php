@@ -57,10 +57,6 @@
         }
 
         .photo {
-            left: 33.72%;
-            top: 30%;
-            width: 32.55%;
-            height: 24.33%;
             background-color: #eef1f5;
             background-size: cover;
             background-position: center;
@@ -73,23 +69,13 @@
         }
 
         .cn-value {
-            left: 6.74%;
-            top: 56.4%;
-            width: 22.97%;
-            height: 3.1%;
             font-family: Georgia, 'Times New Roman', serif;
             font-weight: bold;
-            font-size: 4.6mm;
             color: #1a1a1a;
         }
 
         .name {
-            left: 17.99%;
-            top: 63.6%;
-            width: 64.52%;
-            height: 6.48%;
             font-family: 'Bebas Neue', Arial, sans-serif;
-            font-size: 6.4mm;
             line-height: 1;
             color: #1a1a1a;
             letter-spacing: 0.5px;
@@ -97,12 +83,7 @@
         }
 
         .department {
-            left: 19.94%;
-            top: 70.6%;
-            width: 60.12%;
-            height: 4.69%;
             font-family: 'Bebas Neue', Arial, sans-serif;
-            font-size: 3.6mm;
             line-height: 1;
             color: #1a1a1a;
             letter-spacing: 0.5px;
@@ -226,17 +207,30 @@
 
     @php
         $photoStyle = $assets['photo'] ? "background-image:url('{$assets['photo']}');" : '';
+
+        // Template defaults + this application's saved admin tweaks
+        // (same source as access_pass_front, so preview == PDF).
+        $L = \App\Support\AccessPassLayout::resolve($application->layout_overrides ?? null);
+        $box = function (string $field) use ($L) {
+            $b = $L[$field];
+            $css = "left:{$b['x']}%;top:{$b['y']}%;width:{$b['w']}%;height:{$b['h']}%;";
+            if (isset($b['font'])) {
+                $css .= "font-size:{$b['font']}mm;";
+            }
+
+            return $css;
+        };
     @endphp
 
     <div class="card front">
-        <div class="field photo" style="{{ $photoStyle }}">
+        <div class="field photo" style="{{ $box('photo') }}{{ $photoStyle }}">
             @unless ($assets['photo'])
                 NO PHOTO
             @endunless
         </div>
-        <div class="field cn-value">{{ $application->control_number ?? '—' }}</div>
-        <div class="field name">{{ strtoupper($applicant->full_name) }}</div>
-        <div class="field department">Legislative Security Bureau</div>
+        <div class="field cn-value" style="{{ $box('cn') }}">{{ $application->control_number ?? '—' }}</div>
+        <div class="field name" style="{{ $box('name') }}">{{ strtoupper($applicant->full_name) }}</div>
+        <div class="field department" style="{{ $box('department') }}">Legislative Security Bureau</div>
         <div class="field bar-text">Security</div>
     </div>
 

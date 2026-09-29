@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { Rnd } from "react-rnd";
 import { api } from "../../../../../api/client";
 
@@ -211,8 +212,8 @@ export function AccessPassLayoutEditor({
   const grid: [number, number] = snap ? [SNAP_PX, SNAP_PX] : [1, 1];
   const sel = layout?.[selected];
 
-  return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/50 p-4">
       <div className="flex max-h-[95vh] w-full max-w-3xl flex-col rounded-xl bg-white shadow-xl">
         <div className="border-b border-gray-200 px-5 py-3">
           <h2 className="text-base font-semibold text-gray-900">
@@ -416,6 +417,7 @@ export function AccessPassLayoutEditor({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

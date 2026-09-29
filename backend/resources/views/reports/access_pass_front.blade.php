@@ -111,6 +111,8 @@
 <body>
 
     @php
+        $photoSrc = $photoSrc ?? null;
+        $signatureSrc = $signatureSrc ?? null;
         $photoStyle = $photoSrc ? "background-image:url('{$photoSrc}');" : '';
 
         // Template defaults + this application's saved admin tweaks.

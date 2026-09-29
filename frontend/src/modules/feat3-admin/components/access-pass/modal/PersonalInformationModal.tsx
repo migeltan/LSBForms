@@ -1,18 +1,25 @@
 import { useEffect, useRef, useState } from "react";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, ClipboardList, User } from "lucide-react";
 import type {
   ApplicantDetail,
   ApplicationStatus,
   PersonalInformationDraft,
 } from "../../../../../hooks/types";
-import { StatusBadge } from "../../StatusBadge";
 import { CustomCalendarInput } from "../../../../../components/ui/CustomCalendarInput";
 
-function BlueSectionHeader({ children }: { children: React.ReactNode }) {
+const SERIF = { fontFamily: '"Source Serif 4", Georgia, serif' } as const;
+
+function BlueSectionHeader({
+  icon,
+  children,
+}: {
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="flex items-center gap-2 mt-6 mb-3 first:mt-0">
-      <span className="w-2 h-2 rotate-45 bg-blue-600 shrink-0" />
-      <h3 className="text-xs font-bold tracking-wide uppercase text-blue-950">
+    <div className="mt-8 mb-5 flex items-center gap-3 border-t border-gray-300 pt-8 text-[#1f3a6b] first:mt-0 first:border-t-0 first:pt-0">
+      {icon}
+      <h3 className="text-[22px] font-bold leading-none" style={SERIF}>
         {children}
       </h3>
     </div>
@@ -22,21 +29,20 @@ function BlueSectionHeader({ children }: { children: React.ReactNode }) {
 function BlueField({
   label,
   value,
-  borderClass,
+  className = "",
 }: {
   label: string;
   value: string | number | null | undefined;
-  borderClass: string;
+  borderClass?: string; // legacy prop, ignored
+  className?: string;
 }) {
   return (
-    <div
-      className={`rounded-md border border-blue-100 border-l-4 ${borderClass} bg-blue-50/50 px-3 py-2`}
-    >
-      <div className="text-[10px] font-semibold uppercase tracking-wide text-blue-700">
+    <div className={`min-w-0 ${className}`}>
+      <div className="mb-2 text-[15px] font-semibold text-gray-900">
         {label}
       </div>
-      <div className="mt-1 text-sm font-semibold break-words text-blue-950">
-        {value || value === 0 ? value : "—"}
+      <div className="min-h-[46px] break-words rounded-2xl border border-gray-300 bg-gray-100 px-5 py-3 text-[15px] font-semibold text-gray-700">
+        {value || value === 0 ? value : "\u00A0"}
       </div>
     </div>
   );
@@ -210,31 +216,14 @@ function BlueTextarea({
 
 function StatusField({
   status,
-  borderClass,
 }: {
   status: ApplicationStatus | null | undefined;
-  borderClass: string;
+  borderClass?: string; // legacy prop, ignored
 }) {
-  return (
-    <div
-      className={`rounded-md border border-blue-100 border-l-4 ${borderClass} bg-blue-50/50 px-3 py-2`}
-    >
-      <div className="text-[10px] font-semibold uppercase tracking-wide text-blue-700">
-        Status
-      </div>
-      <div className="mt-1">
-        {status ? (
-          <StatusBadge status={status} />
-        ) : (
-          <span className="text-sm font-semibold text-blue-950">—</span>
-        )}
-      </div>
-    </div>
-  );
+  return <BlueField label="Status" value={status} />;
 }
 
-// One color for the "Application Record" section, a different single
-// color for the "Applicant Information" section — no per-field cycling.
+// Edit mode still uses the old blue-border style (restyled in a later phase).
 const RECORD_BORDER = "border-l-blue-500";
 const INFO_BORDER = "border-l-blue-800";
 
@@ -271,24 +260,11 @@ export function PersonalInformationModal({
           <BlueField
             label="Application ID"
             value={detail.profile.application_id}
-            borderClass={RECORD_BORDER}
           />
-          <StatusField status={p.status} borderClass={RECORD_BORDER} />
-          <BlueField
-            label="Date Submitted"
-            value={p.date_submitted}
-            borderClass={RECORD_BORDER}
-          />
-          <BlueField
-            label="Date Reviewed"
-            value={p.date_reviewed}
-            borderClass={RECORD_BORDER}
-          />
-          <BlueField
-            label="Reviewed By"
-            value={p.reviewed_by}
-            borderClass={RECORD_BORDER}
-          />
+          <StatusField status={p.status} />
+          <BlueField label="Date Submitted" value={p.date_submitted} />
+          <BlueField label="Date Reviewed" value={p.date_reviewed} />
+          <BlueField label="Reviewed By" value={p.reviewed_by} />
           <BlueInput
             label="Declaration Name"
             value={draft.declaration_name}
@@ -400,103 +376,45 @@ export function PersonalInformationModal({
     );
   }
 
+  const icon = "h-6 w-6 shrink-0";
   return (
     <>
-      <BlueSectionHeader>Application Record</BlueSectionHeader>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <BlueSectionHeader icon={<ClipboardList className={icon} />}>
+        Application Record
+      </BlueSectionHeader>
+      <div className="grid grid-cols-2 gap-x-5 gap-y-6 lg:grid-cols-4">
         <BlueField
           label="Application ID"
           value={detail.profile.application_id}
-          borderClass={RECORD_BORDER}
         />
-        <StatusField status={p.status} borderClass={RECORD_BORDER} />
-        <BlueField
-          label="Date Submitted"
-          value={p.date_submitted}
-          borderClass={RECORD_BORDER}
-        />
-        <BlueField
-          label="Date Reviewed"
-          value={p.date_reviewed}
-          borderClass={RECORD_BORDER}
-        />
-        <BlueField
-          label="Reviewed By"
-          value={p.reviewed_by}
-          borderClass={RECORD_BORDER}
-        />
-        <BlueField
-          label="Declaration Name"
-          value={p.declaration_name}
-          borderClass={RECORD_BORDER}
-        />
-        <BlueField
-          label="Declaration Date"
-          value={p.declaration_date}
-          borderClass={RECORD_BORDER}
-        />
-      </div>
-      <div className="grid grid-cols-1 gap-3 mt-3">
-        <BlueField
-          label="Remarks"
-          value={p.remarks}
-          borderClass={RECORD_BORDER}
-        />
+        <StatusField status={p.status} />
+        <BlueField label="Date Submitted" value={p.date_submitted} />
+        <BlueField label="Remarks" value={p.remarks} />
+        <BlueField label="Date Reviewed" value={p.date_reviewed} />
+        <BlueField label="Reviewed By" value={p.reviewed_by} />
+        <BlueField label="Declaration Name" value={p.declaration_name} />
+        <BlueField label="Declaration Date" value={p.declaration_date} />
       </div>
 
-      <BlueSectionHeader>Applicant Information</BlueSectionHeader>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        <BlueField
-          label="First Name"
-          value={p.first_name}
-          borderClass={INFO_BORDER}
-        />
-        <BlueField
-          label="Middle Name"
-          value={p.middle_name}
-          borderClass={INFO_BORDER}
-        />
-        <BlueField
-          label="Last Name"
-          value={p.last_name}
-          borderClass={INFO_BORDER}
-        />
-        <BlueField label="Suffix" value={p.suffix} borderClass={INFO_BORDER} />
-        <BlueField
-          label="Date of Birth"
-          value={p.date_of_birth}
-          borderClass={INFO_BORDER}
-        />
-        <BlueField
-          label="Place of Birth"
-          value={p.place_of_birth}
-          borderClass={INFO_BORDER}
-        />
-        <BlueField label="Sex" value={p.sex} borderClass={INFO_BORDER} />
-        <BlueField
-          label="Civil Status"
-          value={p.civil_status}
-          borderClass={INFO_BORDER}
-        />
-        <BlueField
-          label="Applicant Type"
-          value={p.applicant_type}
-          borderClass={INFO_BORDER}
-        />
-        <BlueField
-          label="Contact Number"
-          value={p.contact_number}
-          borderClass={INFO_BORDER}
-        />
-      </div>
-      <div className="grid grid-cols-1 gap-3 mt-3 sm:grid-cols-2">
-        <BlueField label="Email" value={p.email} borderClass={INFO_BORDER} />
-      </div>
-      <div className="grid grid-cols-1 gap-3 mt-3">
+      <BlueSectionHeader icon={<User className={icon} />}>
+        Application Information
+      </BlueSectionHeader>
+      <div className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+        <BlueField label="First Name" value={p.first_name} />
+        <BlueField label="Middle Name" value={p.middle_name} />
+        <BlueField label="Last Name" value={p.last_name} />
+        <BlueField label="Suffix" value={p.suffix} />
+        <BlueField label="Date of Birth" value={p.date_of_birth} />
+        <BlueField label="Place of Birth" value={p.place_of_birth} />
+        <BlueField label="Sex" value={p.sex} />
+        <BlueField label="Civil Status" value={p.civil_status} />
+        <BlueField label="Applicant Type" value={p.applicant_type} />
+        <BlueField label="Contact Number" value={p.contact_number} />
+        <BlueField label="Email" value={p.email} className="lg:col-span-2" />
         <BlueField
           label="Address"
           value={p.address}
-          borderClass={INFO_BORDER}
+          className="sm:col-span-2 lg:col-span-3"
         />
       </div>
     </>

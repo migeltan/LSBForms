@@ -139,6 +139,14 @@ export function ApplicantIdPreviewModal({
 
           {/* Close + Download, right side */}
           <div className="flex items-center gap-2 shrink-0">
+            {onEditLayout && (
+              <button
+                onClick={onEditLayout}
+                className="inline-flex items-center rounded-md bg-white hover:bg-gray-50 ring-1 ring-inset ring-gray-300 text-gray-700 text-sm font-semibold px-4 py-2 transition-colors"
+              >
+                Adjust layout
+              </button>
+            )}
             <button
               onClick={handleDownload}
               disabled={downloading}
