@@ -75,6 +75,9 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::patch('/access-pass/{application_id}/review', [AdminController::class, 'reviewAccessPass']);
 
     Route::get('/access-pass/{applicantId}/id/preview', [PdfGeneratorService::class, 'previewAccessPass']);
+    Route::get('/access-pass/{applicantId}/id/preview-v2/front', [PdfGeneratorService::class, 'previewAccessPassFrontV2']);
+    Route::get('/access-pass/{applicantId}/id/preview-v2/back', [PdfGeneratorService::class, 'previewAccessPassBackV2']);
+    Route::get('/vehicle-sticker/{applicantId}/id/preview-v2/front', [PdfGeneratorService::class, 'previewVehicleStickerFrontV2']);
     Route::get('/access-pass/{applicantId}/id/download', [PdfGeneratorService::class, 'downloadAccessPass']);
 
     Route::get('/vehicle-sticker', [AdminController::class, 'vehicleList']);

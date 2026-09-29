@@ -7,6 +7,7 @@ use App\Models\AccessPassApplication;
 use App\Models\Applicant;
 use App\Models\ApplicationLog;
 use App\Models\VehicleApplication;
+use App\Service\ControlNumberService;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -507,6 +508,10 @@ class AdminController extends Controller
             'date_reviewed' => now(),
         ]);
 
+        if ($request->input('status') === 'Approved') {
+            app(ControlNumberService::class)->ensureAccessPass($application);
+        }
+
         ApplicationLog::create([
             'application_id' => $applicationId,
             'user_id' => $request->user()->id,
@@ -541,9 +546,13 @@ class AdminController extends Controller
             'reviewed_by' => $request->user()->id,
             'date_reviewed' => now(),
             'clearance_status' => $request->input('clearance_status'),
-            'sticker_number' => $request->input('sticker_number'),
+            'sticker_number' => $request->input('sticker_number') ?: $application->sticker_number,
             'approval_date' => $request->input('status') === 'Approved' ? now()->toDateString() : null,
         ]);
+
+        if ($request->input('status') === 'Approved') {
+            app(ControlNumberService::class)->ensureVehicle($application);
+        }
 
         ApplicationLog::create([
             'application_id' => $applicationId,

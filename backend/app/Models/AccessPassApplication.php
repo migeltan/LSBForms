@@ -25,6 +25,7 @@ class AccessPassApplication extends Model
         'application_id',
         'applicant_id',
         'status',
+        'control_number',
         'date_submitted',
         'date_reviewed',
         'reviewed_by',

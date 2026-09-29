@@ -66,6 +66,22 @@ class PdfGeneratorService
         private readonly QrCodeService $qrCodeService,
     ) {}
 
+    public function previewVehicleStickerFrontV2(int $applicantId): Response
+    {
+        $applicant = Applicant::with('vehicleApplication')->findOrFail($applicantId);
+        $application = $applicant->vehicleApplication;
+
+        abort_if(! $application, 404, 'No vehicle sticker application found for this applicant.');
+
+        $html = View::make('reports.vehicle_sticker_front', [
+            'applicant' => $applicant,
+            'templateSrc' => asset('images/id-templates/vehicle-sticker-blank.png'),
+            'controlNumber' => $application->sticker_number ?? null,
+        ])->render();
+
+        return response($html, 200)->header('Content-Type', 'text/html; charset=UTF-8');
+    }
+
     public function previewAccessPass(int $applicantId): Response
     {
         $applicant = Applicant::with('accessPassApplication')->findOrFail($applicantId);
