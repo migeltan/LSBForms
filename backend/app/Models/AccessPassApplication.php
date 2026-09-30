@@ -34,8 +34,9 @@ class AccessPassApplication extends Model
         'photo_path',
         'declaration_name',
         'declaration_date',
+        'declaration_signature_path',
     ];
-
+    
     protected function casts(): array
     {
         return [

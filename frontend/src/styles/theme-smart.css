@@ -1455,3 +1455,19 @@ h3,
   width: clamp(180px, 22vw, 260px);
   height: auto;
 }
+
+/* Form typography: Georgia bold eyebrow over a Source Sans 3 bold heading.
+   Font size is set with Tailwind at the call site (text-sm etc.). */
+.form-eyebrow {
+  font-family: Georgia, serif;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.01em;
+  color: var(--smart-blue-dark);
+}
+.form-heading {
+  font-family: var(--smart-font-sans);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--smart-ink);
+}

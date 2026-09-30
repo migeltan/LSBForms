@@ -35,10 +35,12 @@ Route::get('/login', function () {
 })->name('login');
 
 // --- Public application flows ---
+Route::post('/access-pass/reserve-reference', [AccessPassController::class, 'reserveReference']);
 Route::post('/access-pass', [AccessPassController::class, 'store']);
 Route::get('/access-pass/{application_id}', [AccessPassController::class, 'show']);
 Route::post('/access-pass/{application_id}/submit', [AccessPassController::class, 'submit']);
 
+Route::post('/vehicle-sticker/reserve-reference', [VehicleStickerController::class, 'reserveReference']);
 Route::post('/vehicle-sticker', [VehicleStickerController::class, 'store']);
 Route::get('/vehicle-sticker/{application_id}', [VehicleStickerController::class, 'show']);
 Route::post('/vehicle-sticker/{application_id}/submit', [VehicleStickerController::class, 'submit']);

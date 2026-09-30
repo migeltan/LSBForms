@@ -1,4 +1,13 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { FileSignature, FileUp, User, Users } from "lucide-react";
+import { FormStepper } from "../../components/ui/FormStepper";
+import { StepNav } from "../../components/ui/StepNav";
+import { useStepForm } from "../../hooks/useStepForm";
+import { SignaturePad } from "../../components/ui/SignaturePad";
+import {
+  ReviewSummary,
+  type ReviewSection,
+} from "../../components/ui/ReviewSummary";
 import axios from "axios";
 import { api } from "../../api/client";
 import {
@@ -49,6 +58,13 @@ const emptyFamilyMember = (): FamilyMember => ({
   contactNumber: "",
 });
 
+const STEPS = [
+  { label: "Personal Info", icon: User },
+  { label: "Background", icon: Users },
+  { label: "Documents", icon: FileUp },
+  { label: "Declaration", icon: FileSignature },
+];
+
 const emptyEducationRecord = (): EducationRecord => ({
   id: crypto.randomUUID(),
   level: "",
@@ -56,8 +72,15 @@ const emptyEducationRecord = (): EducationRecord => ({
   yearGraduated: "",
 });
 
-export function AccessPassForm() {
+export function AccessPassForm({
+  reference,
+  onSubmitted,
+}: {
+  reference: string | null;
+  onSubmitted: () => void;
+}) {
   const [applicantType, setApplicantType] = useState<ApplicantType>("");
+  const [signature, setSignature] = useState("");
 
   // Both repeatable tables now share the same universal update/add/remove
   // logic via useFormControls, instead of each having its own copy.
@@ -86,23 +109,99 @@ export function AccessPassForm() {
       doc_consultancy_contract: null,
       doc_other: null,
       applicant_photo: null,
-    })
+    }),
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultStatus, setResultStatus] = useState<SubmitResultStatus>(null);
   const [resultMessage, setResultMessage] = useState<string | undefined>(
-    undefined
+    undefined,
   );
   const [applicationId, setApplicationId] = useState<string | undefined>(
-    undefined
+    undefined,
   );
 
   const showNbi = applicantType === "Non-Plantilla";
   const showConsultancy = applicantType === "Consultant";
+  const {
+    formProps,
+    step,
+    maxStep,
+    message: stepMessage,
+    lastStep,
+    stepClass,
+    goTo,
+    goNext,
+    reset: resetSteps,
+    interceptSubmit,
+  } = useStepForm({
+    totalSteps: STEPS.length,
+    getMissingFiles: (index) => {
+      if (index === 3) return signature ? [] : ["Signature"];
+      if (index !== 2) return [];
+      const required: [keyof DocumentFiles, string][] = [
+        ["doc_letter_request", "Letter Request"],
+        ["doc_valid_id_1", "Valid ID (Copy 1)"],
+        ["doc_valid_id_2", "Valid ID (Copy 2)"],
+        ["applicant_photo", "Applicant photo"],
+      ];
+      if (showNbi) required.push(["doc_nbi_clearance", "NBI Clearance"]);
+      if (showConsultancy)
+        required.push(["doc_consultancy_contract", "Contract of Consultancy"]);
+      return required.filter(([k]) => !files[k]).map(([, label]) => label);
+    },
+  });
+  // Step 4: snapshot the (uncontrolled) personal fields for the summary and
+  // pre-fill the declaration's printed name + date.
+  const [personal, setPersonal] = useState<Record<string, string>>({});
+  const autoName = useRef("");
+
+  useEffect(() => {
+    if (step !== lastStep) return;
+    const form = formProps.ref.current;
+    if (!form) return;
+
+    const fd = new FormData(form);
+    const get = (k: string) => String(fd.get(k) ?? "").trim();
+    const fullName = [
+      get("first_name"),
+      get("middle_name"),
+      get("last_name"),
+      get("suffix"),
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    const nameEl = form.elements.namedItem(
+      "declaration_name",
+    ) as HTMLInputElement | null;
+    if (nameEl && (!nameEl.value || nameEl.value === autoName.current)) {
+      nameEl.value = fullName;
+      autoName.current = fullName;
+    }
+    const dateEl = form.elements.namedItem(
+      "declaration_date",
+    ) as HTMLInputElement | null;
+    if (dateEl && !dateEl.value)
+      dateEl.value = new Date().toLocaleDateString("en-CA");
+
+    const snap: Record<string, string> = { full_name: fullName };
+    [
+      "applicant_type",
+      "date_of_birth",
+      "place_of_birth",
+      "sex",
+      "civil_status",
+      "address",
+      "contact_number",
+      "email",
+    ].forEach((k) => (snap[k] = get(k)));
+    setPersonal(snap);
+  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (interceptSubmit()) return;
     setResultStatus(null);
     setResultMessage(undefined);
     setIsSubmitting(true);
@@ -111,6 +210,8 @@ export function AccessPassForm() {
       const form = event.currentTarget;
       const formData = new FormData(form);
       formData.set("form_type", "access_pass");
+      if (reference) formData.set("reference_id", reference);
+      formData.set("declaration_signature", signature);
       formData.set("family_background", JSON.stringify(familyMembers));
       formData.set("educational_background", JSON.stringify(educationRecords));
 
@@ -129,6 +230,9 @@ export function AccessPassForm() {
       resetEducationRecords();
       setApplicantType("");
       resetFiles();
+      onSubmitted(); // reserve a fresh number for the next application
+      resetSteps();
+      setSignature("");
     } catch (err) {
       let message = "Something went wrong. Please try again.";
       if (axios.isAxiosError(err)) {
@@ -149,444 +253,519 @@ export function AccessPassForm() {
     }
   }
 
+  const dash = (v?: string) => (v && v.trim() ? v : "—");
+
+  const docRows: [keyof DocumentFiles, string, boolean][] = [
+    ["doc_letter_request", "Letter Request", true],
+    ["doc_valid_id_1", "Valid ID (Copy 1)", true],
+    ["doc_valid_id_2", "Valid ID (Copy 2)", true],
+    ["doc_nbi_clearance", "NBI Clearance", showNbi],
+    ["doc_consultancy_contract", "Contract of Consultancy", showConsultancy],
+    ["doc_other", "Other document", !!files.doc_other],
+    ["applicant_photo", "Applicant photo", true],
+  ];
+
+  const reviewSections: ReviewSection[] = [
+    {
+      title: "Personal Information",
+      step: 0,
+      rows: [
+        { label: "Full name", value: dash(personal.full_name) },
+        { label: "Applicant type", value: dash(personal.applicant_type) },
+        { label: "Date of birth", value: dash(personal.date_of_birth) },
+        { label: "Place of birth", value: dash(personal.place_of_birth) },
+        { label: "Sex", value: dash(personal.sex) },
+        { label: "Civil status", value: dash(personal.civil_status) },
+        { label: "Contact number", value: dash(personal.contact_number) },
+        { label: "Email", value: dash(personal.email) },
+        { label: "Home address", value: dash(personal.address), wide: true },
+      ],
+    },
+    {
+      title: "Family Background",
+      step: 1,
+      rows: familyMembers
+        .filter((m) => m.name || m.relation)
+        .map((m) => ({
+          label: m.relation || "Family member",
+          value: dash(
+            [m.name, m.occupation && `(${m.occupation})`]
+              .filter(Boolean)
+              .join(" "),
+          ),
+          wide: true,
+        })),
+    },
+    {
+      title: "Educational Background",
+      step: 1,
+      rows: educationRecords
+        .filter((r) => r.schoolName || r.level)
+        .map((r) => ({
+          label: r.level || "Education",
+          value: dash(
+            [r.schoolName, r.yearGraduated && `(${r.yearGraduated})`]
+              .filter(Boolean)
+              .join(" "),
+          ),
+          wide: true,
+        })),
+    },
+    {
+      title: "Documents",
+      step: 2,
+      rows: docRows
+        .filter(([, , show]) => show)
+        .map(([key, label]) => ({
+          label,
+          value: files[key]?.name ?? "Not uploaded",
+        })),
+    },
+  ];
+
   return (
     <>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6" noValidate>
+      <form
+        {...formProps}
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-6"
+        noValidate
+      >
         <input type="hidden" name="form_type" value="access_pass" />
 
-        {/* SECTION A: PERSONAL INFORMATION */}
-        <section className="p-6 bg-white border border-l-4 shadow-sm rounded-xl border-l-blue-500 border-slate-200">
-          <p className="text-xs font-medium tracking-wide text-blue-600">
-            Section A
-          </p>
-          <h2 className="mt-1 text-xl font-semibold text-slate-900">
-            Personal Information
-          </h2>
+        <FormStepper
+          steps={STEPS}
+          current={step}
+          maxReached={maxStep}
+          onSelect={goTo}
+        />
 
-          <div className="grid grid-cols-1 gap-4 mt-5 sm:grid-cols-4 sm:gap-x-4 sm:gap-y-5">
-            <div className="grid grid-cols-1 gap-4 sm:col-span-4 sm:grid-cols-12">
+        <div data-step="0" className={stepClass(0)}>
+          {/* SECTION A: PERSONAL INFORMATION */}
+          <section className="p-6 bg-white border border-slate-200 shadow-sm rounded-xl">
+            <p className="form-eyebrow text-sm">Section A</p>
+            <h2 className="form-heading mt-1 text-xl">Personal Information</h2>
+
+            <div className="grid grid-cols-1 gap-4 mt-5 sm:grid-cols-4 sm:gap-x-4 sm:gap-y-5">
+              <div className="grid grid-cols-1 gap-4 sm:col-span-4 sm:grid-cols-12">
+                <TextFieldInput
+                  label="First Name"
+                  name="first_name"
+                  required
+                  color="blue"
+                  containerClassName="sm:col-span-4"
+                />
+                <TextFieldInput
+                  label="Middle Name"
+                  name="middle_name"
+                  color="blue"
+                  containerClassName="sm:col-span-3"
+                />
+                <TextFieldInput
+                  label="Last Name"
+                  name="last_name"
+                  required
+                  color="blue"
+                  containerClassName="sm:col-span-3"
+                />
+                <TextFieldInput
+                  label="Suffix"
+                  name="suffix"
+                  placeholder="Jr."
+                  color="blue"
+                  containerClassName="sm:col-span-2"
+                />
+              </div>
+
               <TextFieldInput
-                label="First Name"
-                name="first_name"
+                label="Date of Birth"
+                name="date_of_birth"
+                type="date"
                 required
-                color="blue"
-                containerClassName="sm:col-span-4"
-              />
-              <TextFieldInput
-                label="Middle Name"
-                name="middle_name"
-                color="blue"
-                containerClassName="sm:col-span-3"
-              />
-              <TextFieldInput
-                label="Last Name"
-                name="last_name"
-                required
-                color="blue"
-                containerClassName="sm:col-span-3"
-              />
-              <TextFieldInput
-                label="Suffix"
-                name="suffix"
-                placeholder="Jr."
                 color="blue"
                 containerClassName="sm:col-span-2"
               />
-            </div>
+              <TextFieldInput
+                label="Place of Birth"
+                name="place_of_birth"
+                color="blue"
+                containerClassName="sm:col-span-2"
+              />
 
-            <TextFieldInput
-              label="Date of Birth"
-              name="date_of_birth"
-              type="date"
-              required
-              color="blue"
-              containerClassName="sm:col-span-2"
-            />
-            <TextFieldInput
-              label="Place of Birth"
-              name="place_of_birth"
-              color="blue"
-              containerClassName="sm:col-span-2"
-            />
+              <SelectField
+                label="Sex"
+                name="sex"
+                className="sm:col-span-2"
+                options={["Male", "Female", "Prefer not to say"]}
+              />
+              <SelectField
+                label="Civil Status"
+                name="civil_status"
+                className="sm:col-span-2"
+                options={["Single", "Married", "Widowed", "Separated", "Other"]}
+              />
 
-            <SelectField
-              label="Sex"
-              name="sex"
-              className="sm:col-span-2"
-              options={["Male", "Female", "Prefer not to say"]}
-            />
-            <SelectField
-              label="Civil Status"
-              name="civil_status"
-              className="sm:col-span-2"
-              options={["Single", "Married", "Widowed", "Separated", "Other"]}
-            />
+              <TextFieldInput
+                label="Home Address"
+                name="address"
+                color="blue"
+                containerClassName="sm:col-span-4"
+              />
 
-            <TextFieldInput
-              label="Home Address"
-              name="address"
-              color="blue"
-              containerClassName="sm:col-span-4"
-            />
-
-            <TextFieldInput
-              label="Contact Number"
-              name="contact_number"
-              required
-              color="blue"
-              containerClassName="sm:col-span-2"
-            />
-            <TextFieldInput
-              label="Email Address"
-              name="email"
-              type="email"
-              required
-              color="blue"
-              containerClassName="sm:col-span-2"
-            />
-
-            <div className="sm:col-span-4">
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                Applicant Type <span className="text-red-600">*</span>
-              </label>
-              <select
-                name="applicant_type"
+              <TextFieldInput
+                label="Contact Number"
+                name="contact_number"
                 required
-                value={applicantType}
-                onChange={(e) =>
-                  setApplicantType(e.target.value as ApplicantType)
-                }
-                className={selectClasses}
-              >
-                <option value="">Select&hellip;</option>
-                <option value="Plantilla">Plantilla</option>
-                <option value="Non-Plantilla">Non-Plantilla</option>
-                <option value="Consultant">Consultant</option>
-                <option value="Other">Other</option>
-              </select>
+                color="blue"
+                containerClassName="sm:col-span-2"
+              />
+              <TextFieldInput
+                label="Email Address"
+                name="email"
+                type="email"
+                required
+                color="blue"
+                containerClassName="sm:col-span-2"
+              />
+
+              <div className="sm:col-span-4">
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Applicant Type <span className="text-red-600">*</span>
+                </label>
+                <select
+                  name="applicant_type"
+                  required
+                  value={applicantType}
+                  onChange={(e) =>
+                    setApplicantType(e.target.value as ApplicantType)
+                  }
+                  className={selectClasses}
+                >
+                  <option value="">Select&hellip;</option>
+                  <option value="Plantilla">Plantilla</option>
+                  <option value="Non-Plantilla">Non-Plantilla</option>
+                  <option value="Consultant">Consultant</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
             </div>
-          </div>
-        </section>
-
-        {/* SECTION B: FAMILY BACKGROUND */}
-        <section className="p-6 bg-white border border-l-4 shadow-sm rounded-xl border-l-amber-500 border-slate-200">
-          <p className="text-xs font-medium tracking-wide text-amber-600">
-            Section B
-          </p>
-          <h2 className="mt-1 text-xl font-semibold text-slate-900">
-            Family Background
-          </h2>
-
-          <div className="flex flex-col gap-4 mt-5">
-            {familyMembers.map((member, index) => (
-              <div
-                key={member.id}
-                className="p-4 border rounded-lg border-slate-200 bg-slate-50/50"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-slate-500">
-                    Family Member {index + 1}
-                  </span>
-                  {familyMembers.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeFamilyMember(member.id)}
-                      className="text-sm font-medium text-red-600 hover:text-red-700"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-                  <TextFieldInput
-                    label="Relation"
-                    size="compact"
-                    color="amber"
-                    value={member.relation}
-                    onChange={(e) =>
-                      updateFamilyMember(member.id, "relation", e.target.value)
-                    }
-                  />
-                  <TextFieldInput
-                    label="Full Name"
-                    size="compact"
-                    color="amber"
-                    value={member.name}
-                    onChange={(e) =>
-                      updateFamilyMember(member.id, "name", e.target.value)
-                    }
-                    containerClassName="sm:col-span-2"
-                  />
-                  <TextFieldInput
-                    label="Occupation"
-                    size="compact"
-                    color="amber"
-                    value={member.occupation}
-                    onChange={(e) =>
-                      updateFamilyMember(
-                        member.id,
-                        "occupation",
-                        e.target.value
-                      )
-                    }
-                  />
-                  <TextFieldInput
-                    label="Contact Number"
-                    size="compact"
-                    color="amber"
-                    value={member.contactNumber}
-                    onChange={(e) =>
-                      updateFamilyMember(
-                        member.id,
-                        "contactNumber",
-                        e.target.value
-                      )
-                    }
-                    containerClassName="sm:col-span-2"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <button
-            type="button"
-            onClick={addFamilyMember}
-            className="mt-4 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50"
-          >
-            + Add Family Member
-          </button>
-        </section>
-
-        {/* SECTION C: EDUCATIONAL BACKGROUND */}
-        <section className="p-6 bg-white border border-l-4 shadow-sm rounded-xl border-l-red-500 border-slate-200">
-          <p className="text-xs font-medium tracking-wide text-red-600">
-            Section C
-          </p>
-          <h2 className="mt-1 text-xl font-semibold text-slate-900">
-            Educational Background
-          </h2>
-
-          <div className="flex flex-col gap-4 mt-5">
-            {educationRecords.map((record, index) => (
-              <div
-                key={record.id}
-                className="p-4 border rounded-lg border-slate-200 bg-slate-50/50"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-slate-500">
-                    Record {index + 1}
-                  </span>
-                  {educationRecords.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeEducationRecord(record.id)}
-                      className="text-sm font-medium text-red-600 hover:text-red-700"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-                  <TextFieldInput
-                    label="Level"
-                    size="compact"
-                    color="red"
-                    value={record.level}
-                    onChange={(e) =>
-                      updateEducationRecord(record.id, "level", e.target.value)
-                    }
-                    placeholder="Elementary / Secondary / College"
-                    containerClassName="sm:col-span-2"
-                  />
-                  <TextFieldInput
-                    label="School Name"
-                    size="compact"
-                    color="red"
-                    value={record.schoolName}
-                    onChange={(e) =>
-                      updateEducationRecord(
-                        record.id,
-                        "schoolName",
-                        e.target.value
-                      )
-                    }
-                    containerClassName="sm:col-span-1"
-                  />
-                  <TextFieldInput
-                    label="Year Graduated"
-                    size="compact"
-                    color="red"
-                    value={record.yearGraduated}
-                    onChange={(e) =>
-                      updateEducationRecord(
-                        record.id,
-                        "yearGraduated",
-                        e.target.value
-                      )
-                    }
-                    containerClassName="sm:col-span-1"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <button
-            type="button"
-            onClick={addEducationRecord}
-            className="mt-4 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50"
-          >
-            + Add Educational Record
-          </button>
-        </section>
-
-        {/* SECTION D: SUPPORTING DOCUMENTS */}
-        <section className="p-6 bg-white border border-l-4 shadow-sm rounded-xl border-l-blue-500 border-slate-200">
-          <p className="text-xs font-medium tracking-wide text-blue-600">
-            Section D
-          </p>
-          <h2 className="mt-1 text-xl font-semibold text-slate-900">
-            Supporting Documents
-          </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Required documents depend on the applicant type selected in Section
-            A.
-          </p>
-
-          <div className="grid grid-cols-1 gap-4 mt-5 sm:grid-cols-2">
-            <UploadFileInput
-              label="Letter Request addressed to the Sergeant-at-Arms"
-              name="doc_letter_request"
-              required
-              color="blue"
-              onChange={(f) => handleFileChange("doc_letter_request", f)}
-            />
-            <UploadFileInput
-              label="Valid ID (Copy 1)"
-              name="doc_valid_id_1"
-              required
-              color="blue"
-              onChange={(f) => handleFileChange("doc_valid_id_1", f)}
-            />
-            <UploadFileInput
-              label="Valid ID (Copy 2)"
-              name="doc_valid_id_2"
-              required
-              color="blue"
-              onChange={(f) => handleFileChange("doc_valid_id_2", f)}
-            />
-
-            {showNbi && (
-              <UploadFileInput
-                label="NBI Clearance"
-                hint="required for Non-Plantilla"
-                name="doc_nbi_clearance"
-                color="amber"
-                onChange={(f) => handleFileChange("doc_nbi_clearance", f)}
-              />
-            )}
-
-            {showConsultancy && (
-              <UploadFileInput
-                label="Contract of Consultancy"
-                hint="required for Consultants"
-                name="doc_consultancy_contract"
-                color="amber"
-                onChange={(f) =>
-                  handleFileChange("doc_consultancy_contract", f)
-                }
-              />
-            )}
-
-            <UploadFileInput
-              label="Other Supporting Document"
-              hint="optional"
-              name="doc_other"
-              color="slate"
-              onChange={(f) => handleFileChange("doc_other", f)}
-            />
-          </div>
-        </section>
-
-        {/* SECTION E: PHOTO */}
-        <section className="p-6 bg-white border border-l-4 shadow-sm rounded-xl border-l-amber-500 border-slate-200">
-          <p className="text-xs font-medium tracking-wide text-amber-600">
-            Section E
-          </p>
-          <h2 className="mt-1 text-xl font-semibold text-slate-900">
-            Applicant Photograph
-          </h2>
-
-          <div className="mt-5 sm:max-w-sm">
-            <UploadFileInput
-              label="Upload Photo"
-              name="applicant_photo"
-              accept=".jpg,.jpeg,.png"
-              required
-              color="amber"
-              onChange={(f) => handleFileChange("applicant_photo", f)}
-            />
-            <p className="mt-1.5 text-xs text-slate-500">
-              Accepted formats: JPG, JPEG, PNG. This photo will be used on the
-              generated access pass.
-            </p>
-          </div>
-        </section>
-
-        {/* SECTION F: DECLARATION */}
-        <section className="p-6 border border-l-4 shadow-sm rounded-xl border-l-red-500 border-slate-200 bg-slate-50">
-          <p className="text-xs font-medium tracking-wide text-red-600">
-            Section F
-          </p>
-          <h2 className="mt-1 text-xl font-semibold text-slate-900">
-            Declaration
-          </h2>
-          <p className="mt-2 text-sm text-slate-600">
-            I certify that the information provided in this application is true
-            and correct to the best of my knowledge. I understand that any false
-            statement may be grounds for denial or revocation of my access pass.
-          </p>
-
-          <div className="grid grid-cols-1 gap-4 mt-5 sm:grid-cols-12">
-            <TextFieldInput
-              label="Printed Name"
-              name="declaration_name"
-              required
-              color="red"
-              containerClassName="sm:col-span-5"
-            />
-            <TextFieldInput
-              label="Signature"
-              name="declaration_signature"
-              placeholder="Signature capture method to be confirmed"
-              color="red"
-              containerClassName="sm:col-span-4"
-            />
-            <TextFieldInput
-              label="Date Signed"
-              name="declaration_date"
-              type="date"
-              required
-              color="red"
-              containerClassName="sm:col-span-3"
-            />
-          </div>
-        </section>
-
-        {/* Actions */}
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isSubmitting && (
-              <span className="w-4 h-4 border-2 border-white rounded-full animate-spin border-t-transparent" />
-            )}
-            {isSubmitting ? "Submitting…" : "Submit Application"}
-          </button>
+          </section>
         </div>
+        <div data-step="1" className={stepClass(1)}>
+          {/* SECTION B: FAMILY BACKGROUND */}
+          <section className="p-6 bg-white border border-slate-200 shadow-sm rounded-xl">
+            <p className="form-eyebrow text-sm">Section B</p>
+            <h2 className="form-heading mt-1 text-xl">Family Background</h2>
+
+            <div className="flex flex-col gap-4 mt-5">
+              {familyMembers.map((member, index) => (
+                <div
+                  key={member.id}
+                  className="p-4 border rounded-lg border-slate-200 bg-slate-50/50"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium text-slate-500">
+                      Family Member {index + 1}
+                    </span>
+                    {familyMembers.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeFamilyMember(member.id)}
+                        className="text-sm font-medium text-red-600 hover:text-red-700"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+                    <TextFieldInput
+                      label="Relation"
+                      size="compact"
+                      color="amber"
+                      value={member.relation}
+                      onChange={(e) =>
+                        updateFamilyMember(
+                          member.id,
+                          "relation",
+                          e.target.value,
+                        )
+                      }
+                    />
+                    <TextFieldInput
+                      label="Full Name"
+                      size="compact"
+                      color="amber"
+                      value={member.name}
+                      onChange={(e) =>
+                        updateFamilyMember(member.id, "name", e.target.value)
+                      }
+                      containerClassName="sm:col-span-2"
+                    />
+                    <TextFieldInput
+                      label="Occupation"
+                      size="compact"
+                      color="amber"
+                      value={member.occupation}
+                      onChange={(e) =>
+                        updateFamilyMember(
+                          member.id,
+                          "occupation",
+                          e.target.value,
+                        )
+                      }
+                    />
+                    <TextFieldInput
+                      label="Contact Number"
+                      size="compact"
+                      color="amber"
+                      value={member.contactNumber}
+                      onChange={(e) =>
+                        updateFamilyMember(
+                          member.id,
+                          "contactNumber",
+                          e.target.value,
+                        )
+                      }
+                      containerClassName="sm:col-span-2"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={addFamilyMember}
+              className="mt-4 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50"
+            >
+              + Add Family Member
+            </button>
+          </section>
+
+          {/* SECTION C: EDUCATIONAL BACKGROUND */}
+          <section className="p-6 bg-white border border-slate-200 shadow-sm rounded-xl">
+            <p className="form-eyebrow text-sm">Section C</p>
+            <h2 className="form-heading mt-1 text-xl">
+              Educational Background
+            </h2>
+
+            <div className="flex flex-col gap-4 mt-5">
+              {educationRecords.map((record, index) => (
+                <div
+                  key={record.id}
+                  className="p-4 border rounded-lg border-slate-200 bg-slate-50/50"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium text-slate-500">
+                      Record {index + 1}
+                    </span>
+                    {educationRecords.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeEducationRecord(record.id)}
+                        className="text-sm font-medium text-red-600 hover:text-red-700"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+                    <TextFieldInput
+                      label="Level"
+                      size="compact"
+                      color="red"
+                      value={record.level}
+                      onChange={(e) =>
+                        updateEducationRecord(
+                          record.id,
+                          "level",
+                          e.target.value,
+                        )
+                      }
+                      placeholder="Elementary / Secondary / College"
+                      containerClassName="sm:col-span-2"
+                    />
+                    <TextFieldInput
+                      label="School Name"
+                      size="compact"
+                      color="red"
+                      value={record.schoolName}
+                      onChange={(e) =>
+                        updateEducationRecord(
+                          record.id,
+                          "schoolName",
+                          e.target.value,
+                        )
+                      }
+                      containerClassName="sm:col-span-1"
+                    />
+                    <TextFieldInput
+                      label="Year Graduated"
+                      size="compact"
+                      color="red"
+                      value={record.yearGraduated}
+                      onChange={(e) =>
+                        updateEducationRecord(
+                          record.id,
+                          "yearGraduated",
+                          e.target.value,
+                        )
+                      }
+                      containerClassName="sm:col-span-1"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={addEducationRecord}
+              className="mt-4 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50"
+            >
+              + Add Educational Record
+            </button>
+          </section>
+        </div>
+        <div data-step="2" className={stepClass(2)}>
+          {/* SECTION D: SUPPORTING DOCUMENTS */}
+          <section className="p-6 bg-white border border-slate-200 shadow-sm rounded-xl">
+            <p className="form-eyebrow text-sm">Section D</p>
+            <h2 className="form-heading mt-1 text-xl">Supporting Documents</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Required documents depend on the applicant type selected in
+              Section A.
+            </p>
+
+            <div className="grid grid-cols-1 gap-4 mt-5 sm:grid-cols-2">
+              <UploadFileInput
+                label="Letter Request addressed to the Sergeant-at-Arms"
+                name="doc_letter_request"
+                required
+                color="blue"
+                onChange={(f) => handleFileChange("doc_letter_request", f)}
+              />
+              <UploadFileInput
+                label="Valid ID (Copy 1)"
+                name="doc_valid_id_1"
+                required
+                color="blue"
+                onChange={(f) => handleFileChange("doc_valid_id_1", f)}
+              />
+              <UploadFileInput
+                label="Valid ID (Copy 2)"
+                name="doc_valid_id_2"
+                required
+                color="blue"
+                onChange={(f) => handleFileChange("doc_valid_id_2", f)}
+              />
+
+              {showNbi && (
+                <UploadFileInput
+                  label="NBI Clearance"
+                  hint="required for Non-Plantilla"
+                  name="doc_nbi_clearance"
+                  color="amber"
+                  onChange={(f) => handleFileChange("doc_nbi_clearance", f)}
+                />
+              )}
+
+              {showConsultancy && (
+                <UploadFileInput
+                  label="Contract of Consultancy"
+                  hint="required for Consultants"
+                  name="doc_consultancy_contract"
+                  color="amber"
+                  onChange={(f) =>
+                    handleFileChange("doc_consultancy_contract", f)
+                  }
+                />
+              )}
+
+              <UploadFileInput
+                label="Other Supporting Document"
+                hint="optional"
+                name="doc_other"
+                color="slate"
+                onChange={(f) => handleFileChange("doc_other", f)}
+              />
+            </div>
+          </section>
+
+          {/* SECTION E: PHOTO */}
+          <section className="p-6 bg-white border border-slate-200 shadow-sm rounded-xl">
+            <p className="form-eyebrow text-sm">Section E</p>
+            <h2 className="form-heading mt-1 text-xl">Applicant Photograph</h2>
+
+            <div className="mt-5 sm:max-w-sm">
+              <UploadFileInput
+                label="Upload Photo"
+                name="applicant_photo"
+                accept=".jpg,.jpeg,.png"
+                required
+                color="amber"
+                onChange={(f) => handleFileChange("applicant_photo", f)}
+              />
+              <p className="mt-1.5 text-xs text-slate-500">
+                Accepted formats: JPG, JPEG, PNG. This photo will be used on the
+                generated access pass.
+              </p>
+            </div>
+          </section>
+        </div>
+        <div data-step="3" className={stepClass(3)}>
+          <ReviewSummary
+            sections={reviewSections}
+            reference={reference}
+            onEdit={goTo}
+          />
+
+          {/* SECTION F: DECLARATION */}
+          <section className="p-6 border border-slate-200 shadow-sm rounded-xl bg-slate-50">
+            <p className="form-eyebrow text-sm">Section F</p>
+            <h2 className="form-heading mt-1 text-xl">Declaration</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              I certify that the information provided in this application is
+              true and correct to the best of my knowledge. I understand that
+              any false statement may be grounds for denial or revocation of my
+              access pass.
+            </p>
+
+            <div className="grid grid-cols-1 gap-4 mt-5 sm:grid-cols-12">
+              <TextFieldInput
+                label="Printed Name"
+                name="declaration_name"
+                required
+                color="red"
+                containerClassName="sm:col-span-8"
+              />
+              <TextFieldInput
+                label="Date Signed"
+                name="declaration_date"
+                type="date"
+                required
+                color="red"
+                containerClassName="sm:col-span-4"
+              />
+            </div>
+
+            <div className="mt-6">
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                Signature <span className="text-red-600">*</span>
+              </label>
+              <SignaturePad value={signature} onChange={setSignature} />
+            </div>
+          </section>
+        </div>
+
+        <StepNav
+          step={step}
+          lastStep={lastStep}
+          isSubmitting={isSubmitting}
+          message={stepMessage}
+          onBack={() => goTo(step - 1)}
+          onNext={goNext}
+        />
       </form>
 
       <SubmitResultModal

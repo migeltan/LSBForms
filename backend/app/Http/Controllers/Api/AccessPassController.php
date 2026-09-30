@@ -8,9 +8,11 @@ use App\Models\Applicant;
 use App\Models\DocumentAccessPass;
 use App\Models\EducationalBackground;
 use App\Models\FamilyBackground;
+use App\Support\ReferenceNumberGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class AccessPassController extends Controller
 {
@@ -47,7 +49,7 @@ class AccessPassController extends Controller
             'educational_background' => ['required', 'string'],
 
             'declaration_name' => ['required', 'string', 'max:150'],
-            'declaration_signature' => ['nullable', 'string'],
+            'declaration_signature' => ['required', 'string', 'regex:/^data:image\/png;base64,/', 'max:2800000'],
             'declaration_date' => ['required', 'date'],
 
             'doc_letter_request' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
@@ -89,7 +91,12 @@ class AccessPassController extends Controller
         }
 
         $application = DB::transaction(function () use ($request, $data, $familyBackground, $educationalBackground) {
-            $applicationId = $this->generateApplicationId();
+            $requested = $request->input('reference_id');
+            $applicationId = (is_string($requested)
+                && preg_match('/^AP-\d{4}-\d{5}$/', $requested)
+                && ! Applicant::where('application_id', $requested)->exists())
+                ? $requested
+                : ReferenceNumberGenerator::next('AP');
 
             $applicant = Applicant::create([
                 'application_id' => $applicationId,
@@ -118,6 +125,7 @@ class AccessPassController extends Controller
                 'photo_path' => $photoPath,
                 'declaration_name' => $data['declaration_name'],
                 'declaration_date' => $data['declaration_date'],
+                'declaration_signature_path' => $this->storeSignature($data['declaration_signature'], $applicationId),
             ]);
 
             foreach ($familyBackground as $member) {
@@ -218,20 +226,24 @@ class AccessPassController extends Controller
         return $file->store($directory, 'public');
     }
 
-    /**
-     * Generates a human-readable ref number like AP-2026-00001.
-     * NOTE: this is a simple count-based approach suitable for early-stage
-     * / low-concurrency use. Under concurrent submissions there's a small
-     * race window before the row is inserted; move to a dedicated sequence
-     * table or DB-level locking if this becomes a concern in production.
-     */
-    private function generateApplicationId(): string
+        /** Decodes the PNG data URL from the signature pad and stores it as a file. */
+    private function storeSignature(string $dataUrl, string $applicationId): string
     {
-        $year = date('Y');
-        $count = Applicant::where('application_type', 'access-pass')
-            ->whereYear('created_at', $year)
-            ->count();
+        $binary = base64_decode(substr($dataUrl, strpos($dataUrl, ',') + 1), true);
 
-        return sprintf('AP-%s-%05d', $year, $count + 1);
+        if ($binary === false || ! str_starts_with($binary, "\x89PNG\r\n\x1a\n")) {
+            abort(422, 'The signature image is invalid. Please sign again.');
+        }
+
+        $path = "access-pass/signatures/{$applicationId}.png";
+        Storage::disk('public')->put($path, $binary);
+
+        return $path;
+    }
+
+    /** POST /access-pass/reserve-reference — see App\Support\ReferenceNumberGenerator */
+    public function reserveReference()
+    {
+        return response()->json(['application_id' => ReferenceNumberGenerator::next('AP')]);
     }
 }

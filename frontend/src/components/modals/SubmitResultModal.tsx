@@ -1,5 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Check, Copy } from "lucide-react";
 import { createPortal } from "react-dom";
+import { CloseButton } from "../buttons/CloseButton";
 
 export type SubmitResultStatus = "success" | "error" | null;
 
@@ -43,6 +45,20 @@ export function SubmitResultModal({
   actionLabel,
   onClose,
 }: SubmitResultModalProps) {
+  const [copied, setCopied] = useState(false);
+  useEffect(() => setCopied(false), [referenceId]);
+
+  async function copyReference() {
+    if (!referenceId) return;
+    try {
+      await navigator.clipboard.writeText(referenceId);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable (non-secure origin) — number stays selectable */
+    }
+  }
+
   // Close on Escape for keyboard accessibility.
   useEffect(() => {
     if (!status) return;
@@ -81,30 +97,8 @@ export function SubmitResultModal({
           80% { transform: scale(0.95); }
           100% { transform: scale(1); }
         }
-        @keyframes swal-check-line-tip {
-          0% { width: 0; left: 1px; top: 19px; }
-          54% { width: 0; left: 1px; top: 19px; }
-          70% { width: 13px; left: 0px; top: 28px; }
-          84% { width: 13px; left: 0px; top: 28px; }
-          100% { width: 13px; left: 0px; top: 28px; }
-        }
-        @keyframes swal-check-line-long {
-          0% { width: 0; right: 30px; top: 40px; }
-          65% { width: 0; right: 30px; top: 40px; }
-          84% { width: 40px; right: 0px; top: 22px; }
-          100% { width: 40px; right: 0px; top: 22px; }
-        }
-        @keyframes swal-x-line-left {
-          0% { width: 0; left: 8px; top: 28px; }
-          65% { width: 0; left: 8px; top: 28px; }
-          84% { width: 34px; left: 6px; top: 28px; }
-          100% { width: 34px; left: 6px; top: 28px; }
-        }
-        @keyframes swal-x-line-right {
-          0% { width: 0; right: 8px; top: 28px; }
-          65% { width: 0; right: 8px; top: 28px; }
-          84% { width: 34px; right: 6px; top: 28px; }
-          100% { width: 34px; right: 6px; top: 28px; }
+        @keyframes swal-draw {
+          to { stroke-dashoffset: 0; }
         }
       `}</style>
 
@@ -115,6 +109,11 @@ export function SubmitResultModal({
         }}
         onClick={(e) => e.stopPropagation()}
       >
+        <CloseButton
+          onClick={onClose}
+          className="absolute right-3 top-3 border border-slate-200 sm:right-4 sm:top-4"
+        />
+
         {/* Icon */}
         <div className="relative h-20 w-20 sm:h-24 sm:w-24 mb-5 sm:mb-6 shrink-0">
           {isSuccess ? (
@@ -125,20 +124,26 @@ export function SubmitResultModal({
                 boxShadow: "0 0 0 4px #a7f3d0 inset",
               }}
             >
-              <div className="relative h-9 w-9 sm:h-11 sm:w-11">
-                <span
-                  className="absolute block h-[3px] sm:h-[4px] rounded-full bg-emerald-600"
+              <svg
+                viewBox="0 0 52 52"
+                className="h-11 w-11 sm:h-14 sm:w-14"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M14 27l8 8 16-17"
+                  stroke="#059669"
+                  strokeWidth="4.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  pathLength={1}
                   style={{
-                    animation: "swal-check-line-tip 0.75s ease forwards",
+                    strokeDasharray: 1,
+                    strokeDashoffset: 1,
+                    animation: "swal-draw 0.5s ease 0.25s forwards",
                   }}
                 />
-                <span
-                  className="absolute block h-[3px] sm:h-[4px] rounded-full bg-emerald-600"
-                  style={{
-                    animation: "swal-check-line-long 0.75s ease forwards",
-                  }}
-                />
-              </div>
+              </svg>
             </div>
           ) : (
             <div
@@ -148,20 +153,28 @@ export function SubmitResultModal({
                 boxShadow: "0 0 0 4px #fecaca inset",
               }}
             >
-              <div className="relative h-9 w-9 sm:h-11 sm:w-11">
-                <span
-                  className="absolute block h-[3px] sm:h-[4px] rounded-full bg-red-600"
-                  style={{
-                    animation: "swal-x-line-left 0.6s ease forwards",
-                  }}
-                />
-                <span
-                  className="absolute block h-[3px] sm:h-[4px] rounded-full bg-red-600"
-                  style={{
-                    animation: "swal-x-line-right 0.6s ease forwards",
-                  }}
-                />
-              </div>
+              <svg
+                viewBox="0 0 52 52"
+                className="h-11 w-11 sm:h-14 sm:w-14"
+                fill="none"
+                aria-hidden="true"
+              >
+                {["M17 17l18 18", "M35 17L17 35"].map((d, i) => (
+                  <path
+                    key={d}
+                    d={d}
+                    stroke="#dc2626"
+                    strokeWidth="4.5"
+                    strokeLinecap="round"
+                    pathLength={1}
+                    style={{
+                      strokeDasharray: 1,
+                      strokeDashoffset: 1,
+                      animation: `swal-draw 0.3s ease ${0.25 + i * 0.2}s forwards`,
+                    }}
+                  />
+                ))}
+              </svg>
             </div>
           )}
         </div>
@@ -169,7 +182,7 @@ export function SubmitResultModal({
         {/* Text */}
         <h2
           id="submit-result-title"
-          className="text-xl sm:text-2xl font-bold text-gray-800 text-center"
+          className="form-heading text-xl sm:text-2xl text-center"
         >
           {resolvedTitle}
         </h2>
@@ -179,12 +192,29 @@ export function SubmitResultModal({
         </p>
 
         {isSuccess && referenceId && (
-          <div className="mt-4 w-full rounded-lg bg-slate-50 px-4 py-2.5 text-center">
-            <p className="text-xs font-medium text-slate-500">
-              Reference Number
-            </p>
-            <p className="mt-0.5 text-sm font-semibold text-slate-900">
-              {referenceId}
+          <div className="mt-4 w-full">
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+              <div className="min-w-0">
+                <p className="form-eyebrow text-xs">Reference Number</p>
+                <p className="mt-0.5 font-mono text-base font-bold text-slate-900">
+                  {referenceId}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={copyReference}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100"
+              >
+                {copied ? (
+                  <Check size={14} className="text-emerald-600" />
+                ) : (
+                  <Copy size={14} />
+                )}
+                {copied ? "Copied" : "Copy"}
+              </button>
+            </div>
+            <p className="mt-2 text-center text-xs text-slate-500">
+              Keep this number. You'll need it to check your application status.
             </p>
           </div>
         )}
@@ -204,6 +234,6 @@ export function SubmitResultModal({
         </button>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

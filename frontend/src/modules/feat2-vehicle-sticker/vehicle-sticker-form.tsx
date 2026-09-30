@@ -1,4 +1,8 @@
 import { useState, type FormEvent } from "react";
+import { Car, FileUp, User } from "lucide-react";
+import { FormStepper } from "../../components/ui/FormStepper";
+import { StepNav } from "../../components/ui/StepNav";
+import { useStepForm } from "../../hooks/useStepForm";
 import axios from "axios";
 import { api } from "../../api/client";
 import {
@@ -27,7 +31,19 @@ const emptyDocumentFiles = (): DocumentFiles => ({
   doc_company_certificate: null,
 });
 
-export function VehicleStickerForm() {
+const STEPS = [
+  { label: "Personal Info", icon: User },
+  { label: "Vehicle", icon: Car },
+  { label: "Documents", icon: FileUp },
+];
+
+export function VehicleStickerForm({
+  reference,
+  onSubmitted,
+}: {
+  reference: string | null;
+  onSubmitted: () => void;
+}) {
   const [ownership, setOwnership] = useState<Ownership>("");
 
   // Same universal file-field handling used across the intake forms.
@@ -37,16 +53,41 @@ export function VehicleStickerForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultStatus, setResultStatus] = useState<SubmitResultStatus>(null);
   const [resultMessage, setResultMessage] = useState<string | undefined>(
-    undefined
+    undefined,
   );
   const [applicationId, setApplicationId] = useState<string | undefined>(
-    undefined
+    undefined,
   );
 
   const showDeedOfSale = ownership === "Not Registered to Applicant";
 
+  const {
+    formProps,
+    step,
+    maxStep,
+    message: stepMessage,
+    lastStep,
+    stepClass,
+    goTo,
+    goNext,
+    reset: resetSteps,
+    interceptSubmit,
+  } = useStepForm({
+    totalSteps: STEPS.length,
+    getMissingFiles: (index) => {
+      if (index !== 2) return [];
+      const required: [keyof DocumentFiles, string][] = [
+        ["doc_or_cr", "OR/CR"],
+        ["doc_hrep_id", "HRep ID"],
+      ];
+      if (showDeedOfSale) required.push(["doc_deed_of_sale", "Deed of Sale"]);
+      return required.filter(([k]) => !files[k]).map(([, label]) => label);
+    },
+  });
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (interceptSubmit()) return;
     setResultStatus(null);
     setResultMessage(undefined);
     setIsSubmitting(true);
@@ -55,6 +96,7 @@ export function VehicleStickerForm() {
       const form = event.currentTarget;
       const formData = new FormData(form);
       formData.set("form_type", "vehicle_sticker");
+      if (reference) formData.set("reference_id", reference);
 
       Object.entries(files).forEach(([key, file]) => {
         if (file) formData.set(key, file);
@@ -69,6 +111,8 @@ export function VehicleStickerForm() {
       form.reset();
       setOwnership("");
       resetFiles();
+      onSubmitted(); // reserve a fresh number for the next application
+      resetSteps();
     } catch (err) {
       let message = "Something went wrong. Please try again.";
       if (axios.isAxiosError(err)) {
@@ -91,195 +135,194 @@ export function VehicleStickerForm() {
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6" noValidate>
+      <form
+        {...formProps}
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-6"
+        noValidate
+      >
         <input type="hidden" name="form_type" value="vehicle_sticker" />
 
-        {/* SECTION A: PERSONAL INFORMATION */}
-        <section className="p-6 bg-white border border-l-4 shadow-sm rounded-xl border-l-blue-500 border-slate-200">
-          <p className="text-xs font-medium tracking-wide text-blue-600">
-            Section A
-          </p>
-          <h2 className="mt-1 text-xl font-semibold text-slate-900">
-            Personal Information
-          </h2>
+        <FormStepper
+          steps={STEPS}
+          current={step}
+          maxReached={maxStep}
+          onSelect={goTo}
+        />
 
-          <div className="grid grid-cols-1 gap-4 mt-5 sm:grid-cols-3">
-            <TextFieldInput
-              label="First Name"
-              name="first_name"
-              required
-              color="blue"
-            />
-            <TextFieldInput
-              label="Middle Name"
-              name="middle_name"
-              color="blue"
-            />
-            <TextFieldInput
-              label="Last Name"
-              name="last_name"
-              required
-              color="blue"
-            />
+        <div data-step="0" className={stepClass(0)}>
+          {/* SECTION A: PERSONAL INFORMATION */}
+          <section className="p-6 bg-white border border-slate-200 shadow-sm rounded-xl">
+            <p className="form-eyebrow text-sm">Section A</p>
+            <h2 className="form-heading mt-1 text-xl">Personal Information</h2>
 
-            <TextFieldInput
-              label="HRep ID Number"
-              name="hrep_id_number"
-              placeholder="Field to be confirmed"
-              color="blue"
-            />
-            <TextFieldInput
-              label="Contact Number"
-              name="contact_number"
-              required
-              color="blue"
-            />
-            <TextFieldInput
-              label="Email Address"
-              name="email"
-              type="email"
-              required
-              color="blue"
-            />
-          </div>
-        </section>
-
-        {/* SECTION B: VEHICLE INFORMATION */}
-        <section className="p-6 bg-white border border-l-4 shadow-sm rounded-xl border-l-amber-500 border-slate-200">
-          <p className="text-xs font-medium tracking-wide text-amber-600">
-            Section B
-          </p>
-          <h2 className="mt-1 text-xl font-semibold text-slate-900">
-            Vehicle Information
-          </h2>
-
-          <div className="grid grid-cols-1 gap-4 mt-5 sm:grid-cols-3">
-            <TextFieldInput
-              label="Plate Number"
-              name="plate_number"
-              required
-              color="amber"
-            />
-            <SelectField
-              label="Vehicle Type"
-              name="vehicle_type"
-              options={["Sedan", "SUV", "Van", "Motorcycle", "Other"]}
-            />
-            <TextFieldInput label="Color" name="color" color="amber" />
-
-            <TextFieldInput label="Make" name="make" required color="amber" />
-            <TextFieldInput label="Model" name="model" required color="amber" />
-            <TextFieldInput
-              label="Year"
-              name="year"
-              placeholder="YYYY"
-              color="amber"
-            />
-
-            <TextFieldInput
-              label="Registration Information"
-              name="registration_information"
-              placeholder="Field to be confirmed"
-              color="amber"
-              containerClassName="sm:col-span-2"
-            />
-
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                Vehicle Ownership <span className="text-red-600">*</span>
-              </label>
-              <select
-                name="ownership"
+            <div className="grid grid-cols-1 gap-4 mt-5 sm:grid-cols-3">
+              <TextFieldInput
+                label="First Name"
+                name="first_name"
                 required
-                value={ownership}
-                onChange={(e) => setOwnership(e.target.value as Ownership)}
-                className={selectClasses}
-              >
-                <option value="">Select&hellip;</option>
-                <option value="Registered to Applicant">
-                  Registered to Applicant
-                </option>
-                <option value="Not Registered to Applicant">
-                  Not Registered to Applicant
-                </option>
-              </select>
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION C: SUPPORTING DOCUMENTS */}
-        <section className="p-6 bg-white border border-l-4 shadow-sm rounded-xl border-l-red-500 border-slate-200">
-          <p className="text-xs font-medium tracking-wide text-red-600">
-            Section C
-          </p>
-          <h2 className="mt-1 text-xl font-semibold text-slate-900">
-            Supporting Documents
-          </h2>
-
-          <div className="grid grid-cols-1 gap-4 mt-5 sm:grid-cols-2">
-            <UploadFileInput
-              label="OR/CR (Official Receipt / Certificate of Registration)"
-              name="doc_or_cr"
-              required
-              color="red"
-              onChange={(f) => handleFileChange("doc_or_cr", f)}
-            />
-
-            {showDeedOfSale && (
-              <UploadFileInput
-                label="Deed of Sale"
-                hint="required if vehicle is not registered to applicant"
-                name="doc_deed_of_sale"
-                color="red"
-                onChange={(f) => handleFileChange("doc_deed_of_sale", f)}
+                color="blue"
               />
-            )}
+              <TextFieldInput
+                label="Middle Name"
+                name="middle_name"
+                color="blue"
+              />
+              <TextFieldInput
+                label="Last Name"
+                name="last_name"
+                required
+                color="blue"
+              />
 
-            <UploadFileInput
-              label="HRep ID"
-              name="doc_hrep_id"
-              required
-              color="red"
-              onChange={(f) => handleFileChange("doc_hrep_id", f)}
-            />
-
-            <UploadFileInput
-              label="Chattel Mortgage"
-              hint="if applicable"
-              name="doc_chattel_mortgage"
-              color="slate"
-              onChange={(f) => handleFileChange("doc_chattel_mortgage", f)}
-            />
-
-            <UploadFileInput
-              label="Company / Secretary's Certificate"
-              hint="if applicable"
-              name="doc_company_certificate"
-              color="slate"
-              onChange={(f) => handleFileChange("doc_company_certificate", f)}
-            />
-          </div>
-        </section>
-
-        {/* Actions */}
-        <div className="flex justify-between">
-          <a
-            href="/"
-            className="inline-flex items-center rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-          >
-            Cancel
-          </a>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isSubmitting && (
-              <span className="w-4 h-4 border-2 border-white rounded-full animate-spin border-t-transparent" />
-            )}
-            {isSubmitting ? "Submitting…" : "Submit Application"}
-          </button>
+              <TextFieldInput
+                label="HRep ID Number"
+                name="hrep_id_number"
+                placeholder="Field to be confirmed"
+                color="blue"
+              />
+              <TextFieldInput
+                label="Contact Number"
+                name="contact_number"
+                required
+                color="blue"
+              />
+              <TextFieldInput
+                label="Email Address"
+                name="email"
+                type="email"
+                required
+                color="blue"
+              />
+            </div>
+          </section>
         </div>
+        <div data-step="1" className={stepClass(1)}>
+          {/* SECTION B: VEHICLE INFORMATION */}
+          <section className="p-6 bg-white border border-slate-200 shadow-sm rounded-xl">
+            <p className="form-eyebrow text-sm">Section B</p>
+            <h2 className="form-heading mt-1 text-xl">Vehicle Information</h2>
+
+            <div className="grid grid-cols-1 gap-4 mt-5 sm:grid-cols-3">
+              <TextFieldInput
+                label="Plate Number"
+                name="plate_number"
+                required
+                color="amber"
+              />
+              <SelectField
+                label="Vehicle Type"
+                name="vehicle_type"
+                options={["Sedan", "SUV", "Van", "Motorcycle", "Other"]}
+              />
+              <TextFieldInput label="Color" name="color" color="amber" />
+
+              <TextFieldInput label="Make" name="make" required color="amber" />
+              <TextFieldInput
+                label="Model"
+                name="model"
+                required
+                color="amber"
+              />
+              <TextFieldInput
+                label="Year"
+                name="year"
+                placeholder="YYYY"
+                color="amber"
+              />
+
+              <TextFieldInput
+                label="Registration Information"
+                name="registration_information"
+                placeholder="Field to be confirmed"
+                color="amber"
+                containerClassName="sm:col-span-2"
+              />
+
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Vehicle Ownership <span className="text-red-600">*</span>
+                </label>
+                <select
+                  name="ownership"
+                  required
+                  value={ownership}
+                  onChange={(e) => setOwnership(e.target.value as Ownership)}
+                  className={selectClasses}
+                >
+                  <option value="">Select&hellip;</option>
+                  <option value="Registered to Applicant">
+                    Registered to Applicant
+                  </option>
+                  <option value="Not Registered to Applicant">
+                    Not Registered to Applicant
+                  </option>
+                </select>
+              </div>
+            </div>
+          </section>
+        </div>
+        <div data-step="2" className={stepClass(2)}>
+          {/* SECTION C: SUPPORTING DOCUMENTS */}
+          <section className="p-6 bg-white border border-slate-200 shadow-sm rounded-xl">
+            <p className="form-eyebrow text-sm">Section C</p>
+            <h2 className="form-heading mt-1 text-xl">Supporting Documents</h2>
+
+            <div className="grid grid-cols-1 gap-4 mt-5 sm:grid-cols-2">
+              <UploadFileInput
+                label="OR/CR (Official Receipt / Certificate of Registration)"
+                name="doc_or_cr"
+                required
+                color="red"
+                onChange={(f) => handleFileChange("doc_or_cr", f)}
+              />
+
+              {showDeedOfSale && (
+                <UploadFileInput
+                  label="Deed of Sale"
+                  hint="required if vehicle is not registered to applicant"
+                  name="doc_deed_of_sale"
+                  color="red"
+                  onChange={(f) => handleFileChange("doc_deed_of_sale", f)}
+                />
+              )}
+
+              <UploadFileInput
+                label="HRep ID"
+                name="doc_hrep_id"
+                required
+                color="red"
+                onChange={(f) => handleFileChange("doc_hrep_id", f)}
+              />
+
+              <UploadFileInput
+                label="Chattel Mortgage"
+                hint="if applicable"
+                name="doc_chattel_mortgage"
+                color="slate"
+                onChange={(f) => handleFileChange("doc_chattel_mortgage", f)}
+              />
+
+              <UploadFileInput
+                label="Company / Secretary's Certificate"
+                hint="if applicable"
+                name="doc_company_certificate"
+                color="slate"
+                onChange={(f) => handleFileChange("doc_company_certificate", f)}
+              />
+            </div>
+          </section>
+        </div>
+
+        <StepNav
+          step={step}
+          lastStep={lastStep}
+          isSubmitting={isSubmitting}
+          message={stepMessage}
+          onBack={() => goTo(step - 1)}
+          onNext={goNext}
+          cancelHref="/"
+        />
       </form>
 
       <SubmitResultModal

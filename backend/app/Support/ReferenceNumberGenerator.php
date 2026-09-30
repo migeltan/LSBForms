@@ -16,10 +16,21 @@ class ReferenceNumberGenerator
     {
         $year = now()->year;
 
-        $count = Applicant::where('application_id', 'like', "{$prefix}-{$year}-%")->count();
+        return DB::transaction(function () use ($prefix, $year) {
+            $row = DB::table('reference_sequences')
+                ->where(['prefix' => $prefix, 'year' => $year])
+                ->lockForUpdate()->first();
 
-        $next = str_pad((string) ($count + 1), 5, '0', STR_PAD_LEFT);
+            if (! $row) {
+                // First use this year: continue after any existing applicants.
+                $n = Applicant::where('application_id', 'like', "{$prefix}-{$year}-%")->count() + 1;
+                DB::table('reference_sequences')->insert(['prefix' => $prefix, 'year' => $year, 'last_number' => $n]);
+            } else {
+                $n = $row->last_number + 1;
+                DB::table('reference_sequences')->where('id', $row->id)->update(['last_number' => $n]);
+            }
 
-        return "{$prefix}-{$year}-{$next}";
+            return sprintf('%s-%d-%05d', $prefix, $year, $n);
+        });
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Applicant;
 use App\Models\DocumentVehicleSticker;
 use App\Models\VehicleApplication;
+use App\Support\ReferenceNumberGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -65,7 +66,12 @@ class VehicleStickerController extends Controller
         }
 
         $application = DB::transaction(function () use ($request, $data) {
-            $applicationId = $this->generateApplicationId();
+            $requested = $request->input('reference_id');
+            $applicationId = (is_string($requested)
+                && preg_match('/^VS-\d{4}-\d{5}$/', $requested)
+                && ! Applicant::where('application_id', $requested)->exists())
+                ? $requested
+                : ReferenceNumberGenerator::next('VS');
 
             $applicant = Applicant::create([
                 'application_id' => $applicationId,
@@ -164,18 +170,9 @@ class VehicleStickerController extends Controller
         return response()->json(['message' => 'Application submitted.', 'application_id' => $application_id]);
     }
 
-    /**
-     * Generates a human-readable ref number like VS-2026-00001.
-     * NOTE: same simple count-based approach as AccessPassController —
-     * see that class's generateApplicationId() for caveats.
-     */
-    private function generateApplicationId(): string
+    /** POST /vehicle-sticker/reserve-reference */
+    public function reserveReference()
     {
-        $year = date('Y');
-        $count = Applicant::where('application_type', 'vehicle-sticker')
-            ->whereYear('created_at', $year)
-            ->count();
-
-        return sprintf('VS-%s-%05d', $year, $count + 1);
+        return response()->json(['application_id' => ReferenceNumberGenerator::next('VS')]);
     }
 }
