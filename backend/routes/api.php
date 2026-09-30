@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Service\PdfGeneratorService;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AccessPassLayoutController;
+use App\Http\Controllers\Api\VehicleStickerLayoutController;
 
 /*
 |--------------------------------------------------------------------------
@@ -78,10 +79,12 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::patch('/access-pass/{application_id}/review', [AdminController::class, 'reviewAccessPass']);
 
     Route::get('/access-pass/{applicantId}/id/preview', [PdfGeneratorService::class, 'previewAccessPass']);
+    Route::get('/access-pass/{applicantId}/id/preview-back', [PdfGeneratorService::class, 'previewAccessPassBack']);
     Route::get('/access-pass/{applicantId}/id/preview-v2/front', [PdfGeneratorService::class, 'previewAccessPassFrontV2']);
     Route::get('/access-pass/{applicantId}/id/preview-v2/back', [PdfGeneratorService::class, 'previewAccessPassBackV2']);
     Route::get('/vehicle-sticker/{applicantId}/id/preview-v2/front', [PdfGeneratorService::class, 'previewVehicleStickerFrontV2']);
     Route::get('/access-pass/{applicantId}/id/download', [PdfGeneratorService::class, 'downloadAccessPass']);
+    Route::post('/access-pass/id/batch-download', [PdfGeneratorService::class, 'batchDownloadAccessPass']);
 
     Route::get('/vehicle-sticker', [AdminController::class, 'vehicleList']);
     Route::get('/vehicle-sticker/{applicantId}', [AdminController::class, 'vehicleShow']);
@@ -102,5 +105,9 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::get('/access-pass/{applicantId}/layout', [AccessPassLayoutController::class, 'show']);
     Route::put('/access-pass/{applicantId}/layout', [AccessPassLayoutController::class, 'update']);
     Route::delete('/access-pass/{applicantId}/layout', [AccessPassLayoutController::class, 'reset']);
+
+    Route::get('/vehicle-sticker/{applicantId}/layout', [VehicleStickerLayoutController::class, 'show']);
+    Route::put('/vehicle-sticker/{applicantId}/layout', [VehicleStickerLayoutController::class, 'update']);
+    Route::delete('/vehicle-sticker/{applicantId}/layout', [VehicleStickerLayoutController::class, 'reset']);
     
 });

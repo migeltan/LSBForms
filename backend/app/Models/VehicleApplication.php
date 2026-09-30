@@ -43,6 +43,7 @@ class VehicleApplication extends Model
         'clearance_status',
         'approval_date',
         'sticker_number',
+        'layout_overrides',
     ];
 
     protected function casts(): array
@@ -51,6 +52,7 @@ class VehicleApplication extends Model
             'date_submitted' => 'datetime',
             'date_reviewed' => 'datetime',
             'approval_date' => 'date',
+            'layout_overrides' => 'array',
         ];
     }
 

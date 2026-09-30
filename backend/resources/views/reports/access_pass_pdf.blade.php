@@ -243,6 +243,8 @@
         };
     @endphp
 
+    @if (($only ?? null) !== 'back')
+    <div class="card front">
         <div class="field bar-text">Security</div>
         <div class="field photo" style="{{ $box('photo') }}{{ $photoStyle }}">
             @unless ($assets['photo'])
@@ -253,6 +255,8 @@
         <div class="field name" style="{{ $box('name') }}">{{ strtoupper($applicant->full_name) }}</div>
         <div class="field department" style="{{ $box('department') }}">Legislative Security Bureau</div>
     </div>
+
+  @endif
 
   <div class="card back">
       <div class="back-inner">

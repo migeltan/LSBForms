@@ -8,6 +8,8 @@ export interface AdminColumn<T> {
   className?: string;
   /** Mobile card role. Default: shown as a label/value field. */
   mobile?: "title" | "badge" | "hide";
+  /** Custom header cell content (e.g. a select-all checkbox). */
+  headerRender?: () => ReactNode;
 }
 
 interface AdminTableShellProps<T> {
@@ -23,6 +25,13 @@ interface AdminTableShellProps<T> {
   loading: boolean;
   error: string | null;
   emptyMessage?: string;
+  /** Optional row selection (used for batch actions). */
+  selectable?: boolean;
+  isSelectable?: (row: T) => boolean;
+  selectedKeys?: Set<string | number>;
+  onSelectionChange?: (keys: Set<string | number>) => void;
+  /** Rendered between the heading row and the table (e.g. batch action bar). */
+  toolbar?: ReactNode;
 }
 
 const ACCENTS = {
@@ -54,7 +63,7 @@ export function AdminTableShell<T>({
   title,
   accent,
   icon,
-  columns,
+  columns: columnsProp,
   rows,
   rowKey,
   searchText,
@@ -62,6 +71,11 @@ export function AdminTableShell<T>({
   loading,
   error,
   emptyMessage = "No applications found.",
+  selectable = false,
+  isSelectable,
+  selectedKeys,
+  onSelectionChange,
+  toolbar,
 }: AdminTableShellProps<T>) {
   const [query, setQuery] = useState("");
 
@@ -70,6 +84,83 @@ export function AdminTableShell<T>({
     if (!q) return rows;
     return rows.filter((row) => searchText(row).toLowerCase().includes(q));
   }, [rows, query, searchText]);
+
+  // --- Optional row selection (batch actions) ---
+  const selectableRows = selectable
+    ? filtered.filter((r) => (isSelectable ? isSelectable(r) : true))
+    : [];
+  const selectedCount = selectableRows.filter((r) =>
+    selectedKeys?.has(rowKey(r)),
+  ).length;
+  const allSelected =
+    selectableRows.length > 0 && selectedCount === selectableRows.length;
+
+  function toggleRow(row: T) {
+    if (!onSelectionChange) return;
+    const next = new Set(selectedKeys);
+    const k = rowKey(row);
+    if (next.has(k)) next.delete(k);
+    else next.add(k);
+    onSelectionChange(next);
+  }
+
+  function toggleAll() {
+    if (!onSelectionChange) return;
+    const next = new Set(selectedKeys);
+    for (const r of selectableRows) {
+      if (allSelected) next.delete(rowKey(r));
+      else next.add(rowKey(r));
+    }
+    onSelectionChange(next);
+  }
+
+  const columns: AdminColumn<T>[] = selectable
+    ? [
+        {
+          header: "Select",
+          align: "center",
+          mobile: "hide",
+          className: "w-12",
+          headerRender: () => (
+            <input
+              type="checkbox"
+              aria-label="Select all approved applications"
+              className="h-4 w-4 cursor-pointer accent-black"
+              disabled={selectableRows.length === 0}
+              checked={allSelected}
+              ref={(el) => {
+                if (el) el.indeterminate = selectedCount > 0 && !allSelected;
+              }}
+              onChange={toggleAll}
+            />
+          ),
+          render: (row) =>
+            isSelectable && !isSelectable(row) ? (
+              <span
+                className="text-xs text-[var(--smart-muted)]"
+                title="Only approved applications can be batch-downloaded"
+              >
+                —
+              </span>
+            ) : (
+              <span
+                className="-m-2 inline-flex p-2"
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
+              >
+                <input
+                  type="checkbox"
+                  aria-label="Select application"
+                  className="h-4 w-4 cursor-pointer accent-[var(--accent)]"
+                  checked={!!selectedKeys?.has(rowKey(row))}
+                  onChange={() => toggleRow(row)}
+                />
+              </span>
+            ),
+        },
+        ...columnsProp,
+      ]
+    : columnsProp;
 
   const colors = ACCENTS[accent];
   const accentVars = {
@@ -136,6 +227,8 @@ export function AdminTableShell<T>({
         </label>
       </div>
 
+      {toolbar}
+
       {/* Desktop / tablet table */}
       <div className="mt-6 hidden max-h-[28rem] overflow-auto rounded-lg border border-[var(--smart-border)] sm:block">
         <table className="w-full border-collapse text-sm">
@@ -148,7 +241,7 @@ export function AdminTableShell<T>({
                     col.align === "center" ? "text-center" : "text-left"
                   }`}
                 >
-                  {col.header}
+                  {col.headerRender ? col.headerRender() : col.header}
                 </th>
               ))}
             </tr>

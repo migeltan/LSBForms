@@ -129,7 +129,7 @@ function FileActionCell({
         </div>
 
         {editing && (
-          <div className="mmt-2 pt-2 border-t border-gray-300">
+          <div className="mt-2 pt-2 border-t border-gray-300">
             <input
               ref={inputRef}
               type="file"
@@ -285,8 +285,18 @@ export function DocumentsModal({
             key={doc.id}
             className="border-t border-gray-300 pt-6 first:border-t-0 first:pt-0"
           >
-            <div className="mb-4 text-sm font-semibold text-gray-500">
-              Document {idx + 1}
+            <div className="mb-4 flex items-center gap-3">
+              <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-[#15304f] px-2 text-xs font-bold text-white">
+                {idx + 1}
+              </span>
+              <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#1f3a6b]">
+                Document {idx + 1} of {documents.length}
+              </span>
+              {doc.document_type && (
+                <span className="min-w-0 truncate text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  · {doc.document_type}
+                </span>
+              )}
             </div>
             <div className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-3">
               <GreenCell

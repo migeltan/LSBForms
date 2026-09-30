@@ -10,7 +10,7 @@ import type {
 } from "../../../../hooks/types";
 import { TOKEN_KEY } from "../../../../providers/AuthProvider";
 import { BASE } from "../../../../hooks/apiConfig";
-import { VehicleProfileModal } from "./modal/VehicleProfileModal";
+import { VehicleStickerPreviewPanel } from "./modal/VehicleStickerPreviewPanel";
 import { VehiclePersonalInformationModal } from "./modal/VehiclePersonalInformationModal";
 import { VehicleInformationModal } from "./modal/VehicleInformationModal";
 import { VehicleDocumentsModal } from "./modal/VehicleDocumentsModal";
@@ -19,27 +19,18 @@ import { DeleteModal } from "../../../../components/modals/DeleteModal";
 import { CloseButton } from "../../../../components/buttons/CloseButton";
 
 type TabKey = "personal" | "vehicle" | "documents";
-type TabColor = "blue" | "yellow" | "green";
-
 type SaveCancelState = "saving" | "success" | "cancelled" | "confirm-cancel";
 
-const TABS: { key: TabKey; label: string; color: TabColor }[] = [
-  { key: "personal", label: "Personal Information", color: "blue" },
-  { key: "vehicle", label: "Vehicle Information", color: "yellow" },
-  { key: "documents", label: "Documents", color: "green" },
+const TABS: { key: TabKey; label: string }[] = [
+  { key: "personal", label: "Personal Information" },
+  { key: "vehicle", label: "Vehicle Information" },
+  { key: "documents", label: "Documents" },
 ];
 
 // Idle tabs are translucent gray; the active tab is highlighted per-key below.
 const TAB_IDLE_STYLE =
-  "bg-gray-500/10 text-gray-600 ring-1 ring-gray-400/20 hover:bg-gray-500/20 hover:ring-gray-400/30";
-
-const TAB_ACTIVE_STYLES: Record<TabColor, string> = {
-  blue: "bg-blue-500/25 text-blue-800 ring-1 ring-blue-500/50 shadow-sm shadow-blue-500/20",
-  yellow:
-    "bg-yellow-500/25 text-yellow-900 ring-1 ring-yellow-500/50 shadow-sm shadow-yellow-500/20",
-  green:
-    "bg-emerald-500/25 text-emerald-800 ring-1 ring-emerald-500/50 shadow-sm shadow-emerald-500/20",
-};
+  "bg-gray-100 text-gray-600 border border-gray-300 hover:bg-gray-200";
+const TAB_ACTIVE_STYLE = "bg-[#6aa9f5] text-[#0f2744] border border-[#4f95ee]";
 
 function draftFromDetail(detail: VehicleApplicantDetail): {
   personal: VehiclePersonalInformationDraft;
@@ -114,7 +105,7 @@ export function VehicleDetailModal({
   // "cancelled" — the discard actually happened
   // null — hidden
   const [saveCancelModal, setSaveCancelModal] = useState(
-    null as SaveCancelState | null
+    null as SaveCancelState | null,
   );
 
   useEffect(() => {
@@ -138,7 +129,7 @@ export function VehicleDetailModal({
           `${BASE}/api/admin/vehicle-sticker/${applicantId}`,
           {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
-          }
+          },
         );
         if (!res.ok) throw new Error("Request failed");
         const data: VehicleApplicantDetail = await res.json();
@@ -207,7 +198,7 @@ export function VehicleDetailModal({
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
           body: JSON.stringify({ status }),
-        }
+        },
       );
       if (!res.ok) throw new Error("Request failed");
       setDetail({
@@ -259,7 +250,7 @@ export function VehicleDetailModal({
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
           body: JSON.stringify(payload),
-        }
+        },
       );
       if (!res.ok) throw new Error("Request failed");
       const updated: VehicleApplicantDetail = await res.json();
@@ -285,7 +276,7 @@ export function VehicleDetailModal({
         {
           method: "DELETE",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }
+        },
       );
       if (!res.ok) throw new Error("Request failed");
       setDeleteModalOpen(false);
@@ -310,65 +301,28 @@ export function VehicleDetailModal({
             }}
           >
             <div className="relative h-full w-full overflow-hidden rounded-[11px] bg-white ring-1 ring-black/5 flex flex-col">
-              {/* Header bar — smart navy theme with diagonal gold/red accent, fixed, does not scroll */}
-              <div
-                className="shrink-0 px-6 py-5 sm:px-8 sm:py-6 text-white relative overflow-hidden"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #1e3a5f 0%, #0f2744 100%)",
-                }}
-              >
-                {/* Diagonal accent stripes, right side */}
-                <div
-                  className="pointer-events-none absolute inset-y-0 right-0 w-40 sm:w-56"
-                  aria-hidden="true"
+              {/* Header bar */}
+              <div className="shrink-0 flex items-center justify-between gap-4 px-8 py-6 text-white bg-[#15304f]">
+                <h2
+                  className="truncate text-3xl font-bold tracking-tight"
+                  style={{ color: "#ffffff" }}
                 >
-                  <div
-                    className="absolute inset-y-0 right-8 sm:right-12 w-10 sm:w-14"
-                    style={{
-                      background: "#e0263a",
-                      transform: "skewX(-16deg)",
-                    }}
-                  />
-                  <div
-                    className="absolute inset-y-0 right-0 w-10 sm:w-14"
-                    style={{
-                      background: "#f5b012",
-                      transform: "skewX(-16deg)",
-                    }}
-                  />
-                </div>
-
-                <div className="relative flex items-start justify-between gap-4">
-                  <div className="min-w-0 flex flex-col gap-1.5">
-                    <div
-                      className="text-xs font-bold tracking-wider uppercase text-[#f5b012]"
-                      style={{ letterSpacing: "0.06em" }}
-                    >
-                      Application Record &middot; Prototype Portal
-                    </div>
-                    <h2
-                      className="text-xl sm:text-2xl font-bold truncate"
-                      style={{ color: "#ffffff", letterSpacing: "0.01em" }}
-                    >
-                      {editing
-                        ? "Editing Vehicle Sticker Application"
-                        : "Vehicle Sticker Application Details"}
-                    </h2>
-                  </div>
-                  <CloseButton
-                    onClick={
-                      editing
-                        ? () => setSaveCancelModal("confirm-cancel")
-                        : onClose
-                    }
-                    ariaLabel={editing ? "Cancel editing" : "Close"}
-                  />
-                </div>
+                  {editing
+                    ? "Editing Vehicle Sticker Application"
+                    : "Vehicle Sticker Application Details"}
+                </h2>
+                <CloseButton
+                  onClick={
+                    editing
+                      ? () => setSaveCancelModal("confirm-cancel")
+                      : onClose
+                  }
+                  ariaLabel={editing ? "Cancel editing" : "Close"}
+                />
               </div>
 
               {/* Body — fixed height, never scrolls as a whole */}
-              <div className="flex-1 min-h-0 flex flex-col px-6 py-5 sm:px-8 sm:py-6 bg-gray-50/40">
+              <div className="flex-1 min-h-0 flex flex-col bg-[#f7f7f5]">
                 {loading && (
                   <div className="flex items-center gap-2 justify-center py-16 text-gray-400 text-sm">
                     <span className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
@@ -383,162 +337,160 @@ export function VehicleDetailModal({
                 )}
 
                 {!loading && !error && detail && (
-                  <>
-                    {/* Profile summary — fixed, does not scroll */}
-                    <div className="shrink-0 bg-white rounded-lg border border-gray-200 px-5 py-4 shadow-sm">
-                      <VehicleProfileModal
+                  <div className="flex-1 min-h-0 flex flex-col lg:flex-row">
+                    {/* LEFT: preview + actions */}
+                    <aside className="shrink-0 overflow-y-auto border-b border-gray-300 px-8 py-8 lg:w-[37%] lg:border-b-0 lg:border-r xl:px-[72px]">
+                      <VehicleStickerPreviewPanel
                         detail={detail}
                         onApprove={() => handleReview("Approved")}
                         onDecline={() => handleReview("Rejected")}
                         reviewing={reviewing}
                         reviewError={reviewError}
                       />
-                    </div>
+                    </aside>
 
-                    {/* Tab buttons — idle tabs translucent gray, fixed, does not scroll */}
-                    <div className="shrink-0 flex flex-wrap gap-2 mt-5">
-                      {TABS.map((t) => {
-                        const isActive = tab === t.key;
-                        return (
+                    {/* RIGHT: tabs, record, footer */}
+                    <section className="flex-1 min-w-0 min-h-0 flex flex-col px-8 py-8 xl:px-14">
+                      <div className="shrink-0 flex flex-wrap gap-3 pb-6 border-b border-gray-300">
+                        {TABS.map((t) => (
                           <button
                             key={t.key}
                             onClick={() => setTab(t.key)}
-                            className={`rounded-lg px-4 py-2.5 text-sm font-semibold transition-all duration-150 ease-out ${
-                              isActive
-                                ? TAB_ACTIVE_STYLES[t.color]
-                                : TAB_IDLE_STYLE
+                            className={`rounded-full px-6 py-2.5 text-sm font-semibold transition-colors ${
+                              tab === t.key ? TAB_ACTIVE_STYLE : TAB_IDLE_STYLE
                             }`}
                           >
                             {t.label}
                           </button>
-                        );
-                      })}
-                    </div>
+                        ))}
+                      </div>
 
-                    {/* Only this tab panel scrolls, and only if its content overflows */}
-                    <div className="flex-1 min-h-0 overflow-y-auto mt-4 bg-white rounded-lg border border-gray-200 shadow-sm px-5 py-5">
-                      {tab === "personal" && (
-                        <VehiclePersonalInformationModal
-                          detail={detail}
-                          editing={editing}
-                          draft={draftPersonal}
-                          onChange={(field, value) =>
-                            setDraftPersonal((prev) =>
-                              prev ? { ...prev, [field]: value } : prev
-                            )
-                          }
-                        />
-                      )}
-                      {tab === "vehicle" && (
-                        <VehicleInformationModal
-                          detail={detail}
-                          editing={editing}
-                          draft={draftVehicle}
-                          onChange={(field, value) =>
-                            setDraftVehicle((prev) =>
-                              prev ? { ...prev, [field]: value } : prev
-                            )
-                          }
-                        />
-                      )}
-                      {tab === "documents" && (
-                        <VehicleDocumentsModal
-                          documents={detail.documents}
-                          editing={editing}
-                          onDocumentUpdated={(updated: DocumentRow) =>
-                            setDetail((prev) =>
-                              prev
-                                ? {
-                                    ...prev,
-                                    documents: prev.documents.map((d) =>
-                                      d.id === updated.id ? updated : d
-                                    ),
-                                  }
-                                : prev
-                            )
-                          }
-                        />
-                      )}
-                    </div>
+                      <div className="flex-1 min-h-0 overflow-y-auto pt-6 pr-2">
+                        {tab === "personal" && (
+                          <VehiclePersonalInformationModal
+                            detail={detail}
+                            editing={editing}
+                            draft={draftPersonal}
+                            onChange={(field, value) =>
+                              setDraftPersonal((prev) =>
+                                prev ? { ...prev, [field]: value } : prev,
+                              )
+                            }
+                          />
+                        )}
+                        {tab === "vehicle" && (
+                          <VehicleInformationModal
+                            detail={detail}
+                            editing={editing}
+                            draft={draftVehicle}
+                            onChange={(field, value) =>
+                              setDraftVehicle((prev) =>
+                                prev ? { ...prev, [field]: value } : prev,
+                              )
+                            }
+                          />
+                        )}
+                        {tab === "documents" && (
+                          <VehicleDocumentsModal
+                            documents={detail.documents}
+                            editing={editing}
+                            onDocumentUpdated={(updated: DocumentRow) =>
+                              setDetail((prev) =>
+                                prev
+                                  ? {
+                                      ...prev,
+                                      documents: prev.documents.map((d) =>
+                                        d.id === updated.id ? updated : d,
+                                      ),
+                                    }
+                                  : prev,
+                              )
+                            }
+                          />
+                        )}
+                      </div>
 
-                    {saveError && (
-                      <p className="shrink-0 mt-3 text-xs text-[var(--smart-red,#c0392b)]">
-                        {saveError}
-                      </p>
-                    )}
+                      {saveError && (
+                        <p className="shrink-0 mt-3 text-xs text-[var(--smart-red,#c0392b)]">
+                          {saveError}
+                        </p>
+                      )}
 
-                    {/* Footer actions — fixed, does not scroll */}
-                    <div className="shrink-0 flex justify-end gap-2 pt-5 mt-5 border-t border-gray-200">
-                      {editing ? (
-                        <>
-                          <button
-                            onClick={() => setSaveCancelModal("confirm-cancel")}
-                            className="rounded-md bg-white hover:bg-gray-50 text-gray-700 text-sm font-semibold px-4 py-2 ring-1 ring-inset ring-gray-300 transition-colors"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={handleSave}
-                            className="rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 shadow-sm transition-colors"
-                          >
-                            Save Changes
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={startEditing}
-                            className="rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 shadow-sm transition-colors inline-flex items-center gap-1.5"
-                          >
-                            <svg
-                              viewBox="0 0 20 20"
-                              className="h-4 w-4"
-                              fill="none"
-                              aria-hidden="true"
+                      {/* Footer actions — fixed, does not scroll */}
+                      <div className="shrink-0 flex justify-end gap-3 pt-5 mt-3 border-t border-gray-300">
+                        {editing ? (
+                          <>
+                            <button
+                              onClick={() =>
+                                setSaveCancelModal("confirm-cancel")
+                              }
+                              className="rounded-lg bg-white hover:bg-gray-50 text-gray-700 text-sm font-semibold px-6 py-3 ring-1 ring-inset ring-gray-300 transition-colors"
                             >
-                              <path
-                                d="M13.5 3.5l3 3L7 16H4v-3L13.5 3.5Z"
-                                stroke="currentColor"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => {
-                              setDeleteError(null);
-                              setDeleteModalOpen(true);
-                            }}
-                            className="rounded-md bg-[var(--smart-red,#c0392b)] hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 shadow-sm transition-colors inline-flex items-center gap-1.5"
-                          >
-                            <svg
-                              viewBox="0 0 20 20"
-                              className="h-4 w-4"
-                              fill="none"
-                              aria-hidden="true"
+                              Cancel
+                            </button>
+                            <button
+                              onClick={handleSave}
+                              className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-6 py-3 shadow-sm transition-colors"
                             >
-                              <path
-                                d="M4 6h12M8 6V4.5A1.5 1.5 0 0 1 9.5 3h1A1.5 1.5 0 0 1 12 4.5V6m-6.5 0 .6 9.4A1.5 1.5 0 0 0 7.6 17h4.8a1.5 1.5 0 0 0 1.5-1.6L14.5 6"
-                                stroke="currentColor"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                            Delete
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </>
+                              Save Changes
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={startEditing}
+                              className="rounded-lg bg-[#0d5cff] hover:bg-[#0a4ad4] text-white text-sm font-semibold px-6 py-3 shadow-sm transition-colors inline-flex items-center gap-1.5"
+                            >
+                              <svg
+                                viewBox="0 0 20 20"
+                                className="h-4 w-4"
+                                fill="none"
+                                aria-hidden="true"
+                              >
+                                <path
+                                  d="M13.5 3.5l3 3L7 16H4v-3L13.5 3.5Z"
+                                  stroke="currentColor"
+                                  strokeWidth="1.5"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => {
+                                setDeleteError(null);
+                                setDeleteModalOpen(true);
+                              }}
+                              className="rounded-lg bg-[#ef3e55] hover:bg-red-600 text-white text-sm font-semibold px-6 py-3 shadow-sm transition-colors inline-flex items-center gap-1.5"
+                            >
+                              <svg
+                                viewBox="0 0 20 20"
+                                className="h-4 w-4"
+                                fill="none"
+                                aria-hidden="true"
+                              >
+                                <path
+                                  d="M4 6h12M8 6V4.5A1.5 1.5 0 0 1 9.5 3h1A1.5 1.5 0 0 1 12 4.5V6m-6.5 0 .6 9.4A1.5 1.5 0 0 0 7.6 17h4.8a1.5 1.5 0 0 0 1.5-1.6L14.5 6"
+                                  stroke="currentColor"
+                                  strokeWidth="1.5"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                              Delete
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </section>
+                  </div>
                 )}
               </div>
             </div>
           </div>
         </div>,
-        document.body
+        document.body,
       )}
 
       {saveCancelModal && (

@@ -6,6 +6,11 @@ import type { AdminColumn } from "../AdminTableShell";
 import { ApplicantDetailModal } from "./ApplicantDetailModal";
 import { TOKEN_KEY } from "../../../../providers/AuthProvider";
 import { BASE } from "../../../../hooks/apiConfig";
+import {
+  useAccessPassBatchDownload,
+  type BatchSize,
+} from "../../../../hooks/useAccessPassBatchDownload";
+import { BatchDownloadBar } from "./BatchDownloadBar";
 
 const ENDPOINT = `${BASE}/api/admin/access-pass`;
 
@@ -75,6 +80,16 @@ export function AccessPassTable() {
     null,
   );
 
+  // Batch ID download: selection is keyed by application_id (the row key).
+  const [selectedKeys, setSelectedKeys] = useState<Set<string | number>>(
+    new Set(),
+  );
+  const [batchSize, setBatchSize] = useState<BatchSize>("access-pass");
+  const batch = useAccessPassBatchDownload();
+  const selectedIds = rows
+    .filter((r) => selectedKeys.has(r.application_id))
+    .map((r) => r.applicant_id);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -116,6 +131,28 @@ export function AccessPassTable() {
         onRowClick={(row) => setSelectedApplicantId(row.applicant_id)}
         loading={loading}
         error={error}
+        selectable
+        isSelectable={(r) => r.status === "Approved"}
+        selectedKeys={selectedKeys}
+        onSelectionChange={(keys) => {
+          setSelectedKeys(keys);
+          batch.reset();
+        }}
+        toolbar={
+          <BatchDownloadBar
+            selectedCount={selectedIds.length}
+            size={batchSize}
+            onSizeChange={setBatchSize}
+            downloading={batch.downloading}
+            error={batch.error}
+            notice={batch.notice}
+            onDownload={() => batch.download(selectedIds, batchSize)}
+            onClear={() => {
+              setSelectedKeys(new Set());
+              batch.reset();
+            }}
+          />
+        }
       />
       <ApplicantDetailModal
         applicantId={selectedApplicantId}

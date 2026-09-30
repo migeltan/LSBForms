@@ -14,7 +14,7 @@ return [
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => [],
+    'exposed_headers' => ['Content-Disposition', 'X-Batch-Total', 'X-Batch-Added'],
 
     'max_age' => 0,
 

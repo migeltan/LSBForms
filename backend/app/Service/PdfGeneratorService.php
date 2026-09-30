@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Models\Applicant;
 use App\Support\AccessPassLayout;
+use App\Support\StickerLayout;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Http;
@@ -42,7 +43,7 @@ class PdfGeneratorService
     // now a portrait rectangle, so STICKER_HEIGHT_PX changed from 288 to 384.
     // ---------------------------------------------------------------------
     private const STICKER_WIDTH_PX = 288;  // 3in * 96dpi
-    private const STICKER_HEIGHT_PX = 384; // 4in * 96dpi
+    private const STICKER_HEIGHT_PX = 480; // 5in * 96dpi (sticker is now 3in x 5in / 76.2mm x 127mm)
 
     // Access Pass v2: 74mm x 105mm. 96dpi px equivalents, since Puppeteer's
     // page.pdf({width,height}) (server.js) overrides the view's own @page
@@ -156,18 +157,19 @@ class PdfGeneratorService
     }
     public function previewVehicleStickerFrontV2(int $applicantId): Response
     {
-        $applicant = Applicant::with('vehicleApplication')->findOrFail($applicantId);
-        $application = $applicant->vehicleApplication;
+        return $this->previewVehicleSticker($applicantId);
+    }
 
-        abort_if(! $application, 404, 'No vehicle sticker application found for this applicant.');
-
-        $html = View::make('reports.vehicle_sticker_front', [
+    private function renderStickerView($applicant, $application, bool $forPdf): string
+    {
+        return View::make('reports.vehicle_sticker_front', [
             'applicant' => $applicant,
-            'templateSrc' => asset('images/id-templates/vehicle-sticker-blank.png'),
+            'templateSrc' => $forPdf
+                ? $this->toDataUri(public_path('images/id-templates/vehicle-sticker-blank.png'))
+                : asset('images/id-templates/vehicle-sticker-blank.png'),
             'controlNumber' => $application->sticker_number ?? null,
+            'layout' => StickerLayout::resolve($application->layout_overrides),
         ])->render();
-
-        return response($html, 200)->header('Content-Type', 'text/html; charset=UTF-8');
     }
 
     public function previewAccessPass(Request $request, int $applicantId): Response
@@ -179,6 +181,27 @@ class PdfGeneratorService
 
         $size = AccessPassLayout::normalizeSize($request->query('size'));
         $html = $this->renderIdView('reports.access_pass_front', $applicant, $application, false, $size);
+
+        return response($html, 200)->header('Content-Type', 'text/html; charset=UTF-8');
+    }
+
+    public function previewAccessPassBack(Request $request, int $applicantId): Response
+    {
+        $applicant = Applicant::with('accessPassApplication')->findOrFail($applicantId);
+        $application = $applicant->accessPassApplication;
+
+        abort_if(! $application, 404, 'No access pass application found for this applicant.');
+
+        // Same view as the PDF, so the preview matches the download exactly.
+        // Only the back card is rendered, with plain asset() URLs instead of data URIs.
+        $html = View::make('reports.access_pass_pdf', [
+            'applicant' => $applicant,
+            'application' => $application,
+            'size' => AccessPassLayout::normalizeSize($request->query('size')),
+            'only' => 'back',
+            'assets' => $this->buildIdCardAssets($application, false),
+            'sealSrc' => asset('images/House_of_Representatives_Logo.png'),
+        ])->render();
 
         return response($html, 200)->header('Content-Type', 'text/html; charset=UTF-8');
     }
@@ -210,6 +233,101 @@ class PdfGeneratorService
         return $this->postPdf($html, $pageW, $pageH, $prefix, $applicant);
     }
 
+    // Max IDs per batch request. Each one is a sequential Puppeteer render.
+    private const BATCH_MAX = 30;
+
+    /**
+     * POST /api/admin/access-pass/id/batch-download
+     * Body: { applicant_ids: int[], size?: 'access-pass'|'pvc-id' }
+     *
+     * Approved applications only. Each PDF comes from downloadAccessPass(),
+     * so it is identical to the single-record download. Failures are listed
+     * in _errors.txt inside the ZIP instead of failing the whole batch.
+     */
+    public function batchDownloadAccessPass(Request $request)
+    {
+        $data = $request->validate([
+            'applicant_ids' => ['required', 'array', 'min:1', 'max:'.self::BATCH_MAX],
+            'applicant_ids.*' => ['integer'],
+            'size' => ['nullable', 'string'],
+        ]);
+
+        if (! class_exists(\ZipArchive::class)) {
+            abort(500, 'ZIP support is not enabled on the server (enable extension=zip in php.ini).');
+        }
+
+        $size = AccessPassLayout::normalizeSize($data['size'] ?? null);
+        $prefix = $size === AccessPassLayout::SIZE_PVC_ID ? 'PvcID' : 'AccessPassID';
+        $ids = array_values(array_unique($data['applicant_ids']));
+
+        $applicants = Applicant::with('accessPassApplication')
+            ->whereIn('id', $ids)
+            ->get()
+            ->keyBy('id');
+
+        $zipPath = tempnam(sys_get_temp_dir(), 'idzip');
+        $zip = new \ZipArchive();
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            abort(500, 'Could not create the ZIP file.');
+        }
+
+        $added = 0;
+        $errors = [];
+
+        foreach ($ids as $id) {
+            $applicant = $applicants->get($id);
+            $application = $applicant?->accessPassApplication;
+            $label = $applicant?->application_id ?? "applicant-{$id}";
+
+            if (! $applicant || ! $application) {
+                $errors[] = "{$label}: application not found.";
+                continue;
+            }
+
+            if ($application->status !== 'Approved') {
+                $errors[] = "{$label}: not approved, skipped.";
+                continue;
+            }
+
+            try {
+                $pdf = $this->downloadAccessPass(
+                    Request::create('/', 'GET', ['size' => $size]),
+                    (int) $id,
+                )->getContent();
+
+                $zip->addFromString("{$prefix}-{$label}.pdf", $pdf);
+                $added++;
+            } catch (\Throwable $e) {
+                logger()->error('Batch ID render failed', ['applicant_id' => $id, 'error' => $e->getMessage()]);
+                $errors[] = "{$label}: ".$e->getMessage();
+            }
+        }
+
+        if ($errors) {
+            $zip->addFromString('_errors.txt', implode(PHP_EOL, $errors));
+        }
+        $zip->close();
+
+        if ($added === 0) {
+            @unlink($zipPath);
+
+            return response()->json([
+                'message' => 'No IDs could be generated.',
+                'errors' => $errors,
+            ], 422);
+        }
+
+        return response()->download(
+            $zipPath,
+            $prefix.'-Batch-'.now()->format('Ymd-His').'.zip',
+            [
+                'Content-Type' => 'application/zip',
+                'X-Batch-Total' => (string) count($ids),
+                'X-Batch-Added' => (string) $added,
+            ],
+        )->deleteFileAfterSend(true);
+    }
+
     public function previewVehicleSticker(int $applicantId): Response
     {
         $applicant = Applicant::with('vehicleApplication')->findOrFail($applicantId);
@@ -217,7 +335,7 @@ class PdfGeneratorService
 
         abort_if(! $application, 404, 'No vehicle sticker application found for this applicant.');
 
-        $html = $this->renderHtml('reports.vehicel_sticker', $applicant, $application, false);
+        $html = $this->renderStickerView($applicant, $application, false);
 
         return response($html, 200)->header('Content-Type', 'text/html; charset=UTF-8');
     }
@@ -229,13 +347,14 @@ class PdfGeneratorService
 
         abort_if(! $application, 404, 'No vehicle sticker application found for this applicant.');
 
-        return $this->generatePdf(
-            'reports.vehicel_sticker',
-            $applicant,
-            $application,
-            'VehicleStickerID',
+        $html = $this->renderStickerView($applicant, $application, true);
+
+        return $this->postPdf(
+            $html,
             self::STICKER_WIDTH_PX,
             self::STICKER_HEIGHT_PX,
+            'VehicleStickerID',
+            $applicant,
         );
     }
 

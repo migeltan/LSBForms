@@ -25,6 +25,7 @@
         body {
             margin: 0;
             padding: 0;
+            overflow: hidden;
         }
 
         .sticker {
@@ -39,16 +40,16 @@
 
         .control-number {
             position: absolute;
-            left: 40.43%;
-            top: 70.6%;
-            width: 24.08%;
-            height: 6.88%;
+            left: {{ $layout['cn']['x'] }}%;
+            top: {{ $layout['cn']['y'] }}%;
+            width: {{ $layout['cn']['w'] }}%;
+            height: {{ $layout['cn']['h'] }}%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: Arial, Helvetica, sans-serif;
             font-weight: 700;
-            font-size: 7mm;
+            font-size: {{ $layout['cn']['font'] }}mm;
             color: #1a1a1a;
         }
     </style>

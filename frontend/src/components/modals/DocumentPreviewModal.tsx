@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { CloseButton } from "../buttons/CloseButton";
 
@@ -21,6 +22,16 @@ export function DocumentPreviewModal({
   documentType?: string;
   onClose: () => void;
 }) {
+  // Esc closes the viewer.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   if (!open || !fileUrl) return null;
 
   const kind = getFileKind(fileName);
@@ -34,62 +45,22 @@ export function DocumentPreviewModal({
         className="relative w-full h-full sm:h-[85vh] sm:max-w-4xl rounded-none sm:rounded-xl bg-white shadow-[0_25px_70px_-20px_rgba(15,39,68,0.5)] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div
-          className="relative shrink-0 overflow-hidden bg-white border-b"
-          style={{ borderColor: "var(--smart-navy, #0f2744)" }}
-        >
-          {/* Diagonal red/gold stripe, right edge — matches the app's banner accent */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-y-0 right-0 w-20 sm:w-28"
-          >
-            <div
-              className="absolute inset-y-0 right-0 w-full"
-              style={{
-                backgroundColor: "var(--smart-red, #c0392b)",
-                clipPath: "polygon(45% 0, 100% 0, 100% 100%, 15% 100%)",
-              }}
-            />
-            <div
-              className="absolute inset-y-0 right-0 w-2/3"
-              style={{
-                backgroundColor: "var(--smart-gold, #d4a017)",
-                clipPath: "polygon(55% 0, 100% 0, 100% 100%, 25% 100%)",
-              }}
-            />
-            <div
-              className="absolute inset-y-0 right-0 w-1/3"
-              style={{
-                backgroundColor: "var(--smart-navy, #0f2744)",
-                clipPath: "polygon(65% 0, 100% 0, 100% 100%, 35% 100%)",
-              }}
-            />
+        <div className="flex shrink-0 items-center gap-3 bg-[#15304f] px-5 py-4 sm:px-6">
+          <div className="min-w-0 flex-1">
+            {documentType && (
+              <div className="truncate text-[11px] font-bold uppercase tracking-[0.14em] text-white/70">
+                {documentType}
+              </div>
+            )}
+            <h3
+              className="truncate text-base font-bold sm:text-lg"
+              title={fileName}
+              style={{ color: "#ffffff", fontFamily: "var(--smart-font-sans)" }}
+            >
+              {fileName}
+            </h3>
           </div>
-
-          <div className="relative z-10 flex items-center gap-3 pl-4 sm:pl-5 pr-16 sm:pr-24 py-3 sm:py-4">
-            <div className="min-w-0">
-              {documentType && (
-                <div
-                  className="text-[10px] font-bold uppercase tracking-wide truncate"
-                  style={{ color: "var(--smart-gold, #d4a017)" }}
-                >
-                  {documentType}
-                </div>
-              )}
-              <h3
-                className="text-sm sm:text-base font-bold truncate min-w-0"
-                style={{ color: "var(--smart-navy, #0f2744)" }}
-              >
-                {fileName}
-              </h3>
-            </div>
-          </div>
-
-          <CloseButton
-            onClick={onClose}
-            ariaLabel="Close preview"
-            className="absolute top-1/2 -translate-y-1/2 right-2 sm:right-3 z-20"
-          />
+          <CloseButton onClick={onClose} ariaLabel="Close preview" />
         </div>
 
         <div className="flex-1 min-h-0 bg-gray-100 flex items-center justify-center overflow-auto">
@@ -123,6 +94,6 @@ export function DocumentPreviewModal({
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
