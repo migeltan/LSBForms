@@ -94,6 +94,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
 
     Route::get('/vehicle-sticker/{applicantId}/id/preview', [PdfGeneratorService::class, 'previewVehicleSticker']);
     Route::get('/vehicle-sticker/{applicantId}/id/download', [PdfGeneratorService::class, 'downloadVehicleSticker']);
+    Route::post('/vehicle-sticker/id/batch-print', [PdfGeneratorService::class, 'batchPrintVehicleStickers']);
 
     Route::get('/access-pass/documents/{documentId}', [DocumentController::class, 'showAccessPass']);
     Route::post('/access-pass/documents/{documentId}/update', [DocumentController::class, 'updateAccessPass']);

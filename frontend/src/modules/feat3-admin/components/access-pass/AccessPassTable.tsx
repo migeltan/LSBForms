@@ -85,7 +85,11 @@ export function AccessPassTable() {
     new Set(),
   );
   const [batchSize, setBatchSize] = useState<BatchSize>("access-pass");
+  const [selecting, setSelecting] = useState(false);
   const batch = useAccessPassBatchDownload();
+  const approvedKeys = rows
+    .filter((r) => r.status === "Approved")
+    .map((r) => r.application_id);
   const selectedIds = rows
     .filter((r) => selectedKeys.has(r.application_id))
     .map((r) => r.applicant_id);
@@ -131,7 +135,7 @@ export function AccessPassTable() {
         onRowClick={(row) => setSelectedApplicantId(row.applicant_id)}
         loading={loading}
         error={error}
-        selectable
+        selectable={selecting}
         isSelectable={(r) => r.status === "Approved"}
         selectedKeys={selectedKeys}
         onSelectionChange={(keys) => {
@@ -141,13 +145,21 @@ export function AccessPassTable() {
         toolbar={
           <BatchDownloadBar
             selectedCount={selectedIds.length}
+            eligibleCount={approvedKeys.length}
+            onSelectAll={() => {
+              setSelectedKeys(new Set(approvedKeys));
+              batch.reset();
+            }}
             size={batchSize}
             onSizeChange={setBatchSize}
             downloading={batch.downloading}
             error={batch.error}
             notice={batch.notice}
             onDownload={() => batch.download(selectedIds, batchSize)}
-            onClear={() => {
+            selecting={selecting}
+            onStart={() => setSelecting(true)}
+            onCancel={() => {
+              setSelecting(false);
               setSelectedKeys(new Set());
               batch.reset();
             }}

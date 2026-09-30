@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Lock } from "lucide-react";
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
 
 export interface AdminColumn<T> {
@@ -118,29 +119,32 @@ export function AdminTableShell<T>({
     ? [
         {
           header: "Select",
-          align: "center",
           mobile: "hide",
-          className: "w-12",
+          className: "w-32",
           headerRender: () => (
-            <input
-              type="checkbox"
-              aria-label="Select all approved applications"
-              className="h-4 w-4 cursor-pointer accent-black"
-              disabled={selectableRows.length === 0}
-              checked={allSelected}
-              ref={(el) => {
-                if (el) el.indeterminate = selectedCount > 0 && !allSelected;
-              }}
-              onChange={toggleAll}
-            />
+            <label className="inline-flex cursor-pointer items-center gap-2.5 whitespace-nowrap">
+              <input
+                type="checkbox"
+                aria-label="Select all approved applications"
+                className="h-5 w-5 cursor-pointer accent-[#15304f]"
+                disabled={selectableRows.length === 0}
+                checked={allSelected}
+                ref={(el) => {
+                  if (el) el.indeterminate = selectedCount > 0 && !allSelected;
+                }}
+                onChange={toggleAll}
+              />
+              <span>Select</span>
+            </label>
           ),
           render: (row) =>
             isSelectable && !isSelectable(row) ? (
               <span
-                className="text-xs text-[var(--smart-muted)]"
-                title="Only approved applications can be batch-downloaded"
+                className="inline-flex items-center text-[var(--smart-muted)]"
+                title="Only approved applications can be selected for batch actions"
               >
-                —
+                <Lock className="h-4 w-4" aria-hidden="true" />
+                <span className="sr-only">Not approved yet</span>
               </span>
             ) : (
               <span
@@ -151,7 +155,7 @@ export function AdminTableShell<T>({
                 <input
                   type="checkbox"
                   aria-label="Select application"
-                  className="h-4 w-4 cursor-pointer accent-[var(--accent)]"
+                  className="h-5 w-5 cursor-pointer accent-[#15304f]"
                   checked={!!selectedKeys?.has(rowKey(row))}
                   onChange={() => toggleRow(row)}
                 />
@@ -302,7 +306,11 @@ export function AdminTableShell<T>({
                   onClick={() => onRowClick(row)}
                   onKeyDown={(e) => handleKey(e, row)}
                   className={`cursor-pointer border-t border-[var(--smart-border)] transition-colors hover:bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] focus-visible:bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--accent)] ${
-                    i % 2 === 1 ? "bg-black/[0.02]" : ""
+                    selectedKeys?.has(rowKey(row))
+                      ? "bg-[color-mix(in_srgb,var(--accent)_14%,transparent)]"
+                      : i % 2 === 1
+                        ? "bg-black/[0.02]"
+                        : ""
                   }`}
                 >
                   {columns.map((col) => (

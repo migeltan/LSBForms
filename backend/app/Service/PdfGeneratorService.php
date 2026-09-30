@@ -167,7 +167,7 @@ class PdfGeneratorService
             'templateSrc' => $forPdf
                 ? $this->toDataUri(public_path('images/id-templates/vehicle-sticker-blank.png'))
                 : asset('images/id-templates/vehicle-sticker-blank.png'),
-            'controlNumber' => $application->sticker_number ?? null,
+            'controlNumber' => app(ControlNumberService::class)->peekVehicle($application),
             'layout' => StickerLayout::resolve($application->layout_overrides),
         ])->render();
     }
@@ -356,6 +356,121 @@ class PdfGeneratorService
             'VehicleStickerID',
             $applicant,
         );
+    }
+
+    // Sticker-sheet paper: [page mm w, page mm h, page px w, page px h @96dpi].
+    private const SHEET_PAPERS = [
+        'a4' => [210.0, 297.0, 794, 1123],
+        'letter' => [215.9, 279.4, 816, 1056],
+    ];
+    private const SHEET_MARGIN_MM = 8.0; // printer-safe edge
+    private const SHEET_GAP_MM = 4.0;    // space between decals
+    private const STICKER_BATCH_MAX = 60;
+
+    /**
+     * POST /api/admin/vehicle-sticker/id/batch-print
+     * Body: { applicant_ids: int[], paper?: 'a4'|'letter' }
+     *
+     * Approved decals only, packed as many per page as fit, one PDF.
+     * Skipped ones are counted in X-Batch-Total vs X-Batch-Added.
+     */
+    public function batchPrintVehicleStickers(Request $request)
+    {
+        $data = $request->validate([
+            'applicant_ids' => ['required', 'array', 'min:1', 'max:'.self::STICKER_BATCH_MAX],
+            'applicant_ids.*' => ['integer'],
+            'paper' => ['nullable', 'in:a4,letter'],
+            'layout' => ['nullable', 'in:compact,actual'],
+        ]);
+
+        $compact = ($data['layout'] ?? 'compact') === 'compact';
+        [$pageW, $pageH, $pxW, $pxH] = self::SHEET_PAPERS[$data['paper'] ?? 'a4'];
+        if ($compact) {
+            // landscape: swap the portrait dimensions
+            [$pageW, $pageH, $pxW, $pxH] = [$pageH, $pageW, $pxH, $pxW];
+        }
+        $ids = array_values(array_unique($data['applicant_ids']));
+
+        $applicants = Applicant::with('vehicleApplication')
+            ->whereIn('id', $ids)
+            ->get()
+            ->keyBy('id');
+
+        $stickers = [];
+        $errors = [];
+
+        foreach ($ids as $id) {
+            $applicant = $applicants->get($id);
+            $application = $applicant?->vehicleApplication;
+            $label = $application?->application_id ?? "applicant-{$id}";
+
+            if (! $application) {
+                $errors[] = "{$label}: application not found.";
+                continue;
+            }
+            if ($application->status !== 'Approved') {
+                $errors[] = "{$label}: not approved, skipped.";
+                continue;
+            }
+
+            $stickers[] = [
+                // Idempotent: keeps the existing number, assigns one only if an
+                // approved decal somehow has none.
+                'number' => app(ControlNumberService::class)->ensureVehicle($application),
+                'layout' => StickerLayout::resolve($application->layout_overrides),
+            ];
+        }
+
+        if (! $stickers) {
+            return response()->json([
+                'message' => 'No decals could be printed.',
+                'errors' => $errors,
+            ], 422);
+        }
+
+        $gap = self::SHEET_GAP_MM;
+        $margin = self::SHEET_MARGIN_MM;
+        $fullW = StickerLayout::WIDTH_MM;
+        $fullH = StickerLayout::HEIGHT_MM;
+
+        if ($compact) {
+            // 12 per landscape page (4 x 3): shrink each decal to fit its cell.
+            $cols = 4;
+            $rows = 3;
+            $cellW = ($pageW - 2 * $margin - ($cols - 1) * $gap) / $cols;
+            $cellH = ($pageH - 0.6 - 2 * $margin - ($rows - 1) * $gap) / $rows;
+            $scale = min($cellW / $fullW, $cellH / $fullH, 1);
+        } else {
+            $scale = 1.0;
+            $cols = max(1, (int) floor(($pageW - 2 * $margin + $gap) / ($fullW + $gap)));
+            $rows = max(1, (int) floor(($pageH - 2 * $margin + $gap) / ($fullH + $gap)));
+        }
+        $w = round($fullW * $scale, 2);
+        $h = round($fullH * $scale, 2);
+
+        $html = View::make('reports.vehicle_sticker_sheet', [
+            'pages' => array_chunk($stickers, $cols * $rows),
+            'templateSrc' => $this->toDataUri(public_path('images/id-templates/vehicle-sticker-blank.png')),
+            'pageW' => $pageW,
+            'pageH' => $pageH,
+            'margin' => $margin,
+            'gap' => $gap,
+            'cols' => $cols,
+            'stickerW' => $w,
+            'stickerH' => $h,
+            'scale' => $scale,
+        ])->render();
+
+        // postPdf only reads ->application_id for the file name.
+        return $this->postPdf(
+            $html,
+            $pxW,
+            $pxH,
+            'VehicleStickerSheet',
+            (object) ['application_id' => 'Batch-'.now()->format('Ymd-His')],
+        )
+            ->header('X-Batch-Total', (string) count($ids))
+            ->header('X-Batch-Added', (string) count($stickers));
     }
 
     /**

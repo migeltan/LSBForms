@@ -58,7 +58,7 @@
 <body>
 
     <div class="sticker">
-        <div class="control-number">{{ $controlNumber ?? '—' }}</div>
+        <div class="control-number">{{ $controlNumber }}</div>
     </div>
 
 </body>

@@ -64,6 +64,23 @@ class ControlNumberService
         });
     }
 
+    /**
+     * The number this decal shows on previews/downloads: its real number if it
+     * has one, otherwise the next one in line. Read-only, nothing is saved, so
+     * the number is only locked in once the application is approved.
+     */
+    public function peekVehicle(VehicleApplication $application): string
+    {
+        if ($application->sticker_number) {
+            return $application->sticker_number;
+        }
+
+        $existing = VehicleApplication::whereNotNull('sticker_number')
+            ->pluck('sticker_number');
+
+        return (string) $this->nextSequence($existing, '');
+    }
+
     /** Highest existing numeric part + 1, or START if there are none yet. */
     private function nextSequence($existing, string $prefix): int
     {

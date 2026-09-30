@@ -6,6 +6,12 @@ import type { AdminColumn } from "../AdminTableShell";
 import { VehicleDetailModal } from "./VehicleDetailModal";
 import { TOKEN_KEY } from "../../../../providers/AuthProvider";
 import { BASE } from "../../../../hooks/apiConfig";
+import {
+  useVehicleStickerBatchPrint,
+  type SheetPaper,
+  type SheetLayout,
+} from "../../../../hooks/useVehicleStickerBatchPrint";
+import { BatchPrintBar } from "./BatchPrintBar";
 
 const ENDPOINT = `${BASE}/api/admin/vehicle-sticker`;
 
@@ -81,6 +87,21 @@ export function VehicleStickerTable() {
     null,
   );
 
+  // Batch print: selection is keyed by application_id (the row key).
+  const [selectedKeys, setSelectedKeys] = useState<Set<string | number>>(
+    new Set(),
+  );
+  const [selecting, setSelecting] = useState(false);
+  const [paper, setPaper] = useState<SheetPaper>("a4");
+  const [sheetLayout, setSheetLayout] = useState<SheetLayout>("compact");
+  const batch = useVehicleStickerBatchPrint();
+  const approvedKeys = rows
+    .filter((r) => r.status === "Approved")
+    .map((r) => r.application_id);
+  const selectedIds = rows
+    .filter((r) => selectedKeys.has(r.application_id))
+    .map((r) => r.applicant_id);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -123,6 +144,38 @@ export function VehicleStickerTable() {
         onRowClick={(row) => setSelectedApplicantId(row.applicant_id)}
         loading={loading}
         error={error}
+        selectable={selecting}
+        isSelectable={(r) => r.status === "Approved"}
+        selectedKeys={selectedKeys}
+        onSelectionChange={(keys) => {
+          setSelectedKeys(keys);
+          batch.reset();
+        }}
+        toolbar={
+          <BatchPrintBar
+            selectedCount={selectedIds.length}
+            eligibleCount={approvedKeys.length}
+            selecting={selecting}
+            onStart={() => setSelecting(true)}
+            onCancel={() => {
+              setSelecting(false);
+              setSelectedKeys(new Set());
+              batch.reset();
+            }}
+            paper={paper}
+            onPaperChange={setPaper}
+            sheetLayout={sheetLayout}
+            onSheetLayoutChange={setSheetLayout}
+            printing={batch.printing}
+            error={batch.error}
+            notice={batch.notice}
+            onPrint={() => batch.print(selectedIds, paper, sheetLayout)}
+            onSelectAll={() => {
+              setSelectedKeys(new Set(approvedKeys));
+              batch.reset();
+            }}
+          />
+        }
       />
       <VehicleDetailModal
         applicantId={selectedApplicantId}

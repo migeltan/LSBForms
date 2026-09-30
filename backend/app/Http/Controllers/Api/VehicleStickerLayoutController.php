@@ -59,7 +59,7 @@ class VehicleStickerLayoutController extends Controller
             'templateUrl' => asset('images/id-templates/vehicle-sticker-blank.png'),
             'fontDataUri' => null,
             'content' => [
-                'controlNumber' => $application->sticker_number ?? '1000',
+                'controlNumber' => app(\App\Service\ControlNumberService::class)->peekVehicle($application),
             ],
         ];
     }

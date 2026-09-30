@@ -294,13 +294,13 @@ export function VehicleDetailModal({
       {createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-3 sm:p-6">
           <div
-            className="relative w-full max-w-[1400px] h-full sm:h-[900px] max-h-[95vh] rounded-xl p-[1.5px] shadow-[0_25px_70px_-20px_rgba(15,39,68,0.5)]"
+            className="relative w-full max-w-[1400px] h-full sm:h-[900px] max-h-[95vh] rounded-[28px] p-[1.5px] shadow-[0_25px_70px_-20px_rgba(15,39,68,0.5)]"
             style={{
               background:
                 "linear-gradient(135deg, rgba(30,58,95,0.8) 0%, rgba(15,39,68,0.2) 45%, rgba(30,58,95,0.8) 100%)",
             }}
           >
-            <div className="relative h-full w-full overflow-hidden rounded-[11px] bg-white ring-1 ring-black/5 flex flex-col">
+            <div className="relative h-full w-full overflow-hidden rounded-[26.5px] bg-white ring-1 ring-black/5 flex flex-col">
               {/* Header bar */}
               <div className="shrink-0 flex items-center justify-between gap-4 px-8 py-6 text-white bg-[#15304f] sm:px-16 sm:py-8">
                 <h2

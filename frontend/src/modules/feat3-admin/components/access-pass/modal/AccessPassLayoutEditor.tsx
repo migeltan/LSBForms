@@ -64,7 +64,9 @@ export function AccessPassLayoutEditor({
       : ALL_FIELDS;
   const [data, setData] = useState<LayoutPayload | null>(null);
   const [layout, setLayout] = useState<Layout | null>(null);
-  useState<FieldKey>(kind === "vehicle-sticker" ? "cn" : "name");
+  const [selected, setSelected] = useState<FieldKey>(
+    kind === "vehicle-sticker" ? "cn" : "name",
+  );
   const [snap, setSnap] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
