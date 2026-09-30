@@ -3,6 +3,8 @@
 namespace App\Service;
 
 use App\Models\Applicant;
+use App\Support\AccessPassLayout;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\View;
@@ -95,7 +97,7 @@ class PdfGeneratorService
         return response($html, 200)->header('Content-Type', 'text/html; charset=UTF-8');
     }
 
-    private function renderIdView(string $view, $applicant, $application, bool $forPdf): string
+    private function renderIdView(string $view, $applicant, $application, bool $forPdf, string $size = AccessPassLayout::SIZE_ACCESS_PASS): string
     {
         $idAssets = $this->buildIdCardAssets($application, $forPdf);
 
@@ -103,6 +105,7 @@ class PdfGeneratorService
             'applicant' => $applicant,
             'application' => $application,
             'forPdf' => $forPdf,
+            'size' => $size,
             'assets' => $idAssets,
             'templateSrc' => $idAssets['template'],
             'photoSrc' => $idAssets['photo'],
@@ -167,34 +170,44 @@ class PdfGeneratorService
         return response($html, 200)->header('Content-Type', 'text/html; charset=UTF-8');
     }
 
-    public function previewAccessPass(int $applicantId): Response
+    public function previewAccessPass(Request $request, int $applicantId): Response
     {
         $applicant = Applicant::with('accessPassApplication')->findOrFail($applicantId);
         $application = $applicant->accessPassApplication;
 
         abort_if(! $application, 404, 'No access pass application found for this applicant.');
 
-        $html = $this->renderIdView('reports.access_pass_front', $applicant, $application, false);
+        $size = AccessPassLayout::normalizeSize($request->query('size'));
+        $html = $this->renderIdView('reports.access_pass_front', $applicant, $application, false, $size);
 
         return response($html, 200)->header('Content-Type', 'text/html; charset=UTF-8');
     }
 
-    public function downloadAccessPass(int $applicantId): Response
+    public function downloadAccessPass(Request $request, int $applicantId): Response
     {
         $applicant = Applicant::with('accessPassApplication')->findOrFail($applicantId);
         $application = $applicant->accessPassApplication;
 
         abort_if(! $application, 404, 'No access pass application found for this applicant.');
 
+        $size = AccessPassLayout::normalizeSize($request->query('size'));
         $idAssets = $this->buildIdCardAssets($application, true);
         $html = View::make('reports.access_pass_pdf', [
             'applicant' => $applicant,
             'application' => $application,
+            'size' => $size,
             'assets' => $idAssets,
             'sealSrc' => $this->toDataUri(public_path('images/House_of_Representatives_Logo.png')),
         ])->render();
 
-        return $this->postPdf($html, self::ACCESS_PASS_WIDTH_PX, self::ACCESS_PASS_HEIGHT_PX, 'AccessPassID', $applicant);
+        // Puppeteer takes px @ 96dpi; these must match the card mm in the view.
+        [$pageW, $pageH] = $size === AccessPassLayout::SIZE_PVC_ID
+            ? [self::PAGE_WIDTH_PX, self::PAGE_HEIGHT_PX]              // 204 x 324 (54 x 85.6mm)
+            : [self::ACCESS_PASS_WIDTH_PX, self::ACCESS_PASS_HEIGHT_PX]; // 280 x 397 (74 x 105mm)
+
+        $prefix = $size === AccessPassLayout::SIZE_PVC_ID ? 'PvcID' : 'AccessPassID';
+
+        return $this->postPdf($html, $pageW, $pageH, $prefix, $applicant);
     }
 
     public function previewVehicleSticker(int $applicantId): Response

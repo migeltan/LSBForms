@@ -477,13 +477,13 @@ export function ApplicantDetailModal({
                               onClick={() =>
                                 setSaveCancelModal("confirm-cancel")
                               }
-                              className="rounded-md bg-white hover:bg-gray-50 text-gray-700 text-sm font-semibold px-4 py-2 ring-1 ring-inset ring-gray-300 transition-colors"
+                              className="rounded-lg bg-white hover:bg-gray-50 text-gray-700 text-sm font-semibold px-6 py-3 ring-1 ring-inset ring-gray-300 transition-colors"
                             >
                               Cancel
                             </button>
                             <button
                               onClick={handleSave}
-                              className="rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 shadow-sm transition-colors"
+                              className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-6 py-3 shadow-sm transition-colors"
                             >
                               Save Changes
                             </button>
@@ -492,7 +492,7 @@ export function ApplicantDetailModal({
                           <>
                             <button
                               onClick={startEditing}
-                              className="rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 shadow-sm transition-colors inline-flex items-center gap-1.5"
+                              className="rounded-lg bg-[#0d5cff] hover:bg-[#0a4ad4] text-white text-sm font-semibold px-6 py-3 shadow-sm transition-colors inline-flex items-center gap-1.5"
                             >
                               <svg
                                 viewBox="0 0 20 20"
@@ -515,7 +515,7 @@ export function ApplicantDetailModal({
                                 setDeleteError(null);
                                 setDeleteModalOpen(true);
                               }}
-                              className="rounded-md bg-[var(--smart-red,#c0392b)] hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 shadow-sm transition-colors inline-flex items-center gap-1.5"
+                              className="rrounded-lg bg-[#ef3e55] hover:bg-red-600 text-white text-sm font-semibold px-6 py-3 shadow-sm transition-colors inline-flex items-center gap-1.5"
                             >
                               <svg
                                 viewBox="0 0 20 20"

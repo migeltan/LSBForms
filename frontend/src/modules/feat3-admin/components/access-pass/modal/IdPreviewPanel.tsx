@@ -10,18 +10,15 @@ import {
 import { ApplicantIdDownloadModal } from "../../../../../components/modals/ApplicantIdDownloadModal";
 import { AccessPassLayoutEditor } from "./AccessPassLayoutEditor";
 
-// Phase 2: sizes only change the on-screen frame. The same artwork is fitted
-// inside it. Per-size layouts + backend size support come later.
+// Keys match the backend (App\Support\AccessPassLayout::SIZES).
 const SIZES = {
   "access-pass": { label: "Access Pass (74 × 105 mm)", w: 74, h: 105 },
   "pvc-id": { label: "PVC ID (54 × 85.6 mm)", w: 54, h: 85.6 },
 } as const;
 type SizeKey = keyof typeof SIZES;
 
-// The preview HTML is always laid out at the Access Pass size (96 dpi).
+// The preview HTML is laid out at the selected size's real mm dimensions (96 dpi).
 const MM_TO_PX = 96 / 25.4;
-const ART_W = 74 * MM_TO_PX;
-const ART_H = 105 * MM_TO_PX;
 
 const SERIF = { fontFamily: '"Source Serif 4", Georgia, serif' } as const;
 
@@ -92,7 +89,7 @@ export function IdPreviewPanel({
     setLoadingPreview(true);
     setPreviewError(null);
     api
-      .get<string>(`${previewUrl}?v=${previewVersion}`, {
+      .get<string>(`${previewUrl}?size=${sizeKey}&v=${previewVersion}`, {
         headers: { Accept: "text/html" },
         responseType: "text",
       })
@@ -102,7 +99,7 @@ export function IdPreviewPanel({
     return () => {
       cancelled = true;
     };
-  }, [previewUrl, previewVersion]);
+  }, [previewUrl, previewVersion, sizeKey]);
 
   // Track the frame width so the fixed-size artwork can be scaled to fit.
   useEffect(() => {
@@ -116,10 +113,12 @@ export function IdPreviewPanel({
   }, []);
 
   const size = SIZES[sizeKey];
+  const artW = size.w * MM_TO_PX;
+  const artH = size.h * MM_TO_PX;
   const frameH = (frameW * size.h) / size.w;
-  const scale = frameW ? Math.min(frameW / ART_W, frameH / ART_H) : 0;
-  const offsetX = (frameW - ART_W * scale) / 2;
-  const offsetY = (frameH - ART_H * scale) / 2;
+  const scale = frameW ? Math.min(frameW / artW, frameH / artH) : 0;
+  const offsetX = (frameW - artW * scale) / 2;
+  const offsetY = (frameH - artH * scale) / 2;
 
   const busy =
     reviewing || flow.step === "approving" || flow.step === "declining";
@@ -135,13 +134,17 @@ export function IdPreviewPanel({
     setDownloading(true);
     try {
       const res = await api.get(downloadUrl, {
+        params: { size: sizeKey },
         headers: { Accept: "application/pdf" },
         responseType: "blob",
       });
       const objectUrl = window.URL.createObjectURL(res.data);
       const link = document.createElement("a");
       link.href = objectUrl;
-      link.download = fileName;
+      link.download =
+        sizeKey === "pvc-id"
+          ? fileName.replace("AccessPassID", "PvcID")
+          : fileName;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -204,8 +207,8 @@ export function IdPreviewPanel({
             scrolling="no"
             className="pointer-events-none absolute left-0 top-0 border-0 bg-white"
             style={{
-              width: ART_W,
-              height: ART_H,
+              width: artW,
+              height: artH,
               transformOrigin: "top left",
               transform: `translate(${offsetX}px, ${offsetY}px) scale(${scale})`,
             }}
@@ -288,6 +291,7 @@ export function IdPreviewPanel({
       {layoutOpen && (
         <AccessPassLayoutEditor
           applicantId={applicantId}
+          size={sizeKey}
           onClose={() => setLayoutOpen(false)}
           onSaved={() => setPreviewVersion((v) => v + 1)}
         />

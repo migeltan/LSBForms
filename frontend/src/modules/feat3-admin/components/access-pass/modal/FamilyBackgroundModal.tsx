@@ -57,35 +57,27 @@ function AmberInput({
   label,
   value,
   onChange,
-  shade,
   required,
+  className = "",
 }: {
   label: string;
   value: string | null;
   onChange: (value: string) => void;
-  shade: "light" | "medium" | "dark";
+  shade?: "light" | "medium" | "dark"; // legacy prop, ignored
   required?: boolean;
+  className?: string;
 }) {
-  const borderShade =
-    shade === "light"
-      ? "border-l-amber-300"
-      : shade === "medium"
-        ? "border-l-amber-500"
-        : "border-l-amber-700";
-
   return (
-    <div
-      className={`rounded-md border border-amber-100 border-l-4 ${borderShade} bg-white px-3 py-2`}
-    >
-      <label className="text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+    <div className={`min-w-0 ${className}`}>
+      <div className="mb-2 text-[15px] font-semibold text-gray-900">
         {label}
         {required && <span className="text-red-500"> *</span>}
-      </label>
+      </div>
       <input
         type="text"
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full text-sm font-semibold text-amber-950 bg-transparent outline-none focus:ring-0 border-0 p-0"
+        className="min-h-[46px] w-full rounded-2xl border border-gray-300 bg-white px-5 py-3 text-[15px] font-semibold text-gray-800 outline-none transition-colors focus:border-blue-400 focus:ring-2 focus:ring-blue-200"
       />
     </div>
   );
@@ -138,22 +130,22 @@ export function FamilyBackgroundModal({
   if (editing) {
     return (
       <>
-        <AmberSectionHeader>
+        <AmberSectionHeader
+          icon={<Users className="h-6 w-6 shrink-0" />}
+          count={`${draftRows.length} ${draftRows.length === 1 ? "record" : "records"}`}
+        >
           Family Background
-          <span className="ml-2 normal-case tracking-normal font-medium text-amber-600 text-xs">
-            {draftRows.length} {draftRows.length === 1 ? "record" : "records"}
-          </span>
         </AmberSectionHeader>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-6">
           {draftRows.map((f, idx) => (
             <div
               key={f.id ?? `new-${idx}`}
-              className="rounded-lg border border-amber-100 border-l-4 border-l-amber-600 bg-white shadow-sm px-4 py-4"
+              className="border-t border-gray-300 pt-6 first:border-t-0 first:pt-0"
             >
-              <div className="flex items-start justify-between gap-2 mb-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-600 text-white text-xs font-bold shadow-sm shadow-amber-600/30">
-                  {idx + 1}
+              <div className="mb-4 flex items-center justify-between gap-2">
+                <span className="text-sm font-semibold text-gray-500">
+                  Member {idx + 1}
                 </span>
                 <button
                   onClick={() => onRemove(idx)}
@@ -163,34 +155,29 @@ export function FamilyBackgroundModal({
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-3">
                 <AmberInput
                   label="Full Name"
                   value={f.name}
                   onChange={(v) => onChange(idx, "name", v)}
-                  shade="light"
                   required
+                  className="sm:col-span-3"
                 />
                 <AmberInput
                   label="Relationship"
                   value={f.relationship}
                   onChange={(v) => onChange(idx, "relationship", v)}
-                  shade="light"
                   required
                 />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                 <AmberInput
                   label="Occupation"
                   value={f.occupation}
                   onChange={(v) => onChange(idx, "occupation", v)}
-                  shade="medium"
                 />
                 <AmberInput
                   label="Other Information"
                   value={f.other_information}
                   onChange={(v) => onChange(idx, "other_information", v)}
-                  shade="dark"
                 />
               </div>
             </div>
@@ -198,7 +185,7 @@ export function FamilyBackgroundModal({
 
           <button
             onClick={onAdd}
-            className="rounded-lg border border-dashed border-amber-300 text-amber-700 hover:bg-amber-50 text-sm font-semibold px-4 py-3 transition-colors"
+            className="rounded-2xl border border-dashed border-gray-400 px-4 py-3 text-sm font-semibold text-[#15304f] transition-colors hover:bg-gray-100"
           >
             + Add Family Member
           </button>

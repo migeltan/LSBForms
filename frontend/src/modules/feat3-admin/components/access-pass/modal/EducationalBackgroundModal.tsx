@@ -56,35 +56,27 @@ function RedInput({
   label,
   value,
   onChange,
-  shade,
   required,
+  className = "",
 }: {
   label: string;
   value: string | null;
   onChange: (value: string) => void;
-  shade: "light" | "medium" | "dark";
+  shade?: "light" | "medium" | "dark"; // legacy prop, ignored
   required?: boolean;
+  className?: string;
 }) {
-  const borderShade =
-    shade === "light"
-      ? "border-l-red-300"
-      : shade === "medium"
-        ? "border-l-red-500"
-        : "border-l-red-700";
-
   return (
-    <div
-      className={`rounded-md border border-red-100 border-l-4 ${borderShade} bg-white px-3 py-2`}
-    >
-      <label className="text-[10px] font-semibold uppercase tracking-wide text-red-400">
+    <div className={`min-w-0 ${className}`}>
+      <div className="mb-2 text-[15px] font-semibold text-gray-900">
         {label}
         {required && <span className="text-red-500"> *</span>}
-      </label>
+      </div>
       <input
         type="text"
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full text-sm font-semibold text-red-950 bg-transparent outline-none focus:ring-0 border-0 p-0"
+        className="min-h-[46px] w-full rounded-2xl border border-gray-300 bg-white px-5 py-3 text-[15px] font-semibold text-gray-800 outline-none transition-colors focus:border-blue-400 focus:ring-2 focus:ring-blue-200"
       />
     </div>
   );
@@ -134,22 +126,22 @@ export function EducationalBackgroundModal({
   if (editing) {
     return (
       <>
-        <RedSectionHeader>
+        <RedSectionHeader
+          icon={<GraduationCap className="h-6 w-6 shrink-0" />}
+          count={`${draftRows.length} ${draftRows.length === 1 ? "record" : "records"}`}
+        >
           Educational Background
-          <span className="ml-2 normal-case tracking-normal font-medium text-red-300 text-xs">
-            {draftRows.length} {draftRows.length === 1 ? "record" : "records"}
-          </span>
         </RedSectionHeader>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-6">
           {draftRows.map((e, idx) => (
             <div
               key={e.id ?? `new-${idx}`}
-              className="rounded-lg border border-red-100 border-l-4 border-l-red-600 bg-white shadow-sm px-4 py-4"
+              className="border-t border-gray-300 pt-6 first:border-t-0 first:pt-0"
             >
-              <div className="flex items-start justify-between gap-2 mb-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold shadow-sm shadow-red-600/30">
-                  {idx + 1}
+              <div className="mb-4 flex items-center justify-between gap-2">
+                <span className="text-sm font-semibold text-gray-500">
+                  School {idx + 1}
                 </span>
                 <button
                   onClick={() => onRemove(idx)}
@@ -159,33 +151,28 @@ export function EducationalBackgroundModal({
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-3">
                 <RedInput
                   label="School Name"
                   value={e.school}
                   onChange={(v) => onChange(idx, "school", v)}
-                  shade="light"
                   required
+                  className="sm:col-span-3"
                 />
                 <RedInput
                   label="Degree"
                   value={e.degree}
                   onChange={(v) => onChange(idx, "degree", v)}
-                  shade="light"
                 />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                 <RedInput
                   label="Year Graduated"
                   value={e.year_graduated}
                   onChange={(v) => onChange(idx, "year_graduated", v)}
-                  shade="medium"
                 />
                 <RedInput
                   label="Other Information"
                   value={e.other_information}
                   onChange={(v) => onChange(idx, "other_information", v)}
-                  shade="dark"
                 />
               </div>
             </div>
@@ -193,7 +180,7 @@ export function EducationalBackgroundModal({
 
           <button
             onClick={onAdd}
-            className="rounded-lg border border-dashed border-red-300 text-red-700 hover:bg-red-50 text-sm font-semibold px-4 py-3 transition-colors"
+            className="rounded-2xl border border-dashed border-gray-400 px-4 py-3 text-sm font-semibold text-[#15304f] transition-colors hover:bg-gray-100"
           >
             + Add School Record
           </button>

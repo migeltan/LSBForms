@@ -1,6 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 /* ---------------------------------------------------------------------
  * CustomCalendarInput
@@ -173,6 +177,8 @@ interface CustomCalendarInputProps {
   required?: boolean;
   /** Overrides the text shown when no date is selected. */
   placeholder?: string;
+  /** "pill" = plain label above a rounded white pill. Default "box". */
+  variant?: "box" | "pill";
 }
 
 export function CustomCalendarInput({
@@ -182,6 +188,7 @@ export function CustomCalendarInput({
   label,
   required,
   placeholder,
+  variant = "box",
 }: CustomCalendarInputProps) {
   const theme = THEMES[color];
   const [open, setOpen] = useState(false);
@@ -272,7 +279,7 @@ export function CustomCalendarInput({
 
   const monthLabel = new Date(viewYear, viewMonth, 1).toLocaleDateString(
     undefined,
-    { month: "long", year: "numeric" }
+    { month: "long", year: "numeric" },
   );
 
   const defaultPlaceholder = label ? "mm/dd/yyyy" : "Any date";
@@ -280,7 +287,7 @@ export function CustomCalendarInput({
     ? label
       ? formatNumeric(value)
       : formatLong(value)
-    : placeholder ?? defaultPlaceholder;
+    : (placeholder ?? defaultPlaceholder);
 
   const popover =
     open &&
@@ -369,11 +376,41 @@ export function CustomCalendarInput({
           </button>
         </div>
       </div>,
-      document.body
+      document.body,
     );
 
   // Labeled variant — a field box with an uppercase caption, matching
   // form-field styling used in detail/edit panels.
+  if (label && variant === "pill") {
+    return (
+      <div className="relative min-w-0">
+        <div className="mb-2 text-[15px] font-semibold text-gray-900">
+          {label}
+          {required && <span className="text-red-500"> *</span>}
+        </div>
+        <button
+          ref={triggerRef}
+          type="button"
+          onClick={() => (open ? setOpen(false) : openPicker())}
+          className={[
+            "flex min-h-[46px] w-full items-center justify-between gap-2 rounded-2xl border bg-white px-5 py-3 text-left transition-colors",
+            open
+              ? "border-blue-400 ring-2 ring-blue-200"
+              : "border-gray-300 hover:border-gray-400",
+          ].join(" ")}
+        >
+          <span
+            className={`text-[15px] font-semibold ${value ? "text-gray-800" : "text-gray-400"}`}
+          >
+            {displayValue}
+          </span>
+          <CalendarIcon className="h-4 w-4 shrink-0 text-gray-500" />
+        </button>
+        {popover}
+      </div>
+    );
+  }
+
   if (label) {
     return (
       <div className="relative">

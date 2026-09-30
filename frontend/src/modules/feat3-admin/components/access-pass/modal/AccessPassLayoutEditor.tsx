@@ -44,10 +44,13 @@ const clamp = (n: number, lo: number, hi: number) =>
 
 export function AccessPassLayoutEditor({
   applicantId,
+  size = "access-pass",
   onClose,
   onSaved,
 }: {
   applicantId: number | string;
+  /** Which card size's layout is being edited (each size has its own). */
+  size?: "access-pass" | "pvc-id";
   onClose: () => void;
   /** Called after a successful save/reset so the caller can refresh its preview. */
   onSaved: () => void;
@@ -59,7 +62,7 @@ export function AccessPassLayoutEditor({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const endpoint = `/admin/access-pass/${applicantId}/layout`;
+  const endpoint = `/admin/access-pass/${applicantId}/layout?size=${size}`;
 
   useEffect(() => {
     let cancelled = false;

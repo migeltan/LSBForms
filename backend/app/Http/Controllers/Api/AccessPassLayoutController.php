@@ -10,34 +10,44 @@ use Illuminate\Http\Request;
 
 class AccessPassLayoutController extends Controller
 {
-    /** GET /admin/access-pass/{applicantId}/layout */
-    public function show(int $applicantId): JsonResponse
+    /** GET /admin/access-pass/{applicantId}/layout?size=access-pass|pvc-id */
+    public function show(Request $request, int $applicantId): JsonResponse
     {
-        return response()->json($this->payload($applicantId));
+        return response()->json($this->payload($applicantId, $this->size($request)));
     }
 
-    /** PUT /admin/access-pass/{applicantId}/layout */
+    /** PUT /admin/access-pass/{applicantId}/layout?size=... */
     public function update(Request $request, int $applicantId): JsonResponse
     {
         $request->validate(['layout' => ['required', 'array']]);
 
         $application = $this->application($applicantId);
+        $size = $this->size($request);
 
         // Store only what was sanitized; anything unknown is dropped.
-        $application->layout_overrides = AccessPassLayout::sanitize($request->input('layout'));
+        $application->layout_overrides = AccessPassLayout::withOverrides(
+            $application->layout_overrides,
+            $size,
+            AccessPassLayout::sanitize($request->input('layout')),
+        );
         $application->save();
 
-        return response()->json($this->payload($applicantId));
+        return response()->json($this->payload($applicantId, $size));
     }
 
-    /** DELETE /admin/access-pass/{applicantId}/layout — back to defaults */
-    public function reset(int $applicantId): JsonResponse
+    /** DELETE /admin/access-pass/{applicantId}/layout?size=... — back to defaults */
+    public function reset(Request $request, int $applicantId): JsonResponse
     {
         $application = $this->application($applicantId);
-        $application->layout_overrides = null;
+        $size = $this->size($request);
+        $application->layout_overrides = AccessPassLayout::withOverrides(
+            $application->layout_overrides,
+            $size,
+            null,
+        );
         $application->save();
 
-        return response()->json($this->payload($applicantId));
+        return response()->json($this->payload($applicantId, $size));
     }
 
     private function application(int $applicantId)
@@ -48,7 +58,12 @@ class AccessPassLayoutController extends Controller
         return $applicant->accessPassApplication;
     }
 
-    private function payload(int $applicantId): array
+    private function size(Request $request): string
+    {
+        return AccessPassLayout::normalizeSize($request->query('size'));
+    }
+
+    private function payload(int $applicantId, string $size): array
     {
         $applicant = Applicant::with('accessPassApplication')->findOrFail($applicantId);
         $application = $this->application($applicantId);
@@ -56,13 +71,14 @@ class AccessPassLayoutController extends Controller
         $fontPath = public_path('fonts/BebasNeue-Regular.ttf');
 
         return [
+            'size' => $size,
             'card' => [
-                'widthMm' => AccessPassLayout::CARD_WIDTH_MM,
-                'heightMm' => AccessPassLayout::CARD_HEIGHT_MM,
+                'widthMm' => AccessPassLayout::dimensions($size)['w'],
+                'heightMm' => AccessPassLayout::dimensions($size)['h'],
             ],
-            'defaults' => AccessPassLayout::defaults(),
-            'layout' => AccessPassLayout::resolve($application->layout_overrides),
-            'isCustomized' => ! empty($application->layout_overrides),
+            'defaults' => AccessPassLayout::defaults($size),
+            'layout' => AccessPassLayout::resolve($application->layout_overrides, $size),
+            'isCustomized' => AccessPassLayout::isCustomized($application->layout_overrides, $size),
             'templateUrl' => asset('images/id-templates/access-pass-blank.png'),
             // Embedded as a data URI (cross-origin @font-face is blocked by CORS).
             'fontDataUri' => is_file($fontPath)

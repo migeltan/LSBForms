@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 
+@php
+    $size = $size ?? \App\Support\AccessPassLayout::SIZE_ACCESS_PASS;
+    $dim = \App\Support\AccessPassLayout::dimensions($size);
+    $cardW = $dim['w'];
+    $cardH = $dim['h'];
+    $sizeScale = \App\Support\AccessPassLayout::scale($size);
+    // Back-page content is authored at 74mm wide; it is scaled to the card
+    // width and its box is made taller so the footer stays at the bottom.
+    $backH = round($cardH / $sizeScale, 2);
+@endphp
 <head>
     <meta charset="UTF-8">
     <title>Access Pass — {{ $applicant->full_name }}</title>
@@ -14,7 +24,7 @@
          * those two MUST stay in sync with the 74mm x 105mm here.
          */
         @page {
-            size: 74mm 105mm;
+            size: {{ $cardW }}mm {{ $cardH }}mm;
             margin: 0;
         }
 
@@ -37,8 +47,8 @@
 
         .card {
             position: relative;
-            width: 74mm;
-            height: 105mm;
+            width: {{ $cardW }}mm;
+            height: {{ $cardH }}mm;
             overflow: hidden;
         }
 
@@ -72,6 +82,8 @@
             font-family: Georgia, 'Times New Roman', serif;
             font-weight: bold;
             color: #1a1a1a;
+            white-space: nowrap;
+            line-height: 1;
         }
 
         .name {
@@ -80,6 +92,7 @@
             color: #1a1a1a;
             letter-spacing: 0.5px;
             text-transform: uppercase;
+            white-space: nowrap;
         }
 
         .department {
@@ -88,6 +101,7 @@
             color: #1a1a1a;
             letter-spacing: 0.5px;
             text-transform: uppercase;
+            white-space: nowrap;
         }
 
         .bar-text {
@@ -97,7 +111,7 @@
             height: 6.89%;
             justify-content: center;
             font-family: 'Bebas Neue', Arial, sans-serif;
-            font-size: 5.2mm;
+            font-size: {{ round(5.2 * $sizeScale, 2) }}mm;
             letter-spacing: 3px;
             color: #ffffff;
             text-transform: uppercase;
@@ -106,6 +120,14 @@
         /* --- back --- */
         .back {
             background: #ffffff;
+        }
+
+        .back-inner {
+            position: relative;
+            width: 74mm;
+            height: {{ $backH }}mm;
+            transform: scale({{ $sizeScale }});
+            transform-origin: top left;
             font-family: Georgia, 'Times New Roman', serif;
             color: #1a1a1a;
             padding: 5mm 5.5mm;
@@ -208,9 +230,8 @@
     @php
         $photoStyle = $assets['photo'] ? "background-image:url('{$assets['photo']}');" : '';
 
-        // Template defaults + this application's saved admin tweaks
-        // (same source as access_pass_front, so preview == PDF).
-        $L = \App\Support\AccessPassLayout::resolve($application->layout_overrides ?? null);
+        // Same layout source as the preview (defaults for this size + saved tweaks).
+        $L = \App\Support\AccessPassLayout::resolve($application->layout_overrides, $size);
         $box = function (string $field) use ($L) {
             $b = $L[$field];
             $css = "left:{$b['x']}%;top:{$b['y']}%;width:{$b['w']}%;height:{$b['h']}%;";
@@ -222,19 +243,19 @@
         };
     @endphp
 
-    <div class="card front">
+        <div class="field bar-text">Security</div>
         <div class="field photo" style="{{ $box('photo') }}{{ $photoStyle }}">
             @unless ($assets['photo'])
                 NO PHOTO
             @endunless
         </div>
-        <div class="field cn-value" style="{{ $box('cn') }}">{{ $application->control_number ?? '—' }}</div>
+        <div class="field cn-value" data-fit style="{{ $box('cn') }}">{{ $application->control_number ?? '—' }}</div>
         <div class="field name" style="{{ $box('name') }}">{{ strtoupper($applicant->full_name) }}</div>
         <div class="field department" style="{{ $box('department') }}">Legislative Security Bureau</div>
-        <div class="field bar-text">Security</div>
     </div>
 
-    <div class="card back">
+  <div class="card back">
+      <div class="back-inner">
         <img class="seal" src="{{ $sealSrc }}" alt="">
         <div class="heading">House of Representatives</div>
         <div class="subheading">Legislative Security Bureau</div>
@@ -264,9 +285,29 @@
             <div class="sign-caption">Issuing Officer</div>
         </div>
 
-        <div class="footer-strip"></div>
-    </div>
+          <div class="footer-strip"></div>
+      </div>
+      </div>
 
-</body>
+          <script>
+        (function () {
+            function fit() {
+                document.querySelectorAll('[data-fit]').forEach(function (el) {
+                    var size = parseFloat(getComputedStyle(el).fontSize);
+                    while (el.scrollWidth > el.clientWidth + 0.5 && size > 6) {
+                        size -= 0.25;
+                        el.style.fontSize = size + 'px';
+                    }
+                });
+            }
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(fit);
+            } else {
+                window.addEventListener('load', fit);
+            }
+        })();
+    </script>
+
+  </body>
 
 </html>
