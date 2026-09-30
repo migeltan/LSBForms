@@ -25,7 +25,7 @@ interface LayoutPayload {
   };
 }
 
-const FIELDS: { key: FieldKey; label: string }[] = [
+const ALL_FIELDS: { key: FieldKey; label: string }[] = [
   { key: "photo", label: "Photo" },
   { key: "cn", label: "Control number" },
   { key: "name", label: "Name" },
@@ -45,24 +45,34 @@ const clamp = (n: number, lo: number, hi: number) =>
 export function AccessPassLayoutEditor({
   applicantId,
   size = "access-pass",
+  kind = "access-pass",
   onClose,
   onSaved,
 }: {
   applicantId: number | string;
   /** Which card size's layout is being edited (each size has its own). */
   size?: "access-pass" | "pvc-id";
+  /** "vehicle-sticker" edits the decal (control number only). */
+  kind?: "access-pass" | "vehicle-sticker";
   onClose: () => void;
   /** Called after a successful save/reset so the caller can refresh its preview. */
   onSaved: () => void;
 }) {
+  const FIELDS =
+    kind === "vehicle-sticker"
+      ? ALL_FIELDS.filter((f) => f.key === "cn")
+      : ALL_FIELDS;
   const [data, setData] = useState<LayoutPayload | null>(null);
   const [layout, setLayout] = useState<Layout | null>(null);
-  const [selected, setSelected] = useState<FieldKey>("name");
+  useState<FieldKey>(kind === "vehicle-sticker" ? "cn" : "name");
   const [snap, setSnap] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const endpoint = `/admin/access-pass/${applicantId}/layout?size=${size}`;
+  const endpoint =
+    kind === "vehicle-sticker"
+      ? `/admin/vehicle-sticker/${applicantId}/layout`
+      : `/admin/access-pass/${applicantId}/layout?size=${size}`;
 
   useEffect(() => {
     let cancelled = false;
@@ -167,7 +177,10 @@ export function AccessPassLayoutEditor({
           <span
             style={{
               ...textStyle,
-              fontFamily: "Georgia, serif",
+              fontFamily:
+                kind === "vehicle-sticker"
+                  ? "Arial, Helvetica, sans-serif"
+                  : "Georgia, serif",
               fontWeight: 700,
             }}
           >

@@ -302,10 +302,13 @@ export function VehicleDetailModal({
           >
             <div className="relative h-full w-full overflow-hidden rounded-[11px] bg-white ring-1 ring-black/5 flex flex-col">
               {/* Header bar */}
-              <div className="shrink-0 flex items-center justify-between gap-4 px-8 py-6 text-white bg-[#15304f]">
+              <div className="shrink-0 flex items-center justify-between gap-4 px-8 py-6 text-white bg-[#15304f] sm:px-16 sm:py-8">
                 <h2
                   className="truncate text-3xl font-bold tracking-tight"
-                  style={{ color: "#ffffff" }}
+                  style={{
+                    color: "#ffffff",
+                    fontFamily: "var(--smart-font-sans)",
+                  }}
                 >
                   {editing
                     ? "Editing Vehicle Sticker Application"
@@ -318,6 +321,7 @@ export function VehicleDetailModal({
                       : onClose
                   }
                   ariaLabel={editing ? "Cancel editing" : "Close"}
+                  className="sm:h-12! sm:w-12!"
                 />
               </div>
 
@@ -339,7 +343,7 @@ export function VehicleDetailModal({
                 {!loading && !error && detail && (
                   <div className="flex-1 min-h-0 flex flex-col lg:flex-row">
                     {/* LEFT: preview + actions */}
-                    <aside className="shrink-0 overflow-y-auto border-b border-gray-300 px-8 py-8 lg:w-[37%] lg:border-b-0 lg:border-r xl:px-[72px]">
+                    <aside className="flex shrink-0 flex-col overflow-y-auto border-b border-gray-300 px-8 py-8 lg:w-[37%] lg:border-b-0 lg:border-r xl:px-[72px]">
                       <VehicleStickerPreviewPanel
                         detail={detail}
                         onApprove={() => handleReview("Approved")}
@@ -356,7 +360,7 @@ export function VehicleDetailModal({
                           <button
                             key={t.key}
                             onClick={() => setTab(t.key)}
-                            className={`rounded-full px-6 py-2.5 text-sm font-semibold transition-colors ${
+                            className={`rounded-2xl px-6 py-2.5 text-sm font-semibold transition-colors ${
                               tab === t.key ? TAB_ACTIVE_STYLE : TAB_IDLE_STYLE
                             }`}
                           >
