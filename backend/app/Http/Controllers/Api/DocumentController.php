@@ -11,44 +11,6 @@ use Illuminate\Support\Facades\Validator;
 
 class DocumentController extends Controller
 {
-    /**
-     * POST /api/documents
-     * Stores a single uploaded access pass document (letter request,
-     * valid ID, NBI clearance, OR/CR, etc.) against a reference number.
-     *
-     * NOTE: this was previously wired to a generic `App\Models\Document`
-     * model that doesn't exist in this codebase — only DocumentAccessPass
-     * and DocumentVehicleSticker do. Pointed at DocumentAccessPass here
-     * since we're scoping to access-pass for now. Vehicle sticker document
-     * uploads for the public flow can follow the same pattern once needed
-     * — mirror this into a storeVehicleSticker() method against
-     * DocumentVehicleSticker.
-     */
-    public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'application_id' => ['required', 'string', 'max:20'],
-            'document_type' => ['required', 'string', 'max:100'],
-            'file' => ['required', 'file', 'max:10240', 'mimes:jpg,jpeg,png,pdf'],
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['message' => 'Invalid input.', 'errors' => $validator->errors()], 422);
-        }
-
-        $file = $request->file('file');
-        $path = $file->store("documents/{$request->input('application_id')}", 'public');
-
-        $document = DocumentAccessPass::create([
-            'application_id' => $request->input('application_id'),
-            'document_type' => $request->input('document_type'),
-            'file_name' => $file->getClientOriginalName(),
-            'file_path' => $path,
-            'verification_status' => 'Pending',
-        ]);
-
-        return response()->json($document, 201);
-    }
 
     /**
      * GET /api/documents/{application_id}

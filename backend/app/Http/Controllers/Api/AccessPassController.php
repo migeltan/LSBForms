@@ -205,29 +205,6 @@ class AccessPassController extends Controller
         return response()->json($application);
     }
 
-    /**
-     * Marks a Draft application as formally Submitted — used by
-     * routes/api.php: POST /access-pass/{application_id}/submit
-     * NOTE: placeholder implementation. store() above already sets
-     * status to 'Submitted' immediately on creation, so this endpoint
-     * only matters if you introduce a genuine Draft-save step later.
-     */
-    public function submit(string $application_id)
-    {
-        $application = AccessPassApplication::where('application_id', $application_id)->first();
-
-        if (!$application) {
-            return response()->json(['message' => 'Application not found.'], 404);
-        }
-
-        $application->update([
-            'status' => 'Submitted',
-            'date_submitted' => now(),
-        ]);
-
-        return response()->json(['message' => 'Application submitted.', 'application_id' => $application_id]);
-    }
-
     private function storeUploadedFile($file, string $directory): string
     {
         return $file->store($directory, 'public');
