@@ -12,6 +12,8 @@ import {
 import { UploadFileInput } from "../../components/ui/UploadFileInput";
 import { TextFieldInput } from "../../components/ui/TextFieldInput";
 import { useFileFields } from "../../hooks/useFormControls";
+import { useFormDraft } from "../../hooks/useFormDraft";
+import { ResetFormBar } from "../../components/ui/ResetFormBar";
 
 type Ownership = "" | "Registered to Applicant" | "Not Registered to Applicant";
 
@@ -45,6 +47,7 @@ export function VehicleStickerForm({
   onSubmitted: () => void;
 }) {
   const [ownership, setOwnership] = useState<Ownership>("");
+  const [formKey, setFormKey] = useState(0); // bump to remount (clear) the form
 
   // Same universal file-field handling used across the intake forms.
   const { files, handleFileChange, resetFiles } =
@@ -85,6 +88,26 @@ export function VehicleStickerForm({
     },
   });
 
+  const draft = useFormDraft({
+    key: "smart_draft_vehicle_sticker",
+    formRef: formProps.ref,
+    extra: { ownership, step },
+    onRestore: (d) => {
+      if (d.ownership) setOwnership(d.ownership);
+      if (d.step) goTo(d.step);
+    },
+  });
+
+  function handleReset() {
+    return;
+    draft.clear();
+    setFormKey((k) => k + 1);
+    setOwnership("");
+    resetFiles();
+    resetSteps();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (interceptSubmit()) return;
@@ -110,6 +133,7 @@ export function VehicleStickerForm({
       setResultStatus("success");
       form.reset();
       setOwnership("");
+      draft.clear();
       resetFiles();
       onSubmitted(); // reserve a fresh number for the next application
       resetSteps();
@@ -135,13 +159,19 @@ export function VehicleStickerForm({
 
   return (
     <>
+      <ResetFormBar restored={draft.restored} onReset={handleReset} />
       <form
+        key={formKey}
         {...formProps}
+        onInput={(e) => {
+          formProps.onInput(e);
+          draft.save();
+        }}
         onSubmit={handleSubmit}
         className="flex flex-col gap-6"
         noValidate
       >
-        <input type="hidden" name="form_type" value="vehicle_sticker" />
+        <input type="hidden" name="form_type" value="access_pass" />
 
         <FormStepper
           steps={STEPS}

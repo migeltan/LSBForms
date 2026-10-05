@@ -113,6 +113,7 @@
             font-family: 'Bebas Neue', Arial, sans-serif;
             font-size: {{ round(5.2 * $sizeScale, 2) }}mm;
             letter-spacing: 3px;
+            white-space: nowrap;
             color: #ffffff;
             text-transform: uppercase;
         }
@@ -245,7 +246,7 @@
 
     @if (($only ?? null) !== 'back')
     <div class="card front">
-        <div class="field bar-text">Security</div>
+        <div class="field bar-text" data-fit>{{ $applicant->applicant_type }}</div>
         <div class="field photo" style="{{ $box('photo') }}{{ $photoStyle }}">
             @unless ($assets['photo'])
                 NO PHOTO

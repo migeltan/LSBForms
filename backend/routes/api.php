@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AccessPassController;
 use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\Api\ApplicantTypeController;
 use App\Http\Controllers\Api\ApplicationStatusController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\VehicleStickerController;
@@ -35,6 +36,10 @@ Route::get('/login', function () {
 })->name('login');
 
 // --- Public application flows ---
+Route::post('/access-pass/reserve-reference', [AccessPassController::class, 'reserveReference']);
+Route::post('/vehicle-sticker/reserve-reference', [VehicleStickerController::class, 'reserveReference']);
+
+Route::get('/applicant-types', [ApplicantTypeController::class, 'index']);
 Route::post('/access-pass/reserve-reference', [AccessPassController::class, 'reserveReference']);
 Route::post('/access-pass', [AccessPassController::class, 'store']);
 Route::get('/access-pass/{application_id}', [AccessPassController::class, 'show']);

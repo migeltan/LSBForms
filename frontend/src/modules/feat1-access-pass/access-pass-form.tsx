@@ -17,13 +17,15 @@ import {
 import { UploadFileInput } from "../../components/ui/UploadFileInput";
 import { TextFieldInput } from "../../components/ui/TextFieldInput";
 import { useFormControls, useFileFields } from "../../hooks/useFormControls";
+import { useFormDraft } from "../../hooks/useFormDraft";
+import { ResetFormBar } from "../../components/ui/ResetFormBar";
 
-type ApplicantType =
-  | ""
-  | "Plantilla"
-  | "Non-Plantilla"
-  | "Consultant"
-  | "Other";
+// From GET /applicant-types (applicant_access_position + applicant_req_documents)
+interface ApplicantTypeOption {
+  id: string;
+  name: string;
+  documents: { code: string; name: string }[];
+}
 
 interface FamilyMember {
   id: string;
@@ -44,8 +46,6 @@ interface DocumentFiles {
   doc_letter_request: File | null;
   doc_valid_id_1: File | null;
   doc_valid_id_2: File | null;
-  doc_nbi_clearance: File | null;
-  doc_consultancy_contract: File | null;
   doc_other: File | null;
   applicant_photo: File | null;
 }
@@ -79,8 +79,15 @@ export function AccessPassForm({
   reference: string | null;
   onSubmitted: () => void;
 }) {
-  const [applicantType, setApplicantType] = useState<ApplicantType>("");
+  const [applicantType, setApplicantType] = useState("");
+  const [applicantTypes, setApplicantTypes] = useState<ApplicantTypeOption[]>(
+    [],
+  );
+  const [typesError, setTypesError] = useState(false);
+  // Applicant-specific uploads, keyed by "req_{doc_code}"
+  const [reqFiles, setReqFiles] = useState<Record<string, File | null>>({});
   const [signature, setSignature] = useState("");
+  const [formKey, setFormKey] = useState(0); // bump to remount (clear) the form
 
   // Both repeatable tables now share the same universal update/add/remove
   // logic via useFormControls, instead of each having its own copy.
@@ -90,6 +97,7 @@ export function AccessPassForm({
     addRecord: addFamilyMember,
     removeRecord: removeFamilyMember,
     resetRecords: resetFamilyMembers,
+    setRecords: setFamilyMembers,
   } = useFormControls<FamilyMember>(emptyFamilyMember);
 
   const {
@@ -98,6 +106,7 @@ export function AccessPassForm({
     addRecord: addEducationRecord,
     removeRecord: removeEducationRecord,
     resetRecords: resetEducationRecords,
+    setRecords: setEducationRecords,
   } = useFormControls<EducationRecord>(emptyEducationRecord);
 
   const { files, handleFileChange, resetFiles } = useFileFields<DocumentFiles>(
@@ -105,8 +114,6 @@ export function AccessPassForm({
       doc_letter_request: null,
       doc_valid_id_1: null,
       doc_valid_id_2: null,
-      doc_nbi_clearance: null,
-      doc_consultancy_contract: null,
       doc_other: null,
       applicant_photo: null,
     }),
@@ -121,8 +128,15 @@ export function AccessPassForm({
     undefined,
   );
 
-  const showNbi = applicantType === "Non-Plantilla";
-  const showConsultancy = applicantType === "Consultant";
+  useEffect(() => {
+    api
+      .get<ApplicantTypeOption[]>("/applicant-types")
+      .then((res) => setApplicantTypes(res.data))
+      .catch(() => setTypesError(true));
+  }, []);
+
+  const requiredDocs =
+    applicantTypes.find((t) => t.name === applicantType)?.documents ?? [];
   const {
     formProps,
     step,
@@ -145,12 +159,41 @@ export function AccessPassForm({
         ["doc_valid_id_2", "Valid ID (Copy 2)"],
         ["applicant_photo", "Applicant photo"],
       ];
-      if (showNbi) required.push(["doc_nbi_clearance", "NBI Clearance"]);
-      if (showConsultancy)
-        required.push(["doc_consultancy_contract", "Contract of Consultancy"]);
-      return required.filter(([k]) => !files[k]).map(([, label]) => label);
+      return [
+        ...required.filter(([k]) => !files[k]).map(([, label]) => label),
+        ...requiredDocs
+          .filter((d) => !reqFiles[`req_${d.code}`])
+          .map((d) => d.name),
+      ];
     },
   });
+  const draft = useFormDraft({
+    key: "smart_draft_access_pass",
+    formRef: formProps.ref,
+    extra: { applicantType, familyMembers, educationRecords, signature, step },
+    onRestore: (d) => {
+      if (d.applicantType) setApplicantType(d.applicantType);
+      if (d.familyMembers?.length) setFamilyMembers(d.familyMembers);
+      if (d.educationRecords?.length) setEducationRecords(d.educationRecords);
+      if (d.signature) setSignature(d.signature);
+      if (d.step) goTo(d.step);
+    },
+  });
+
+  function handleReset() {
+    return;
+    draft.clear();
+    setFormKey((k) => k + 1);
+    resetFamilyMembers();
+    resetEducationRecords();
+    setApplicantType("");
+    setReqFiles({});
+    resetFiles();
+    resetSteps();
+    setSignature("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   // Step 4: snapshot the (uncontrolled) personal fields for the summary and
   // pre-fill the declaration's printed name + date.
   const [personal, setPersonal] = useState<Record<string, string>>({});
@@ -218,6 +261,10 @@ export function AccessPassForm({
       Object.entries(files).forEach(([key, file]) => {
         if (file) formData.set(key, file);
       });
+      requiredDocs.forEach((d) => {
+        const f = reqFiles[`req_${d.code}`];
+        if (f) formData.set(`req_${d.code}`, f);
+      });
 
       const response = await api.post("/access-pass", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -229,6 +276,8 @@ export function AccessPassForm({
       resetFamilyMembers();
       resetEducationRecords();
       setApplicantType("");
+      setReqFiles({});
+      draft.clear();
       resetFiles();
       onSubmitted(); // reserve a fresh number for the next application
       resetSteps();
@@ -259,8 +308,6 @@ export function AccessPassForm({
     ["doc_letter_request", "Letter Request", true],
     ["doc_valid_id_1", "Valid ID (Copy 1)", true],
     ["doc_valid_id_2", "Valid ID (Copy 2)", true],
-    ["doc_nbi_clearance", "NBI Clearance", showNbi],
-    ["doc_consultancy_contract", "Contract of Consultancy", showConsultancy],
     ["doc_other", "Other document", !!files.doc_other],
     ["applicant_photo", "Applicant photo", true],
   ];
@@ -319,14 +366,26 @@ export function AccessPassForm({
         .map(([key, label]) => ({
           label,
           value: files[key]?.name ?? "Not uploaded",
-        })),
+        }))
+        .concat(
+          requiredDocs.map((d) => ({
+            label: d.name,
+            value: reqFiles[`req_${d.code}`]?.name ?? "Not uploaded",
+          })),
+        ),
     },
   ];
 
   return (
     <>
+      <ResetFormBar restored={draft.restored} onReset={handleReset} />
       <form
+        key={formKey}
         {...formProps}
+        onInput={(e) => {
+          formProps.onInput(e);
+          draft.save();
+        }}
         onSubmit={handleSubmit}
         className="flex flex-col gap-6"
         noValidate
@@ -436,17 +495,28 @@ export function AccessPassForm({
                   name="applicant_type"
                   required
                   value={applicantType}
-                  onChange={(e) =>
-                    setApplicantType(e.target.value as ApplicantType)
-                  }
+                  onChange={(e) => {
+                    setApplicantType(e.target.value);
+                    setReqFiles({}); // drop uploads from the previous type
+                  }}
                   className={selectClasses}
                 >
-                  <option value="">Select&hellip;</option>
-                  <option value="Plantilla">Plantilla</option>
-                  <option value="Non-Plantilla">Non-Plantilla</option>
-                  <option value="Consultant">Consultant</option>
-                  <option value="Other">Other</option>
+                  <option value="">
+                    {applicantTypes.length || typesError
+                      ? "Select\u2026"
+                      : "Loading\u2026"}
+                  </option>
+                  {applicantTypes.map((t) => (
+                    <option key={t.id} value={t.name}>
+                      {t.name}
+                    </option>
+                  ))}
                 </select>
+                {typesError && (
+                  <p className="mt-1 text-sm text-red-600">
+                    Couldn&apos;t load applicant types. Please refresh the page.
+                  </p>
+                )}
               </div>
             </div>
           </section>
@@ -660,27 +730,21 @@ export function AccessPassForm({
                 onChange={(f) => handleFileChange("doc_valid_id_2", f)}
               />
 
-              {showNbi && (
+              {requiredDocs.map((d) => (
                 <UploadFileInput
-                  label="NBI Clearance"
-                  hint="required for Non-Plantilla"
-                  name="doc_nbi_clearance"
-                  color="amber"
-                  onChange={(f) => handleFileChange("doc_nbi_clearance", f)}
-                />
-              )}
-
-              {showConsultancy && (
-                <UploadFileInput
-                  label="Contract of Consultancy"
-                  hint="required for Consultants"
-                  name="doc_consultancy_contract"
+                  key={d.code}
+                  label={d.name}
+                  hint={`required for ${applicantType}`}
+                  name={`req_${d.code}`}
                   color="amber"
                   onChange={(f) =>
-                    handleFileChange("doc_consultancy_contract", f)
+                    setReqFiles((prev) => ({
+                      ...prev,
+                      [`req_${d.code}`]: f?.[0] ?? null,
+                    }))
                   }
                 />
-              )}
+              ))}
 
               <UploadFileInput
                 label="Other Supporting Document"

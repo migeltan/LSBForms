@@ -10,7 +10,10 @@ return [
         env('FRONTEND_URL', 'http://localhost:5173'),
     ],
 
-    'allowed_origins_patterns' => [],
+    // Local dev: Vite may run on 127.0.0.1 or a different port (5174, ...).
+    'allowed_origins_patterns' => env('APP_ENV') === 'local'
+        ? ['#^https?://(localhost|127\.0\.0\.1)(:\d+)?$#']
+        : [],
 
     'allowed_headers' => ['*'],
 

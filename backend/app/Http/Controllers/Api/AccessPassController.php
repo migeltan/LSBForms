@@ -10,6 +10,7 @@ use App\Models\EducationalBackground;
 use App\Models\FamilyBackground;
 use App\Support\ReferenceNumberGenerator;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -24,14 +25,25 @@ class AccessPassController extends Controller
         'doc_letter_request' => 'Letter Request',
         'doc_valid_id_1' => 'Valid ID 1',
         'doc_valid_id_2' => 'Valid ID 2',
-        'doc_nbi_clearance' => 'NBI Clearance',
-        'doc_consultancy_contract' => 'Contract of Consultancy',
         'doc_other' => 'Other',
     ];
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        // Applicant-specific documents for the selected classification
+        // (applicant_access_position / applicant_req_documents). File input
+        // name is "req_{doc_code}"; stored document_type is the document name.
+        $reqDocs = DB::table('applicant_req_documents as d')
+            ->join('applicant_access_position as p', 'p.position_id', '=', 'd.position_id')
+            ->where('p.application_position', $request->input('applicant_type'))
+            ->get(['d.doc_code', 'd.document_name']);
+
+        $reqRules = [];
+        foreach ($reqDocs as $d) {
+            $reqRules["req_{$d->doc_code}"] = ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'];
+        }
+
+        $validator = Validator::make($request->all(), $reqRules + [
             'first_name' => ['required', 'string', 'max:100'],
             'middle_name' => ['nullable', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
@@ -43,7 +55,7 @@ class AccessPassController extends Controller
             'address' => ['nullable', 'string'],
             'contact_number' => ['required', 'string', 'max:30'],
             'email' => ['required', 'email', 'max:150'],
-            'applicant_type' => ['required', 'in:Plantilla,Non-Plantilla,Consultant,Other'],
+            'applicant_type' => ['required', 'string', Rule::exists('applicant_access_position', 'application_position')],
 
             'family_background' => ['required', 'string'],
             'educational_background' => ['required', 'string'],
@@ -55,8 +67,6 @@ class AccessPassController extends Controller
             'doc_letter_request' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
             'doc_valid_id_1' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
             'doc_valid_id_2' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
-            'doc_nbi_clearance' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
-            'doc_consultancy_contract' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
             'doc_other' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
             'applicant_photo' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:10240'],
         ]);
@@ -76,21 +86,7 @@ class AccessPassController extends Controller
             ], 422);
         }
 
-        // Conditional document requirements the client-side form enforces
-        // visually — re-checked here since the server can't trust the client.
-        if ($data['applicant_type'] === 'Non-Plantilla' && !$request->hasFile('doc_nbi_clearance')) {
-            return response()->json([
-                'errors' => ['doc_nbi_clearance' => ['NBI Clearance is required for Non-Plantilla applicants.']],
-            ], 422);
-        }
-
-        if ($data['applicant_type'] === 'Consultant' && !$request->hasFile('doc_consultancy_contract')) {
-            return response()->json([
-                'errors' => ['doc_consultancy_contract' => ['Contract of Consultancy is required for Consultants.']],
-            ], 422);
-        }
-
-        $application = DB::transaction(function () use ($request, $data, $familyBackground, $educationalBackground) {
+        $application = DB::transaction(function () use ($request, $data, $familyBackground, $educationalBackground, $reqDocs) {
             $requested = $request->input('reference_id');
             $applicationId = (is_string($requested)
                 && preg_match('/^AP-\d{4}-\d{5}$/', $requested)
@@ -167,6 +163,17 @@ class AccessPassController extends Controller
                     'document_type' => $documentType,
                     'file_name' => $file->getClientOriginalName(),
                     'file_path' => $path,
+                    'verification_status' => 'Pending',
+                ]);
+            }
+
+            foreach ($reqDocs as $d) {
+                $file = $request->file("req_{$d->doc_code}");
+                DocumentAccessPass::create([
+                    'application_id' => $applicationId,
+                    'document_type' => $d->document_name,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_path' => $this->storeUploadedFile($file, 'access-pass/documents'),
                     'verification_status' => 'Pending',
                 ]);
             }

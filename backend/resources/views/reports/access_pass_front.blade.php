@@ -110,6 +110,7 @@
             font-family: 'Bebas Neue', Arial, sans-serif;
             font-size: {{ round(5.2 * $sizeScale, 2) }}mm;
             letter-spacing: 3px;
+            white-space: nowrap;
             color: #ffffff;
             text-transform: uppercase;
         }
@@ -157,7 +158,7 @@ $L = \App\Support\AccessPassLayout::resolve($layoutSource, $size);
             @endif
         </div>
 
-        <div class="field bar-text">{{ $category ?? 'Security' }}</div>
+<div class="field bar-text" data-fit>{{ $applicant->applicant_type }}</div>
     </div>
 
         <script>
