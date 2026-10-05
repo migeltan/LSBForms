@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { FileText } from "lucide-react";
 import type { DocumentRow } from "../../../../../hooks/types";
-import { STORAGE_BASE, BASE } from "../../../../../hooks/apiConfig";
+import { BASE } from "../../../../../hooks/apiConfig";
 import { TOKEN_KEY } from "../../../../../providers/AuthProvider";
 import { DocumentPreviewModal } from "../../../../../components/modals/DocumentPreviewModal";
 import { DownloadModal } from "../../../../../components/modals/DownloadModal";
@@ -75,7 +75,7 @@ function FileActionCell({
   onView: () => void;
   onReplace: (file: File) => void;
 }) {
-  const downloadUrl = `${BASE}/api/access-pass/documents/${documentId}/download`;
+  const downloadUrl = `${BASE}/api/admin/access-pass/documents/${documentId}/download`;
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [downloadStatus, setDownloadStatus] = useState<
@@ -266,6 +266,30 @@ export function DocumentsModal({
     }
   }
 
+  async function handleView(doc: DocumentRow) {
+    try {
+      const token = sessionStorage.getItem(TOKEN_KEY);
+      const res = await fetch(
+        `${BASE}/api/admin/access-pass/documents/${doc.id}/file`,
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+      );
+      if (!res.ok) throw new Error("Could not load file");
+      const blobUrl = URL.createObjectURL(await res.blob());
+      setPreview({
+        url: blobUrl,
+        name: doc.file_name,
+        type: doc.document_type,
+      });
+    } catch {
+      window.alert("Could not open the file. Please try again.");
+    }
+  }
+
+  function closePreview() {
+    if (preview) URL.revokeObjectURL(preview.url);
+    setPreview(null);
+  }
+
   if (documents.length === 0) {
     return <EmptyState />;
   }
@@ -312,13 +336,7 @@ export function DocumentsModal({
                 editing={editing}
                 uploading={uploadingId === doc.id}
                 uploadError={uploadError[doc.id] ?? null}
-                onView={() =>
-                  setPreview({
-                    url: STORAGE_BASE + "/" + doc.file_path,
-                    name: doc.file_name,
-                    type: doc.document_type,
-                  })
-                }
+                onView={() => handleView(doc)}
                 onReplace={(file) => handleReplace(doc, file)}
               />
             </div>
@@ -331,7 +349,7 @@ export function DocumentsModal({
         fileUrl={preview?.url ?? null}
         fileName={preview?.name ?? ""}
         documentType={preview?.type}
-        onClose={() => setPreview(null)}
+        onClose={closePreview}
       />
     </>
   );

@@ -10,6 +10,7 @@ House of Representatives Internal Security Group.
 | PDF Service | Node + Puppeteer + Express (Windows Service) | `/pdf-service` |
 
 kmonnlnlnk
+
 ```
 hor_internal-security-group/
 ├── backend/       Laravel API — routes, controllers, models, migrations
@@ -82,15 +83,13 @@ npm run dev             # → http://localhost:5173
   instead of spawning Chromium per request.
 - For full instalation go to [`pdf-service/README.md`](./pdf-service/README.md)
 
-## 🔑 Default login
+## 🔑 Admin login
 
-```
-admin / Password123
-```
+The first admin is created by `php artisan db:seed`, using `ADMIN_SEED_HREP_ID` (default `HREP-2024-0001`) and `ADMIN_SEED_PASSWORD` from `backend/.env`.
 
-⚠️ **Change this before any demo or deployment.**
+If `ADMIN_SEED_PASSWORD` is left empty, a dev-only default is used **locally only** and seeding fails in production.
 
----
+⚠️ **Set a strong `ADMIN_SEED_PASSWORD` before any demo or deployment.**
 
 ## 📦 What's included
 

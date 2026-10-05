@@ -99,7 +99,6 @@ export function VehicleStickerForm({
   });
 
   function handleReset() {
-    return;
     draft.clear();
     setFormKey((k) => k + 1);
     setOwnership("");
@@ -131,7 +130,7 @@ export function VehicleStickerForm({
 
       setApplicationId(response.data?.application_id);
       setResultStatus("success");
-      form.reset();
+      setFormKey((k) => k + 1);
       setOwnership("");
       draft.clear();
       resetFiles();

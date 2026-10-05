@@ -118,6 +118,16 @@
             text-transform: uppercase;
         }
 
+        .signature-img {
+            justify-content: center;
+        }
+
+        .signature-img img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
         /* --- back --- */
         .back {
             background: #ffffff;
@@ -255,6 +265,11 @@
         <div class="field cn-value" data-fit style="{{ $box('cn') }}">{{ $application->control_number ?? '—' }}</div>
         <div class="field name" style="{{ $box('name') }}">{{ strtoupper($applicant->full_name) }}</div>
         <div class="field department" style="{{ $box('department') }}">Legislative Security Bureau</div>
+        <div class="field signature-img" style="{{ $box('signature') }}">
+            @if (! empty($assets['signature']))
+                <img src="{{ $assets['signature'] }}" alt="Signature">
+            @endif
+        </div>
     </div>
 
   @endif

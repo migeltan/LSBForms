@@ -22,7 +22,7 @@ use App\Http\Controllers\Api\VehicleStickerLayoutController;
 */
 
 // --- Auth (admin/reviewer login — src/pages/Admin.tsx) ---
-Route::post('/auth/login', [AuthController::class, 'login']);
+Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);
@@ -40,42 +40,21 @@ Route::get('/login', function () {
 })->name('login');
 
 // --- Public application flows ---
-Route::post('/access-pass/reserve-reference', [AccessPassController::class, 'reserveReference']);
-Route::post('/vehicle-sticker/reserve-reference', [VehicleStickerController::class, 'reserveReference']);
-
 Route::get('/applicant-types', [ApplicantTypeController::class, 'index']);
-Route::post('/access-pass/reserve-reference', [AccessPassController::class, 'reserveReference']);
-Route::post('/access-pass', [AccessPassController::class, 'store']);
-Route::get('/access-pass/{application_id}', [AccessPassController::class, 'show']);
 
-Route::post('/vehicle-sticker/reserve-reference', [VehicleStickerController::class, 'reserveReference']);
-Route::post('/vehicle-sticker', [VehicleStickerController::class, 'store']);
-Route::get('/vehicle-sticker/{application_id}', [VehicleStickerController::class, 'show']);
+Route::middleware('throttle:10,1')->group(function () {
+    Route::post('/access-pass/reserve-reference', [AccessPassController::class, 'reserveReference']);
+    Route::post('/access-pass', [AccessPassController::class, 'store']);
 
-Route::get('/documents/{application_id}', [DocumentController::class, 'index']);
-
-// --- Force-download endpoints (see DocumentController for why these
-// exist instead of just linking straight to public storage) ---
-Route::get('/access-pass/documents/{documentId}/download', [DocumentController::class, 'downloadAccessPass']);
-Route::get('/vehicle-sticker/documents/{documentId}/download', [DocumentController::class, 'downloadVehicle']);
+    Route::post('/vehicle-sticker/reserve-reference', [VehicleStickerController::class, 'reserveReference']);
+    Route::post('/vehicle-sticker', [VehicleStickerController::class, 'store']);
+});
 
 // --- Check Application Status (src/pages/Status.tsx) ---
-// Lean, public-safe applicant profile for the row-click modal on the
-// Status page (feat4-check-status/StatusModalProfile.tsx). Two path
-// segments, so it never collides with the /status/{reference}
-// single-segment wildcard below regardless of declaration order —
-// declared first here just for readability.
-Route::get('/status/applicant/{applicantId}', [ApplicationStatusController::class, 'profile']);
-Route::get('/status/{reference}', [ApplicationStatusController::class, 'show']);
-
-// --- Application search: search bar + type/date filters + results
-// table (src/pages/StatusSearch.tsx). Kept under its own /applications
-// prefix rather than /status to avoid colliding with the /status/{reference}
-// wildcard above.
-Route::get('/applications/search', [ApplicationStatusController::class, 'search']);
-
-
-
+// Reference number + last name or email. Returns status and dates only.
+Route::post('/status/lookup', [ApplicationStatusController::class, 'lookup'])
+    ->middleware('throttle:10,1');
+    
 // --- Admin / reviewer only (src/pages/Admin.tsx) ---
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
     Route::get('/applications', [AdminController::class, 'index']);
@@ -115,7 +94,10 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
 
     Route::get('/vehicle-sticker/documents/{documentId}', [DocumentController::class, 'showVehicle']);
     Route::post('/vehicle-sticker/documents/{documentId}/update', [DocumentController::class, 'updateVehicle']);
-
+    Route::get('/access-pass/documents/{documentId}/file', [DocumentController::class, 'viewAccessPass']);
+    Route::get('/access-pass/documents/{documentId}/download', [DocumentController::class, 'downloadAccessPass']);
+    Route::get('/vehicle-sticker/documents/{documentId}/file', [DocumentController::class, 'viewVehicle']);
+    Route::get('/vehicle-sticker/documents/{documentId}/download', [DocumentController::class, 'downloadVehicle']);
 
         Route::get('/access-pass/{applicantId}/layout', [AccessPassLayoutController::class, 'show']);
     Route::put('/access-pass/{applicantId}/layout', [AccessPassLayoutController::class, 'update']);

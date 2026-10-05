@@ -7,6 +7,7 @@ use App\Models\Applicant;
 use App\Support\AccessPassLayout;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AccessPassLayoutController extends Controller
 {
@@ -89,9 +90,18 @@ class AccessPassLayoutController extends Controller
                 'department' => 'Legislative Security Bureau',
                 'controlNumber' => $application->control_number ?? '1AA-1000',
                 'photoUrl' => $application->photo_path ? asset('storage/'.$application->photo_path) : null,
-                // TODO: point at wherever the signature image actually lives.
-                'signatureUrl' => null,
+                'signatureUrl' => $this->signatureDataUri($application),
             ],
         ];
+    }
+        private function signatureDataUri($application): ?string
+    {
+        $path = $application->declaration_signature_path;
+
+        if (! $path || ! Storage::disk('local')->exists($path)) {
+            return null;
+        }
+
+        return 'data:image/png;base64,'.base64_encode(Storage::disk('local')->get($path));
     }
 }

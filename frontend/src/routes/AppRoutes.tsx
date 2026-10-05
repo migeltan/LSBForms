@@ -11,8 +11,6 @@ import { AdminProfilesPage } from "../modules/feat3-admin/pages/AdminProfilesPag
 import { AdminLogsPage } from "../modules/feat3-admin/pages/AdminLogsPage";
 import { AdminManualEntryPage } from "../modules/feat3-admin/pages/AdminManualEntryPage";
 import { NotFound } from "../pages/NotFound";
-import { StatusSearch } from "../modules/feat4-check-status/InputSearch/StatusSearch.tsx";
-import { StatusQrScan } from "../modules/feat4-check-status/QrSearch/StatusQrScan.tsx";
 
 export function AppRoutes() {
   return (
@@ -22,8 +20,6 @@ export function AppRoutes() {
         <Route path="access-pass" element={<AccessPass />} />
         <Route path="vehicle-sticker" element={<VehicleSticker />} />
         <Route path="status" element={<Status />} />
-        <Route path="status/search" element={<StatusSearch />} />
-        <Route path="status/qr" element={<StatusQrScan />} />
         <Route path="admin" element={<Admin />} />
         <Route path="admin/access-pass" element={<AdminAccessPassPage />} />
         <Route

@@ -69,10 +69,12 @@ export function ApplicantDetailModal({
   applicantId,
   onClose,
   onDeleted,
+  onChanged,
 }: {
   applicantId: number | null;
   onClose: () => void;
   onDeleted?: () => void;
+  onChanged?: () => void;
 }) {
   const [detail, setDetail] = useState<ApplicantDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -203,6 +205,7 @@ export function ApplicantDetailModal({
         ...detail,
         personal_information: { ...detail.personal_information, status },
       });
+      onChanged?.();
     } catch {
       setReviewError("Could not update the application status.");
     } finally {
@@ -261,6 +264,7 @@ export function ApplicantDetailModal({
       setDraftFamily([]);
       setDraftEducation([]);
       setSaveCancelModal("success");
+      onChanged?.();
     } catch {
       setSaveError("Could not save changes. Please try again.");
       setSaveCancelModal(null);

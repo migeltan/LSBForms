@@ -227,9 +227,8 @@ function ApplicationCard({ form }: { form: FormDefinition }) {
   );
 }
 
-/** Inline reference-number search. Hands off to the existing
- *  /status/search page + searchApplications logic rather than
- *  duplicating any lookup behavior on the landing page itself. */
+/** Inline reference-number box. Hands off to the /status page (which asks
+ *  for the last name or email too) rather than duplicating the lookup here. */
 function StatusCheckCard() {
   const [reference, setReference] = useState("");
   const navigate = useNavigate();
@@ -238,7 +237,7 @@ function StatusCheckCard() {
     e.preventDefault();
     const trimmed = reference.trim();
     if (!trimmed) return;
-    navigate(`/status/search?ref=${encodeURIComponent(trimmed)}`);
+    navigate(`/status?ref=${encodeURIComponent(trimmed)}`);
   }
 
   return (
@@ -250,8 +249,9 @@ function StatusCheckCard() {
         <div className="section-label">Already Applied?</div>
         <h2>Check Application Status</h2>
         <p className="mb-0 text-[var(--smart-muted)]">
-          Enter your <strong>application reference number</strong> to see where
-          your application stands.
+          Enter your <strong>application reference number</strong>, then confirm
+          it with your <strong>last name or email</strong> to see where your
+          application stands.
         </p>
       </div>
       <div className="status-check-controls">

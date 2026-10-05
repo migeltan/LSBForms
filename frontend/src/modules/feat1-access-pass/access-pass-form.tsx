@@ -181,7 +181,6 @@ export function AccessPassForm({
   });
 
   function handleReset() {
-    return;
     draft.clear();
     setFormKey((k) => k + 1);
     resetFamilyMembers();
@@ -272,7 +271,7 @@ export function AccessPassForm({
 
       setApplicationId(response.data?.application_id);
       setResultStatus("success");
-      form.reset();
+      setFormKey((k) => k + 1);
       resetFamilyMembers();
       resetEducationRecords();
       setApplicantType("");

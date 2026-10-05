@@ -75,6 +75,7 @@ const ICON = (
 export function AccessPassTable() {
   const [rows, setRows] = useState<AccessPassRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reloadKey, setReloadKey] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [selectedApplicantId, setSelectedApplicantId] = useState<number | null>(
     null,
@@ -98,7 +99,7 @@ export function AccessPassTable() {
     let cancelled = false;
 
     async function load() {
-      setLoading(true);
+      if (reloadKey === 0) setLoading(true);
       setError(null);
       try {
         const token = sessionStorage.getItem(TOKEN_KEY);
@@ -119,7 +120,7 @@ export function AccessPassTable() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reloadKey]);
 
   return (
     <>
@@ -169,6 +170,8 @@ export function AccessPassTable() {
       <ApplicantDetailModal
         applicantId={selectedApplicantId}
         onClose={() => setSelectedApplicantId(null)}
+        onChanged={() => setReloadKey((k) => k + 1)}
+        onDeleted={() => setReloadKey((k) => k + 1)}
       />
     </>
   );

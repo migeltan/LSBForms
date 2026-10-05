@@ -111,7 +111,7 @@ class AccessPassController extends Controller
                 'applicant_type' => $data['applicant_type'],
             ]);
 
-            $photoPath = $this->storeUploadedFile($request->file('applicant_photo'), 'access-pass/photos');
+            $photoPath = $this->storeUploadedFile($request->file('applicant_photo'), 'access-pass/photos', 'public');
 
             $application = AccessPassApplication::create([
                 'application_id' => $applicationId,
@@ -205,9 +205,9 @@ class AccessPassController extends Controller
         return response()->json($application);
     }
 
-    private function storeUploadedFile($file, string $directory): string
+    private function storeUploadedFile($file, string $directory, string $disk = 'local'): string
     {
-        return $file->store($directory, 'public');
+        return $file->store($directory, $disk);
     }
 
         /** Decodes the PNG data URL from the signature pad and stores it as a file. */
@@ -219,8 +219,8 @@ class AccessPassController extends Controller
             abort(422, 'The signature image is invalid. Please sign again.');
         }
 
-        $path = "access-pass/signatures/{$applicationId}.png";
-        Storage::disk('public')->put($path, $binary);
+        $path = 'access-pass/signatures/'.\Illuminate\Support\Str::random(40).'.png';
+        Storage::disk('local')->put($path, $binary);
 
         return $path;
     }

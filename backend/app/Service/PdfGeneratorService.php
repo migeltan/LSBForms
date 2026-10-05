@@ -8,6 +8,7 @@ use App\Support\StickerLayout;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 
 class PdfGeneratorService
@@ -110,6 +111,7 @@ class PdfGeneratorService
             'assets' => $idAssets,
             'templateSrc' => $idAssets['template'],
             'photoSrc' => $idAssets['photo'],
+            'signatureSrc' => $idAssets['signature'],
             'controlNumber' => $application->control_number ?? null,
             'department' => 'Legislative Security Bureau',
             'category' => 'Security',
@@ -145,6 +147,7 @@ class PdfGeneratorService
             return [
                 'template' => $this->toDataUri(public_path('images/id-templates/access-pass-blank.png')),
                 'photo' => $photoPath ? $this->toDataUri(storage_path('app/public/'.$photoPath)) : null,
+                'signature' => $this->signatureDataUri($application),
                 'bebasFont' => $bebasFont,
             ];
         }
@@ -152,8 +155,24 @@ class PdfGeneratorService
         return [
             'template' => asset('images/id-templates/access-pass-blank.png'),
             'photo' => $photoPath ? asset('storage/'.$photoPath) : null,
+            'signature' => $this->signatureDataUri($application),
             'bebasFont' => $bebasFont,
         ];
+    }
+
+    /**
+     * The declaration signature lives on the private disk, so it can't be
+     * linked by URL. It is always inlined as a data URI (preview and PDF).
+     */
+    private function signatureDataUri($application): ?string
+    {
+        $path = $application->declaration_signature_path ?? null;
+
+        if (! $path || ! Storage::disk('local')->exists($path)) {
+            return null;
+        }
+
+        return $this->toDataUri(Storage::disk('local')->path($path));
     }
     public function previewVehicleStickerFrontV2(int $applicantId): Response
     {

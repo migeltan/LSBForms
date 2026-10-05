@@ -272,3 +272,12 @@ export interface StatusModalProfileData {
   applicant_type: string | null; // shown as "Application Type" — access pass only
   plate_number: string | null; // shown as "Plate Number" — vehicle sticker only
 }
+
+// --- Status page: public lookup result (POST /status/lookup) ---
+export interface StatusLookupResult {
+  type: "access-pass" | "vehicle-sticker";
+  application_id: string;
+  status: ApplicationStatus | string;
+  date_submitted: string | null;
+  date_reviewed: string | null;
+}

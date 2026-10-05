@@ -64,12 +64,12 @@ class DocumentController extends Controller
         $updates = [];
 
         if ($request->hasFile('file')) {
-            if ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
-                Storage::disk('public')->delete($document->file_path);
+            if ($document->file_path && Storage::disk('local')->exists($document->file_path)) {
+                Storage::disk('local')->delete($document->file_path);
             }
 
             $file = $request->file('file');
-            $updates['file_path'] = $file->store("documents/{$document->application_id}", 'public');
+            $updates['file_path'] = $file->store("documents/{$document->application_id}", 'local');
             $updates['file_name'] = $file->getClientOriginalName();
         }
 
@@ -131,12 +131,12 @@ class DocumentController extends Controller
         $updates = [];
 
         if ($request->hasFile('file')) {
-            if ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
-                Storage::disk('public')->delete($document->file_path);
+            if ($document->file_path && Storage::disk('local')->exists($document->file_path)) {
+                Storage::disk('local')->delete($document->file_path);
             }
 
             $file = $request->file('file');
-            $updates['file_path'] = $file->store("documents/{$document->application_id}", 'public');
+            $updates['file_path'] = $file->store("documents/{$document->application_id}", 'local');
             $updates['file_name'] = $file->getClientOriginalName();
         }
 
@@ -170,35 +170,55 @@ class DocumentController extends Controller
      * public storage disk — this endpoint doesn't expose anything
      * that direct storage access didn't already.
      */
+        /** GET /api/admin/access-pass/documents/{documentId}/file (inline view, admin only) */
+    public function viewAccessPass(int $documentId)
+    {
+        $document = DocumentAccessPass::findOrFail($documentId);
+
+        return $this->inlineFile($document->file_path);
+    }
+
+    /** GET /api/admin/access-pass/documents/{documentId}/download (admin only) */
     public function downloadAccessPass(int $documentId)
     {
         $document = DocumentAccessPass::findOrFail($documentId);
 
-        if (! Storage::disk('public')->exists($document->file_path)) {
-            abort(404);
-        }
-
-        return response()->download(
-            Storage::disk('public')->path($document->file_path),
-            $document->file_name
-        );
+        return $this->attachmentFile($document->file_path, $document->file_name);
     }
 
-    /**
-     * GET /api/vehicle-sticker/documents/{documentId}/download
-     * Mirrors downloadAccessPass() above, against DocumentVehicleSticker.
-     */
+    /** GET /api/admin/vehicle-sticker/documents/{documentId}/file (inline view, admin only) */
+    public function viewVehicle(int $documentId)
+    {
+        $document = DocumentVehicleSticker::findOrFail($documentId);
+
+        return $this->inlineFile($document->file_path);
+    }
+
+    /** GET /api/admin/vehicle-sticker/documents/{documentId}/download (admin only) */
     public function downloadVehicle(int $documentId)
     {
         $document = DocumentVehicleSticker::findOrFail($documentId);
 
-        if (! Storage::disk('public')->exists($document->file_path)) {
+        return $this->attachmentFile($document->file_path, $document->file_name);
+    }
+
+    private function inlineFile(?string $path)
+    {
+        if (! $path || ! Storage::disk('local')->exists($path)) {
             abort(404);
         }
 
-        return response()->download(
-            Storage::disk('public')->path($document->file_path),
-            $document->file_name
-        );
+        return response()->file(Storage::disk('local')->path($path), [
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
+    private function attachmentFile(?string $path, string $name)
+    {
+        if (! $path || ! Storage::disk('local')->exists($path)) {
+            abort(404);
+        }
+
+        return response()->download(Storage::disk('local')->path($path), $name);
     }
 }

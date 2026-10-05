@@ -28,7 +28,11 @@ Route::get('/', function () {
  * priority when it's hit.
  */
 Route::get('/storage/{path}', function (string $path) {
-    if (! Storage::disk('public')->exists($path)) {
+    // Only photos live on the public disk. Documents and signatures are private.
+    $allowed = ['access-pass/photos/', 'admin-photos/'];
+    $ok = collect($allowed)->contains(fn ($prefix) => str_starts_with($path, $prefix));
+
+    if (! $ok || str_contains($path, '..') || ! Storage::disk('public')->exists($path)) {
         abort(404);
     }
 

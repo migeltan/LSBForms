@@ -82,6 +82,7 @@ const ICON = (
 export function VehicleStickerTable() {
   const [rows, setRows] = useState<VehicleStickerRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reloadKey, setReloadKey] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [selectedApplicantId, setSelectedApplicantId] = useState<number | null>(
     null,
@@ -106,7 +107,7 @@ export function VehicleStickerTable() {
     let cancelled = false;
 
     async function load() {
-      setLoading(true);
+      if (reloadKey === 0) setLoading(true);
       setError(null);
       try {
         const token = sessionStorage.getItem(TOKEN_KEY);
@@ -128,8 +129,7 @@ export function VehicleStickerTable() {
     return () => {
       cancelled = true;
     };
-  }, []);
-
+  }, [reloadKey]);
   return (
     <>
       <AdminTableShell
@@ -180,6 +180,8 @@ export function VehicleStickerTable() {
       <VehicleDetailModal
         applicantId={selectedApplicantId}
         onClose={() => setSelectedApplicantId(null)}
+        onChanged={() => setReloadKey((k) => k + 1)}
+        onDeleted={() => setReloadKey((k) => k + 1)}
       />
     </>
   );

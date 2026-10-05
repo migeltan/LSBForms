@@ -109,7 +109,7 @@ class VehicleStickerController extends Controller
                 }
 
                 $file = $request->file($field);
-                $path = $file->store('vehicle-sticker/documents', 'public');
+                $path = $file->store('vehicle-sticker/documents', 'local');
 
                 DocumentVehicleSticker::create([
                     'application_id' => $applicationId,

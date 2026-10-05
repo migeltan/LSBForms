@@ -138,9 +138,36 @@ function FormsMenu() {
   );
 }
 function MobileMenu() {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+
+  // Close on outside click or Escape.
+  useEffect(() => {
+    if (!open) return;
+    function onClickOutside(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onClickOutside);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
   return (
-    <details className="relative md:hidden">
-      <summary className="list-none cursor-pointer rounded border border-white/20 px-3 py-2 text-white [&::-webkit-details-marker]:hidden">
+    <div className="relative md:hidden" ref={wrapRef}>
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+        className="cursor-pointer rounded border border-white/20 px-3 py-2 text-white"
+      >
         <span className="sr-only">Toggle navigation</span>
         <svg
           width="20"
@@ -156,34 +183,37 @@ function MobileMenu() {
             strokeLinecap="round"
           />
         </svg>
-      </summary>
-      <ul className="absolute right-0 top-12 z-50 w-56 rounded-md border border-[var(--smart-border)] bg-white p-2 shadow-lg">
-        {[
-          ...navItems,
-          ...AVAILABLE_FORMS.map((form) => ({
-            to: form.href,
-            label: form.title,
-            end: false,
-          })),
-          { to: "/admin", label: "Admin", end: false },
-        ].map((item) => (
-          <li key={item.to}>
-            <NavLink
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                `block rounded px-3 py-2 text-sm ${
-                  isActive
-                    ? "bg-[var(--smart-blue-light)] text-[var(--smart-blue-dark)] font-semibold"
-                    : "text-[var(--smart-ink)]"
-                }`
-              }
-            >
-              {item.label}
-            </NavLink>
-          </li>
-        ))}
-      </ul>
-    </details>
+      </button>
+      {open && (
+        <ul className="absolute right-0 top-12 z-50 w-56 rounded-md border border-[var(--smart-border)] bg-white p-2 shadow-lg">
+          {[
+            ...navItems,
+            ...AVAILABLE_FORMS.map((form) => ({
+              to: form.href,
+              label: form.title,
+              end: false,
+            })),
+            { to: "/admin", label: "Admin", end: false },
+          ].map((item) => (
+            <li key={item.to}>
+              <NavLink
+                to={item.to}
+                end={item.end}
+                onClick={() => setOpen(false)}
+                className={({ isActive }) =>
+                  `block rounded px-3 py-2 text-sm ${
+                    isActive
+                      ? "bg-[var(--smart-blue-light)] text-[var(--smart-blue-dark)] font-semibold"
+                      : "text-[var(--smart-ink)]"
+                  }`
+                }
+              >
+                {item.label}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
