@@ -5,22 +5,23 @@ const CONTACT_TILES = [
   {
     icon: MapPin,
     label: "Office Address",
-    value: "[OFFICIAL OFFICE ADDRESS TO BE CONFIRMED]",
+    value:
+      "Legislative Security Building, Clearance Branch, House of Representatives Complex, Constitution Hills, Batasan Hills, Quezon City",
   },
   {
     icon: Phone,
     label: "Phone",
-    value: "[OFFICIAL CONTACT NUMBER TO BE CONFIRMED]",
+    value: "Trunkline: 8931-5001, Local: 7544, 7448",
   },
   {
     icon: Mail,
     label: "Email",
-    value: "[OFFICIAL EMAIL ADDRESS TO BE CONFIRMED]",
+    value: "isgclearance@gmail.com",
   },
   {
     icon: Clock,
     label: "Office Hours",
-    value: "[OFFICIAL OFFICE HOURS TO BE CONFIRMED]",
+    value: "Monday to Thursday, 8:00 AM to 7:00 PM",
   },
 ];
 

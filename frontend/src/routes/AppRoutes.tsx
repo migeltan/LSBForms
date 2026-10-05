@@ -7,6 +7,9 @@ import { Status } from "../pages/Status";
 import { Admin } from "../pages/Admin.tsx";
 import { AdminAccessPassPage } from "../modules/feat3-admin/pages/AdminAccessPassPage";
 import { AdminVehicleStickerPage } from "../modules/feat3-admin/pages/AdminVehicleStickerPage";
+import { AdminProfilesPage } from "../modules/feat3-admin/pages/AdminProfilesPage";
+import { AdminLogsPage } from "../modules/feat3-admin/pages/AdminLogsPage";
+import { AdminManualEntryPage } from "../modules/feat3-admin/pages/AdminManualEntryPage";
 import { NotFound } from "../pages/NotFound";
 import { StatusSearch } from "../modules/feat4-check-status/InputSearch/StatusSearch.tsx";
 import { StatusQrScan } from "../modules/feat4-check-status/QrSearch/StatusQrScan.tsx";
@@ -27,6 +30,9 @@ export function AppRoutes() {
           path="admin/vehicle-sticker"
           element={<AdminVehicleStickerPage />}
         />
+        <Route path="admin/profiles" element={<AdminProfilesPage />} />
+        <Route path="admin/logs" element={<AdminLogsPage />} />
+        <Route path="admin/manual-entry" element={<AdminManualEntryPage />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

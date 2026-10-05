@@ -3,19 +3,18 @@ import { useNavigate } from "react-router-dom";
 import { TOKEN_KEY, useAuth } from "../../../providers/AuthProvider";
 import { BASE } from "../../../hooks/apiConfig";
 import type { ApplicationStatus } from "../../../hooks/types";
+import { EditAdminInfoModal } from "../components/EditAdminInfoModal";
 
-// "Pending" = not yet finalised. "To review" = freshly submitted (the badge
-// label for "Submitted" is "For Review").
+// "Pending" = not yet finalised. This unifies "Pending" and "For Review"
+// (the badge label for "Submitted") into a single UI category.
 const PENDING: ApplicationStatus[] = [
   "Submitted",
   "Under Review",
   "Incomplete/Returned",
 ];
-const TO_REVIEW: ApplicationStatus[] = ["Submitted"];
 
 interface Counts {
   pending: number;
-  toReview: number;
 }
 
 async function fetchCounts(path: string, signal: AbortSignal): Promise<Counts> {
@@ -28,7 +27,6 @@ async function fetchCounts(path: string, signal: AbortSignal): Promise<Counts> {
   const rows: { status: ApplicationStatus }[] = await res.json();
   return {
     pending: rows.filter((r) => PENDING.includes(r.status)).length,
-    toReview: rows.filter((r) => TO_REVIEW.includes(r.status)).length,
   };
 }
 
@@ -63,10 +61,6 @@ function AppStats({
         <span className="admin-app-stat-dot admin-app-stat-dot--blue" />
         {show(counts?.pending)} Pending Applications
       </li>
-      <li>
-        <span className="admin-app-stat-dot admin-app-stat-dot--green" />
-        {show(counts?.toReview)} To review
-      </li>
     </ul>
   );
 }
@@ -86,6 +80,7 @@ export function AdminPage() {
   const navigate = useNavigate();
   const access = useCounts("access-pass");
   const vehicle = useCounts("vehicle-sticker");
+  const [editOpen, setEditOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-6">
@@ -106,11 +101,19 @@ export function AdminPage() {
 
         <div className="admin-welcome-side">
           <div className="admin-avatar" aria-hidden="true">
-            {initialsOf(user?.full_name)}
+            {user?.photo_url ? (
+              <img src={user.photo_url} alt="" />
+            ) : (
+              initialsOf(user?.full_name)
+            )}
           </div>
           <div className="admin-welcome-name">{user?.full_name ?? "Admin"}</div>
           <div className="admin-welcome-actions">
-            <button type="button" className="btn-outline-dark">
+            <button
+              type="button"
+              className="btn-outline-dark"
+              onClick={() => setEditOpen(true)}
+            >
               Edit Info
             </button>
             <button
@@ -187,37 +190,83 @@ export function AdminPage() {
        * inert for now
        * --------------------------------------------------------- */}
       <div className="admin-feature-grid">
-        <div className="admin-feature-card-wrap">
-          <div className="admin-feature-card-inner admin-feature-card-inner--blue">
-            Auto
-            <br />
-            Template
+        <div className="admin-app-card-wrap">
+          <div className="admin-app-panel admin-app-panel--blue">
+            <h3>
+              Auto
+              <br />
+              Template
+            </h3>
+            <div className="admin-app-panel-divider" />
+            <p className="admin-app-panel-desc">
+              Encode paper-based applications and auto-generate the pass or
+              sticker.
+            </p>
           </div>
-          <div className="admin-feature-card">
-            <span className="admin-feature-badge">Coming soon</span>
+          <div className="admin-app-card">
+            <div className="admin-app-card-footer admin-app-card-footer--end">
+              <button
+                type="button"
+                className="btn-outline-dark"
+                onClick={() => navigate("/admin/manual-entry")}
+              >
+                Open
+              </button>
+            </div>
           </div>
         </div>
-        <div className="admin-feature-card-wrap">
-          <div className="admin-feature-card-inner admin-feature-card-inner--magenta">
-            Add
-            <br />
-            Admin Profile
+
+        <div className="admin-app-card-wrap">
+          <div className="admin-app-panel admin-app-panel--magenta">
+            <h3>
+              Add
+              <br />
+              Admin Profile
+            </h3>
+            <div className="admin-app-panel-divider" />
+            <p className="admin-app-panel-desc">
+              Create admin and reviewer accounts with contact details.
+            </p>
           </div>
-          <div className="admin-feature-card">
-            <span className="admin-feature-badge">Coming soon</span>
+          <div className="admin-app-card">
+            <div className="admin-app-card-footer admin-app-card-footer--end">
+              <button
+                type="button"
+                className="btn-outline-dark"
+                onClick={() => navigate("/admin/profiles")}
+              >
+                Open
+              </button>
+            </div>
           </div>
         </div>
-        <div className="admin-feature-card-wrap">
-          <div className="admin-feature-card-inner admin-feature-card-inner--green">
-            Activity
-            <br />
-            Log
+
+        <div className="admin-app-card-wrap">
+          <div className="admin-app-panel admin-app-panel--green">
+            <h3>
+              Activity
+              <br />
+              Log
+            </h3>
+            <div className="admin-app-panel-divider" />
+            <p className="admin-app-panel-desc">
+              Track approvals, declines and deletions made by admins.
+            </p>
           </div>
-          <div className="admin-feature-card">
-            <span className="admin-feature-badge">Coming soon</span>
+          <div className="admin-app-card">
+            <div className="admin-app-card-footer admin-app-card-footer--end">
+              <button
+                type="button"
+                className="btn-outline-dark"
+                onClick={() => navigate("/admin/logs")}
+              >
+                Open
+              </button>
+            </div>
           </div>
         </div>
       </div>
+      {editOpen && <EditAdminInfoModal onClose={() => setEditOpen(false)} />}
     </div>
   );
 }

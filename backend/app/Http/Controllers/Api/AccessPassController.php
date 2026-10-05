@@ -23,8 +23,8 @@ class AccessPassController extends Controller
      */
     private const DOCUMENT_FIELDS = [
         'doc_letter_request' => 'Letter Request',
-        'doc_valid_id_1' => 'Valid ID 1',
-        'doc_valid_id_2' => 'Valid ID 2',
+        'doc_valid_id_1' => 'Valid ID (Front)',
+        'doc_valid_id_2' => 'Valid ID (Back)',
         'doc_other' => 'Other',
     ];
 

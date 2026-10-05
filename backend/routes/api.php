@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Api\AccessPassController;
 use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\Api\AdminUserController;
+use App\Http\Controllers\Api\AdminLogController;
+use App\Http\Controllers\Api\ManualApplicationController;
 use App\Http\Controllers\Api\ApplicantTypeController;
 use App\Http\Controllers\Api\ApplicationStatusController;
 use App\Http\Controllers\Api\DocumentController;
@@ -23,6 +26,7 @@ Route::post('/auth/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);
+    Route::post('/auth/profile', [AuthController::class, 'updateProfile']);
 });
 
 /*
@@ -78,6 +82,12 @@ Route::get('/applications/search', [ApplicationStatusController::class, 'search'
 // --- Admin / reviewer only (src/pages/Admin.tsx) ---
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
     Route::get('/applications', [AdminController::class, 'index']);
+
+    Route::get('/users', [AdminUserController::class, 'index']);
+    Route::post('/users', [AdminUserController::class, 'store']);
+    Route::get('/logs', [AdminLogController::class, 'index']);
+
+    Route::post('/manual-applications', [ManualApplicationController::class, 'store']);
 
     Route::get('/access-pass', [AdminController::class, 'accessPassList']);
     Route::get('/access-pass/{applicantId}', [AdminController::class, 'accessPassShow']);

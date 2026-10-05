@@ -23,8 +23,11 @@ class User extends Authenticatable
         'full_name',
         'role',
         'is_active',
+        'profile_photo_path',
+        'email',
+        'contact_no',
     ];
-
+    
     protected $hidden = [
         'password_hash',
     ];
@@ -44,6 +47,13 @@ class User extends Authenticatable
     public function getAuthPassword(): string
     {
         return $this->password_hash;
+    }
+
+    public function photoUrl(): ?string
+    {
+        return $this->profile_photo_path
+            ? asset('storage/'.$this->profile_photo_path)
+            : null;
     }
 
     public function isAdmin(): bool

@@ -155,8 +155,8 @@ export function AccessPassForm({
       if (index !== 2) return [];
       const required: [keyof DocumentFiles, string][] = [
         ["doc_letter_request", "Letter Request"],
-        ["doc_valid_id_1", "Valid ID (Copy 1)"],
-        ["doc_valid_id_2", "Valid ID (Copy 2)"],
+        ["doc_valid_id_1", "Valid ID (Front)"],
+        ["doc_valid_id_2", "Valid ID (Back)"],
         ["applicant_photo", "Applicant photo"],
       ];
       return [
@@ -306,8 +306,8 @@ export function AccessPassForm({
 
   const docRows: [keyof DocumentFiles, string, boolean][] = [
     ["doc_letter_request", "Letter Request", true],
-    ["doc_valid_id_1", "Valid ID (Copy 1)", true],
-    ["doc_valid_id_2", "Valid ID (Copy 2)", true],
+    ["doc_valid_id_1", "Valid ID (Front)", true],
+    ["doc_valid_id_2", "Valid ID (Back)", true],
     ["doc_other", "Other document", !!files.doc_other],
     ["applicant_photo", "Applicant photo", true],
   ];
@@ -716,14 +716,16 @@ export function AccessPassForm({
                 onChange={(f) => handleFileChange("doc_letter_request", f)}
               />
               <UploadFileInput
-                label="Valid ID (Copy 1)"
+                label="Valid ID (Front)"
+                hint="front side of one valid government-issued ID"
                 name="doc_valid_id_1"
                 required
                 color="blue"
                 onChange={(f) => handleFileChange("doc_valid_id_1", f)}
               />
               <UploadFileInput
-                label="Valid ID (Copy 2)"
+                label="Valid ID (Back)"
+                hint="back side of the same ID"
                 name="doc_valid_id_2"
                 required
                 color="blue"

@@ -12,6 +12,7 @@ export interface AuthUser {
   hrep_id: string;
   full_name: string;
   role: "admin" | "reviewer";
+  photo_url?: string | null;
 }
 
 interface AuthContextValue {
@@ -19,6 +20,7 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   login: (hrepId: string, password: string) => Promise<void>;
   logout: () => void;
+  updateUser: (user: AuthUser) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -48,9 +50,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  const updateUser = useCallback((next: AuthUser) => {
+    sessionStorage.setItem(USER_KEY, JSON.stringify(next));
+    setUser(next);
+  }, []);
+
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated: !!user, login, logout }}
+      value={{ user, isAuthenticated: !!user, login, logout, updateUser }}
     >
       {children}
     </AuthContext.Provider>

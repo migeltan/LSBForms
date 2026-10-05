@@ -14,7 +14,7 @@ export function Header() {
     <header className={`gov-header${hidden ? " gov-header-hidden" : ""}`}>
       <div className="gov-header-pattern" aria-hidden="true" />
       <div className="gov-header-inner max-w-6xl px-4 mx-auto">
-        <div className="flex min-h-[88px] flex-wrap items-center justify-between gap-y-5 py-7">
+        <div className="flex min-h-[76px] flex-wrap items-center justify-between gap-y-4 py-4">
           <NavLink to="/" className="flex items-center gap-3">
             <span className="gov-brand-logo">
               <img

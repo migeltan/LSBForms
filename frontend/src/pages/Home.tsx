@@ -104,16 +104,25 @@ export function Home() {
             </div>
             <ul className="mb-0 list-disc space-y-1 pl-10 text-[var(--smart-muted)]">
               <li>
-                Prepare <strong>clear scans</strong> of photos of your documents
+                Prepare <strong>clear, readable scans</strong> of your documents
+                (JPG, PNG or PDF, up to <strong>10 MB</strong> each)
               </li>
               <li>
-                <strong>Recent 2x2</strong> photo ready
+                <strong>Recent White Background Photo</strong> photo ready,
+                plain background, face clearly visible
+              </li>
+              <li>
+                IDs must be <strong>valid (not expired)</strong>, and your name
+                should match across all documents
               </li>
               <li>
                 Submitting does not mean automatic approval, this is subject to
                 the <strong>Internal Security Group</strong>
               </li>
-              <li>[OFFICIAL PROCESSING TIME TO BE CONFIRMED]</li>
+              <li>
+                Keep your <strong>reference number</strong> to check your
+                application status later
+              </li>
             </ul>
             <button type="button" className="btn btn-govt-info">
               View Reference Files
@@ -130,14 +139,29 @@ export function Home() {
               Required Documents
             </div>
             <ul className="mb-0 list-disc space-y-1 pl-10 text-[var(--smart-muted)]">
-              <li>Letter request addressed to the Sergeant-at-Arms</li>
-              <li>Two (2) copies of a valid ID</li>
+              <li>
+                <strong>Access Pass:</strong> Letter request addressed to the
+                Sergeant-at-Arms
+              </li>
+              <li>
+                <strong>Valid government-issued ID</strong> with photo and
+                signature (front and back)
+              </li>
               <li>NBI Clearance (non-plantilla applicants)</li>
               <li>Contract of Consultancy (consultant applicants)</li>
-              <li>OR/CR, and Deed of Sale if applicable (vehicle sticker)</li>
+              <li>
+                <strong>Vehicle Sticker:</strong> OR/CR, and Deed of Sale if the
+                vehicle is not registered to you
+              </li>
+              <li>HRep ID</li>
+              <li>
+                Chattel Mortgage or Company/Secretary&apos;s Certificate, if
+                applicable
+              </li>
             </ul>
             <p className="mb-0 mt-2 text-[var(--smart-muted)]">
-              [OFFICIAL DOCUMENT REQUIREMENT LIST TO BE CONFIRMED]
+              Additional documents may be required depending on your applicant
+              type.
             </p>
             <button type="button" className="btn btn-govt-info">
               View Reference Files
