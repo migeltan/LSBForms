@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { DetailSkeleton } from "../../../../components/ui/Skeleton";
 import type {
   VehicleApplicantDetail,
   ApplicationStatus,
@@ -331,12 +332,7 @@ export function VehicleDetailModal({
 
               {/* Body — fixed height, never scrolls as a whole */}
               <div className="flex-1 min-h-0 flex flex-col bg-[#f7f7f5]">
-                {loading && (
-                  <div className="flex items-center gap-2 justify-center py-16 text-gray-400 text-sm">
-                    <span className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
-                    Loading applicant&hellip;
-                  </div>
-                )}
+                {loading && <DetailSkeleton />}
 
                 {!loading && error && (
                   <div className="py-16 text-center text-[var(--smart-red,#c0392b)] text-sm font-medium">

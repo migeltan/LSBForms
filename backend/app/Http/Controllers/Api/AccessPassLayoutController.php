@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AccessPassApplication;
 use App\Models\Applicant;
 use App\Support\AccessPassLayout;
 use Illuminate\Http\JsonResponse;
@@ -94,7 +95,7 @@ class AccessPassLayoutController extends Controller
             ],
         ];
     }
-        private function signatureDataUri($application): ?string
+private function signatureDataUri(AccessPassApplication $application): ?string
     {
         $path = $application->declaration_signature_path;
 

@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { fetchStatusApplicantProfile } from "../../../api/client"; // adjust path to your client.ts
 import type { StatusModalProfileData } from "../../../hooks/types"; // adjust path to your types file
 import { CloseButton } from "../../../components/buttons/CloseButton"; // adjust path to your components dir
-
+import { DetailSkeleton } from "../../../components/ui/Skeleton";
 interface StatusModalProfileProps {
   open: boolean;
   onClose: () => void;
@@ -307,12 +306,7 @@ export function StatusModalProfile({
             <CloseButton onClick={onClose} />
           </div>
 
-          {loading && (
-            <div className="relative flex flex-col items-center gap-3 py-16">
-              <span className="h-6 w-6 animate-spin rounded-full border-2 border-gray-200 border-t-[#1e3a5f]" />
-              <span className="text-sm text-gray-500">Loading profile…</span>
-            </div>
-          )}
+          {loading && <DetailSkeleton rows={5} />}
 
           {!loading && error && (
             <div className="relative py-16 text-sm font-medium text-center text-red-600">

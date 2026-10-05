@@ -34,7 +34,7 @@ class ManualApplicationController extends Controller
             'middle_name' => ['nullable', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
             'suffix' => ['nullable', 'string', 'max:20'],
-            'applicant_type' => ['required', 'string', 'max:100'],
+'applicant_type' => ['required', 'string', \Illuminate\Validation\Rule::exists('applicant_access_position', 'application_position')],
             'contact_number' => ['nullable', 'string', 'max:30'],
             'email' => ['nullable', 'email', 'max:150'],
             'photo' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:10240'],

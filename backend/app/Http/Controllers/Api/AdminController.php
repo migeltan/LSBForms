@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Mail\ApplicationStatusMail;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * NOTE: the ID/sticker PDF preview + download endpoints
@@ -512,6 +514,8 @@ class AdminController extends Controller
             app(ControlNumberService::class)->ensureAccessPass($application);
         }
 
+        $this->sendStatusMail($application, 'Access Pass');
+
         ApplicationLog::create([
             'application_id' => $applicationId,
             'user_id' => $request->user()->id,
@@ -554,6 +558,8 @@ class AdminController extends Controller
             app(ControlNumberService::class)->ensureVehicle($application);
         }
 
+        $this->sendStatusMail($application, 'Vehicle Sticker');
+
         ApplicationLog::create([
             'application_id' => $applicationId,
             'user_id' => $request->user()->id,
@@ -562,5 +568,32 @@ class AdminController extends Controller
         ]);
 
         return response()->json($application);
+    }
+        /** Emails the applicant on Approved / Rejected / Incomplete-Returned (retake). */
+    private function sendStatusMail(AccessPassApplication|VehicleApplication $application, string $formType): void
+    {
+        $status = $application->status;
+
+        if (! in_array($status, ['Approved', 'Rejected', 'Incomplete/Returned'], true)) {
+            return;
+        }
+
+        $applicant = $application->applicant;
+
+        if (! $applicant?->email) {
+            return;
+        }
+
+        try {
+            Mail::to($applicant->email)->send(new ApplicationStatusMail(
+                $applicant->full_name,
+                $application->application_id,
+                $formType,
+                $status,
+                $application->remarks,
+            ));
+        } catch (\Throwable $e) {
+            logger()->warning('Status email failed', ['application_id' => $application->application_id, 'error' => $e->getMessage()]);
+        }
     }
 }

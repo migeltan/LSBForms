@@ -2,7 +2,9 @@
 
 namespace App\Service;
 
+use App\Models\AccessPassApplication;
 use App\Models\Applicant;
+use App\Models\VehicleApplication;
 use App\Support\AccessPassLayout;
 use App\Support\StickerLayout;
 use Illuminate\Http\Request;
@@ -99,7 +101,7 @@ class PdfGeneratorService
         return response($html, 200)->header('Content-Type', 'text/html; charset=UTF-8');
     }
 
-    private function renderIdView(string $view, $applicant, $application, bool $forPdf, string $size = AccessPassLayout::SIZE_ACCESS_PASS): string
+private function renderIdView(string $view, Applicant $applicant, AccessPassApplication $application, bool $forPdf, string $size = AccessPassLayout::SIZE_ACCESS_PASS): string
     {
         $idAssets = $this->buildIdCardAssets($application, $forPdf);
 
@@ -114,11 +116,10 @@ class PdfGeneratorService
             'signatureSrc' => $idAssets['signature'],
             'controlNumber' => $application->control_number ?? null,
             'department' => 'Legislative Security Bureau',
-            'category' => 'Security',
         ])->render();
     }
 
-    private function renderIdBackView($applicant, bool $forPdf): string
+private function renderIdBackView(Applicant $applicant, bool $forPdf): string
     {
         return View::make('reports.access_pass_back', [
             'applicant' => $applicant,
@@ -129,7 +130,7 @@ class PdfGeneratorService
         ])->render();
     }
 
-    private function buildIdCardAssets($application, bool $forPdf): array
+private function buildIdCardAssets(AccessPassApplication $application, bool $forPdf): array
     {
         $photoPath = $application->photo_path ?? null;
 
@@ -164,7 +165,7 @@ class PdfGeneratorService
      * The declaration signature lives on the private disk, so it can't be
      * linked by URL. It is always inlined as a data URI (preview and PDF).
      */
-    private function signatureDataUri($application): ?string
+private function signatureDataUri(AccessPassApplication $application): ?string
     {
         $path = $application->declaration_signature_path ?? null;
 
@@ -179,7 +180,7 @@ class PdfGeneratorService
         return $this->previewVehicleSticker($applicantId);
     }
 
-    private function renderStickerView($applicant, $application, bool $forPdf): string
+private function renderStickerView(Applicant $applicant, VehicleApplication $application, bool $forPdf): string
     {
         return View::make('reports.vehicle_sticker_front', [
             'applicant' => $applicant,
@@ -518,7 +519,7 @@ class PdfGeneratorService
      * either of those. This means the logo overlay renders identically
      * whether this is a preview or a PDF.
      */
-    private function renderHtml(string $view, $applicant, $application, bool $forPdf): string
+private function renderHtml(string $view, Applicant $applicant, AccessPassApplication|VehicleApplication $application, bool $forPdf): string
     {
         $assets = $forPdf ? $this->buildInlineAssets($application) : [];
 
@@ -539,7 +540,7 @@ class PdfGeneratorService
         ])->render();
     }
 
-    private function buildInlineAssets($application): array
+private function buildInlineAssets(AccessPassApplication|VehicleApplication $application): array
     {
         $photoPath = $application->photo_path ?? null;
 
@@ -598,8 +599,8 @@ class PdfGeneratorService
      */
     private function generatePdf(
         string $view,
-        $applicant,
-        $application,
+        Applicant $applicant,
+        AccessPassApplication|VehicleApplication $application,
         string $fileNamePrefix,
         int $pageWidth = self::PAGE_WIDTH_PX,
         int $pageHeight = self::PAGE_HEIGHT_PX,
@@ -621,7 +622,7 @@ class PdfGeneratorService
         int $pageWidth,
         int $pageHeight,
         string $fileNamePrefix,
-        $applicant,
+        Applicant $applicant,
     ): Response {
         set_time_limit(120);
 

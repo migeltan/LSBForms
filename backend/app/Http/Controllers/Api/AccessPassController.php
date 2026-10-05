@@ -10,10 +10,13 @@ use App\Models\EducationalBackground;
 use App\Models\FamilyBackground;
 use App\Support\ReferenceNumberGenerator;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use App\Mail\ApplicationStatusMail;
+use Illuminate\Support\Facades\Mail;
 
 class AccessPassController extends Controller
 {
@@ -181,6 +184,18 @@ class AccessPassController extends Controller
             return $application;
         });
 
+        try {
+            $applicant = $application->applicant;
+            Mail::to($applicant->email)->send(new ApplicationStatusMail(
+                $applicant->full_name,
+                $application->application_id,
+                'Access Pass',
+                'submitted',
+            ));
+        } catch (\Throwable $e) {
+            logger()->warning('Submission email failed', ['application_id' => $application->application_id, 'error' => $e->getMessage()]);
+        }
+
         return response()->json([
             'message' => 'Access pass application submitted successfully.',
             'application_id' => $application->application_id,
@@ -205,7 +220,7 @@ class AccessPassController extends Controller
         return response()->json($application);
     }
 
-    private function storeUploadedFile($file, string $directory, string $disk = 'local'): string
+private function storeUploadedFile(UploadedFile $file, string $directory, string $disk = 'local'): string
     {
         return $file->store($directory, $disk);
     }

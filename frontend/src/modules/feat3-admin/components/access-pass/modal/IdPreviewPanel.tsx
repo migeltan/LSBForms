@@ -9,7 +9,7 @@ import {
 } from "../../../../../components/modals/ApprovedDeclineModal";
 import { ApplicantIdDownloadModal } from "../../../../../components/modals/ApplicantIdDownloadModal";
 import { AccessPassLayoutEditor } from "./AccessPassLayoutEditor";
-
+import { Skeleton } from "../../../../../components/ui/Skeleton";
 // Keys match the backend (App\Support\AccessPassLayout::SIZES).
 const SIZES = {
   "access-pass": { label: "Access Pass (74 × 105 mm)", w: 74, h: 105 },
@@ -237,9 +237,7 @@ export function IdPreviewPanel({
           }
         >
           {loadingPreview && (
-            <p className="absolute inset-0 flex items-center justify-center text-sm text-gray-400">
-              Loading preview…
-            </p>
+            <Skeleton className="absolute inset-0 rounded-none" />
           )}
           {!loadingPreview && previewError && (
             <p className="absolute inset-0 flex items-center justify-center px-4 text-center text-sm text-[var(--smart-red,#c0392b)]">

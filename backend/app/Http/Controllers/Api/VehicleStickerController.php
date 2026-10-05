@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Applicant;
 use App\Models\DocumentVehicleSticker;
+use App\Mail\ApplicationStatusMail;
 use App\Models\VehicleApplication;
 use App\Support\ReferenceNumberGenerator;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -122,6 +124,18 @@ class VehicleStickerController extends Controller
 
             return $vehicleApplication;
         });
+
+        try {
+            $applicant = $application->applicant;
+            Mail::to($applicant->email)->send(new ApplicationStatusMail(
+                $applicant->full_name,
+                $application->application_id,
+                'Vehicle Sticker',
+                'submitted',
+            ));
+        } catch (\Throwable $e) {
+            logger()->warning('Submission email failed', ['application_id' => $application->application_id, 'error' => $e->getMessage()]);
+        }
 
         return response()->json([
             'message' => 'Vehicle sticker application submitted successfully.',
