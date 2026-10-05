@@ -1,6 +1,6 @@
-# SMART Portal — Backend (Laravel)
+# LSBForms — Backend (Laravel)
 
-API for the House of Representatives — Internal Security Group SMART Portal
+API for the House of Representatives — Internal Security Group LSBForms
 (Access Pass & Vehicle Sticker applications). Laravel 11 + MySQL.
 
 This scaffold was hand-written (not generated via `composer create-project`,

@@ -2,7 +2,7 @@
 
 return [
 
-    'name' => env('APP_NAME', 'SMART Portal'),
+    'name' => env('APP_NAME', 'LSBForms'),
 
     'env' => env('APP_ENV', 'production'),
 

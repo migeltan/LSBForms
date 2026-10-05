@@ -1,7 +1,7 @@
 {
   "name": "hob-isg/hor_internal-security-group",
   "type": "project",
-  "description": "SMART Portal — House of Representatives Internal Security Group Access Pass & Vehicle Sticker application system.",
+  "description": "LSBForms — House of Representatives Internal Security Group Access Pass & Vehicle Sticker application system.",
   "keywords": [
     "laravel",
     "smart-portal",

@@ -1,4 +1,4 @@
-# 🛡️ SMART Portal — hor_internal-security-group
+# 🛡️ LSBForms — hor_internal-security-group
 
 Digital Access Pass & Vehicle Sticker Application Portal for the
 House of Representatives Internal Security Group.
