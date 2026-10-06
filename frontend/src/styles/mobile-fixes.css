@@ -1,0 +1,282 @@
+/* ====================================================================
+   Mobile fixes — header + landing page (phones, < 768px)
+   Loaded AFTER theme-smart.css (see src/index.css), so these only
+   override what is needed on small screens. Desktop is untouched.
+   ==================================================================== */
+@media (max-width: 767.98px) {
+  /* ---- Header: keep brand + hamburger on ONE row, much shorter ---- */
+  .gov-header-inner > div {
+    flex-wrap: nowrap;
+    gap: 0.75rem;
+    min-height: 64px;
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+  }
+  .gov-header-inner > div > a {
+    min-width: 0;
+    gap: 0.6rem;
+  }
+  .gov-header-inner > div > .relative {
+    flex-shrink: 0;
+  }
+  .gov-brand-logo img {
+    height: 2.75rem;
+    width: 2.75rem;
+  }
+  .gov-brand-title {
+    font-size: 1.3rem;
+    line-height: 1.05;
+    margin-bottom: 1px;
+  }
+  .gov-brand-subtitle-1 {
+    font-size: 12px;
+    line-height: 15px;
+  }
+  .gov-brand-subtitle-2 {
+    font-size: 10.5px;
+    line-height: 13px;
+  }
+
+  /* ---- Hero: logo to the right of the title (like laptop), paragraph
+          full-width underneath. CSS grid + display:contents lets us do
+          this without touching Home.tsx. ---- */
+  .hero-landing {
+    min-height: auto;
+    padding: 1.25rem 0 1.5rem;
+  }
+  .hero-landing-inner {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    column-gap: 0.75rem;
+    row-gap: 0.9rem;
+    align-items: center;
+  }
+  .hero-landing-text {
+    display: contents;
+  }
+  .hero-landing-title {
+    grid-column: 1;
+    grid-row: 1;
+    margin: 0;
+    min-width: 0;
+  }
+  .hero-landing-title-eyebrow {
+    font-size: 1.6rem;
+  }
+  .hero-landing-title-main {
+    font-size: 2rem;
+  }
+  .hero-landing-lead {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+  .hero-landing-graphic {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    width: 96px;
+    height: 96px;
+  }
+
+  /* ---- "Already Applied?" card: remove the big empty gap ---- */
+  .status-check-card {
+    padding: 1.5rem 1.25rem;
+    gap: 1rem;
+  }
+  .status-check-text {
+    flex: 0 0 auto;
+  }
+
+  /* ---- Instructions / Required Documents lists: less indent ---- */
+  .before-begin-panel ul.list-disc {
+    padding-left: 1.25rem;
+  }
+}
+
+/* ====================================================================
+   Mobile fixes — Access Pass + Vehicle Sticker forms (phones, < 768px)
+   Scoped to the multi-step forms only (form:has(> [data-step])), so the
+   landing status card, login, status lookup and modals are not affected.
+   ==================================================================== */
+@media (max-width: 767.98px) {
+  /* Stepper: slightly tighter so labels have room */
+  main form:has(> [data-step]) > nav {
+    padding: 0.9rem 0.5rem;
+  }
+
+  /* Section cards: reclaim horizontal space */
+  main form:has(> [data-step]) [data-step] > .p-6 {
+    padding: 1.1rem 1rem;
+  }
+  /* Nested cards (Family member / Education record) */
+  main form:has(> [data-step]) [data-step] .p-4 {
+    padding: 0.75rem;
+  }
+
+  /* "+ Add ..." buttons: full width, easy to tap */
+  main form:has(> [data-step]) button.mt-4 {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  /* Back / Next bar stays reachable while scrolling long steps */
+  main form:has(> [data-step]) > div:last-child {
+    position: sticky;
+    bottom: 0.5rem;
+    z-index: 30;
+    padding: 0.75rem;
+    box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.12);
+  }
+  main form:has(> [data-step]) > div:last-child button {
+    min-height: 44px;
+  }
+
+  /* Inputs everywhere: 16px stops iOS Safari zooming in on focus */
+  main
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(
+      [type="hidden"]
+    ),
+  main select,
+  main textarea {
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  /* Landing cards: smaller boxes */
+  .form-section-card.landing-card {
+    padding: 1.1rem 1.1rem 1.25rem;
+  }
+  .form-section-card.landing-card h2 {
+    margin-bottom: 0.5rem;
+  }
+  .app-choice-card {
+    padding: 1.1rem 1.1rem 1.25rem;
+    min-height: 0;
+  }
+  .app-choice-card h3 {
+    font-size: 1.25rem;
+    margin: 0.35rem 0 0.5rem;
+  }
+  .app-choice-card p {
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+  .app-choice-card .btn {
+    margin-top: 0.75rem;
+  }
+  .status-check-text h2 {
+    font-size: 1.25rem;
+  }
+  .status-check-text p {
+    font-size: 0.95rem;
+  }
+  .bento-section {
+    min-height: auto;
+    justify-content: flex-start;
+    gap: 0.9rem;
+    margin-top: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+}
+/* ====================================================================
+   Mobile fixes — dynamic sizing + Admin pages (phones, < 768px)
+   ==================================================================== */
+@media (max-width: 767.98px) {
+  /* Dynamic scale: every rem-based size (Tailwind spacing, text, cards)
+     shrinks smoothly with screen width: 14px on small phones, up to the
+     normal 16px on large ones. Desktop is untouched. */
+  html {
+    font-size: clamp(14px, 3.7vw, 16px);
+  }
+
+  /* ---- Admin dashboard: compact application cards ---- */
+  .admin-app-card-wrap {
+    --admin-footer-h: 4.25rem;
+    --admin-banner-lift: 0.75rem;
+  }
+  .admin-app-panel {
+    margin: 0 0.75rem;
+    min-height: 0;
+    padding: 0.85rem 1rem;
+  }
+  .admin-app-panel h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.6rem;
+  }
+  .admin-app-panel-divider {
+    margin-bottom: 0.6rem;
+  }
+  .admin-app-panel-desc {
+    font-size: 0.9rem;
+  }
+
+  /* ---- Activity Log + Admin Profiles tables: stack rows as cards ---- */
+  main table:is(:has(td.whitespace-nowrap), :has(td.capitalize)) {
+    display: block;
+  }
+  main table:is(:has(td.whitespace-nowrap), :has(td.capitalize)) thead {
+    display: none;
+  }
+  main table:is(:has(td.whitespace-nowrap), :has(td.capitalize)) tbody {
+    display: block;
+  }
+  main table:is(:has(td.whitespace-nowrap), :has(td.capitalize)) tr {
+    display: block;
+    margin-bottom: 0.6rem;
+    padding: 0.6rem 0.85rem;
+    border: 1px solid var(--smart-border);
+    border-radius: 12px;
+    background: #fff;
+  }
+  main table:is(:has(td.whitespace-nowrap), :has(td.capitalize)) td {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.25rem 0;
+    text-align: right;
+    white-space: normal;
+    border: 0;
+  }
+  main table:is(:has(td.whitespace-nowrap), :has(td.capitalize)) td::before {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: var(--smart-muted);
+    text-align: left;
+  }
+  /* Activity Log labels */
+  main table:has(td.whitespace-nowrap) td:nth-child(1)::before {
+    content: "Date & time";
+  }
+  main table:has(td.whitespace-nowrap) td:nth-child(2)::before {
+    content: "Admin";
+  }
+  main table:has(td.whitespace-nowrap) td:nth-child(3)::before {
+    content: "Action";
+  }
+  main table:has(td.whitespace-nowrap) td:nth-child(4)::before {
+    content: "Application";
+  }
+  main table:has(td.whitespace-nowrap) td:nth-child(5)::before {
+    content: "Remarks";
+  }
+  /* Admin Profiles labels */
+  main table:has(td.capitalize) td:nth-child(1)::before {
+    content: "Full name";
+  }
+  main table:has(td.capitalize) td:nth-child(2)::before {
+    content: "HREP ID";
+  }
+  main table:has(td.capitalize) td:nth-child(3)::before {
+    content: "Role";
+  }
+  main table:has(td.capitalize) td:nth-child(4)::before {
+    content: "Email";
+  }
+  main table:has(td.capitalize) td:nth-child(5)::before {
+    content: "Contact no.";
+  }
+}
