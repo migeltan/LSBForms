@@ -280,3 +280,213 @@
     content: "Contact no.";
   }
 }
+
+/* ====================================================================
+   Mobile polish — landing page (phones, < 768px)
+   APPEND to the very end of src/styles/mobile-fixes.css.
+   Same-or-higher specificity + later in the file = wins; nothing above
+   needs to be deleted. Desktop/tablet are untouched.
+
+   Idea: one gutter, one card padding, one radius, one type scale, all
+   sized with clamp()/vw so it flexes between a 320px and a 430px phone.
+   ==================================================================== */
+@media (max-width: 767.98px) {
+  :root {
+    --m-gutter: clamp(0.875rem, 4.2vw, 1.25rem); /* page side padding   */
+    --m-pad: clamp(1rem, 4.6vw, 1.25rem); /* inside every card   */
+    --m-radius: 14px; /* every landing card  */
+    --m-gap: clamp(0.75rem, 3.4vw, 1rem); /* between blocks      */
+  }
+
+  /* ---- Page gutter: one value for hero AND cards ----
+     The hero had its own 1rem padding on top of <main>'s px-4, so its
+     text sat ~32px in while the cards sat at 16px. Remove the double. */
+  main#mainContent {
+    padding-inline: var(--m-gutter);
+    padding-top: 0.5rem;
+    padding-bottom: 1.5rem;
+  }
+  .hero-landing-inner {
+    padding-inline: 0;
+  }
+
+  /* ---- Hero: scales with screen width ---- */
+  .hero-landing {
+    padding: 0.75rem 0 1.25rem;
+  }
+  .hero-landing-title-eyebrow {
+    font-size: clamp(1.15rem, 5.6vw, 1.5rem);
+    color: var(--smart-muted);
+    font-weight: 600;
+  }
+  .hero-landing-title-main {
+    font-size: clamp(1.65rem, 8vw, 2.1rem);
+    line-height: 1.08;
+    text-wrap: balance;
+  }
+  .hero-landing-lead {
+    font-size: clamp(0.92rem, 3.9vw, 1rem);
+    line-height: 1.6;
+  }
+  .hero-landing-graphic {
+    width: clamp(64px, 20vw, 88px);
+    height: clamp(64px, 20vw, 88px);
+  }
+
+  /* ---- Landing blocks: same spacing rhythm everywhere ---- */
+  .bento-section {
+    gap: var(--m-gap);
+    margin-top: 0.5rem;
+    margin-bottom: 1.75rem;
+  }
+  .bento-section > .grid {
+    gap: var(--m-gap); /* beats Tailwind gap-5 */
+  }
+  .forms-search {
+    max-width: none;
+  }
+
+  /* ---- One card shape: padding, radius, shadow ---- */
+  .app-choice-card,
+  .form-section-card.landing-card {
+    padding: var(--m-pad);
+    border-radius: var(--m-radius);
+    box-shadow: 0 2px 10px rgba(22, 61, 115, 0.07);
+  }
+
+  /* ---- Application cards (Access Pass / Vehicle Sticker) ---- */
+  .app-choice-card {
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+  .app-choice-card .card-index {
+    font-size: 0.85rem;
+  }
+  .app-choice-card h3 {
+    font-size: clamp(1.15rem, 5.4vw, 1.35rem);
+    line-height: 1.2;
+    margin: 0.25rem 0 0.4rem;
+  }
+  .app-choice-card p {
+    font-size: 0.92rem;
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  /* ---- Buttons: full width, centered, thumb-sized (the .btn rule is
+          unlayered, so Tailwind's `block` never made these full width) ---- */
+  .app-choice-card .btn,
+  .status-check-controls .btn,
+  .before-begin-panel .btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+    font-size: 0.95rem;
+  }
+  .app-choice-card .btn {
+    margin-top: 0.9rem;
+  }
+
+  /* ---- Status check ---- */
+  .status-check-card {
+    gap: 0.9rem;
+  }
+  .status-check-text .section-label {
+    font-size: 0.85rem;
+  }
+  .status-check-text h2 {
+    font-size: clamp(1.15rem, 5.4vw, 1.35rem);
+    line-height: 1.2;
+  }
+  .status-check-input-wrap input {
+    padding-block: 0.65rem;
+    border-radius: var(--smart-radius-pill);
+  }
+
+  /* ---- Before you begin: heading block ---- */
+  .before-begin-section {
+    margin-bottom: 2rem;
+  }
+  .before-begin-sticky-inner {
+    margin-bottom: 0.9rem;
+  }
+  .before-begin-kicker {
+    font-size: 0.95rem;
+  }
+  .before-begin-heading {
+    font-size: clamp(1.5rem, 7.2vw, 1.9rem);
+    line-height: 1.12;
+    text-wrap: balance;
+  }
+  .before-begin-panels {
+    gap: var(--m-gap);
+  }
+
+  /* ---- Before you begin: Instructions / Required Documents ---- */
+  .before-begin-panel {
+    align-items: stretch;
+  }
+  .before-begin-panel .section-label {
+    font-size: 1.05rem;
+    margin-bottom: 0.6rem;
+  }
+  .before-begin-panel ul,
+  .before-begin-panel p {
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+  .before-begin-panel ul.list-disc {
+    padding-left: 1.1rem;
+  }
+  .before-begin-panel ul.list-disc > li {
+    padding-left: 0.1rem;
+  }
+  .before-begin-panel ul.list-disc > li + li {
+    margin-top: 0.4rem;
+  }
+  .before-begin-panel .btn {
+    margin-top: 1rem;
+  }
+
+  /* ---- Contact: single column, smaller tiles ---- */
+  .contact-section h2 {
+    font-size: clamp(1.15rem, 5.4vw, 1.35rem);
+    line-height: 1.2;
+  }
+  .contact-section > p {
+    font-size: 0.92rem;
+  }
+  .contact-grid {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+    margin-top: 1rem;
+  }
+  .contact-tile {
+    padding: 0.75rem 0.85rem;
+    border-radius: 10px;
+  }
+  .contact-tile-value {
+    font-size: 0.9rem;
+    line-height: 1.45;
+    overflow-wrap: anywhere; /* long email / address never overflows */
+  }
+
+  /* ---- Background shapes: quieter on small screens ---- */
+  .page-bg-decor {
+    opacity: 0.7;
+  }
+}
+
+/* Touch screens: no "stuck" hover lift after a tap */
+@media (max-width: 767.98px) and (hover: none) {
+  .app-choice-card:hover {
+    transform: none;
+    box-shadow: 0 2px 10px rgba(22, 61, 115, 0.07);
+  }
+  .form-section-card.landing-card:hover {
+    box-shadow: 0 2px 10px rgba(22, 61, 115, 0.07);
+  }
+  .hero-landing-graphic:hover .hero-landing-graphic-img {
+    transform: none;
+  }
+}
