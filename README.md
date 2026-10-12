@@ -1,217 +1,274 @@
-# 🛡️ LSBForms — hor_internal-security-group
+<div align="center">
 
-Digital Access Pass & Vehicle Sticker Application Portal for the
-House of Representatives Internal Security Group.
+# LSBForms
 
-| Layer       | Stack                                        | Path           |
-| ----------- | -------------------------------------------- | -------------- |
-| Backend     | Laravel 11 + MySQL                           | `/backend`     |
-| Frontend    | React + TypeScript + Vite + Tailwind         | `/frontend`    |
-| PDF Service | Node + Puppeteer + Express (Windows Service) | `/pdf-service` |
+**Digital Access Pass and Vehicle Sticker application portal for the House of Representatives of the Philippines**
 
-```
-hor_internal-security-group/
-├── backend/       Laravel API — routes, controllers, models, migrations
-├── frontend/      React SPA — pages, components, theme
-└── pdf-service/   Local PDF rendering service used by the backend
-```
+Legislative Security Bureau, Internal Security Group (ISG)
 
-## ✅ Prerequisites
+Built by **Migel H. Tan** during the **INSPIRE Internship Program** (formerly SMART Internship Program)
 
-- PHP 8.2+, Composer
-- Node.js 18+, npm
-- MySQL
-- Windows (required only for `pdf-service`)
+</div>
 
 ---
 
-## 1️⃣ Backend
+## Introduction
 
-```
+Applying for an Access Pass or a Vehicle Sticker (decal) means paper forms, photocopied requirements and a lot of manual work for ISG staff: checking documents, then cutting, pasting and laminating each pass by hand.
+
+LSBForms provides a centralized online process for submitting application information and supporting documents. It **does not replace** the existing security verification procedures. It digitizes the administrative and document-submission side, and responsible personnel keep full control over screening, validation, approval and issuance.
+
+Once an application is approved and the applicant's photo and information are validated, the system fills an ID template automatically and produces a **print-ready file** (PDF) for authorized personnel to print on PVC cards or sticker sheets.
+
+> **Status:** working prototype. See [Known limitations](#known-limitations).
+
+---
+
+## Project Resources
+
+| Resource         | Link                                                                   |
+| ---------------- | ---------------------------------------------------------------------- |
+| Video demo       | _Add link here_                                                        |
+| Project document | _Add link here_                                                        |
+| Source code      | [github.com/migeltan/LSBForms](https://github.com/migeltan/LSBForms) |
+
+---
+
+## Screenshots
+
+_Add screenshots here: landing page, Access Pass form, status check, admin dashboard, ID preview._
+
+---
+
+## About the Project
+
+### The problem
+
+- Applications and requirements arrive on paper or by ad-hoc channels, so tracking who applied, and what is still missing, is slow.
+- Applicants have no easy way to find out whether their application went through.
+- Every approved pass or decal has to be prepared by hand (cutting, pasting, laminating), which is slow and inconsistent.
+- Records of who reviewed what, and when, are hard to reconstruct.
+
+### What LSBForms does
+
+- Gives applicants a step-by-step online form for an **Access Pass** or a **Vehicle Sticker**, with document uploads.
+- Issues a **reference number** (for example `AP-2026-00001`, `VS-2026-00001`) so applicants can check their status at any time.
+- Gives administrators and reviewers a dashboard and review queue for both application types.
+- Generates **print-ready Access Pass IDs and vehicle decals** from approved applications.
+- Keeps an activity log of reviews, edits and other admin actions.
+
+---
+
+## How It Works
+
+### The applicant journey
+
+1. The applicant opens the portal and picks **Access Pass** or **Vehicle Sticker**.
+2. They fill in a **progressive form**. A reference number is reserved up front, and in-progress forms are saved as a local draft for 24 hours.
+3. They submit. The system confirms the reference number and sends a confirmation email.
+4. At any time they open **Check Status** and enter the reference number plus their last name or email to see the status and dates.
+5. They receive an email when the application is approved, rejected or returned for more information.
+
+| Form                | Steps                                                  | Who it is for                                                                                |
+| ------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| **Access Pass**     | Personal Info, Background, Documents, Declaration      | Congressional staff, consultants, attached agencies, concessionaires, contractors and others |
+| **Vehicle Sticker** | Personal Info, Vehicle, Documents                      | House employees applying for a decal for a private vehicle                                   |
+
+**Access Pass applicant types:** Congressional Staff, Consultant, House Member Security, Attached Agency, Concessionaire, Contractor, Security, Temporary ID for Secretariat, Auxiliary Service. Some types need extra documents (for example an NBI clearance, a copy of consultancy, a health certificate, or firearm papers and a duty detail order for House Member Security).
+
+### The reviewer and admin journey
+
+1. Sign in with an HREP ID and password.
+2. Open the **dashboard** for an overview of both forms, then the Access Pass or Vehicle Sticker table.
+3. Open an application to see personal information, background, documents (previewable and downloadable) and the ID preview.
+4. **Decide**: approve, reject, or return it as incomplete, with remarks.
+5. For an approved application, **preview and print** the ID or decal.
+
+### Application statuses
+
+| Form            | Statuses                                                                 |
+| --------------- | ------------------------------------------------------------------------ |
+| Access Pass     | Submitted, Incomplete/Returned, Approved, Rejected                       |
+| Vehicle Sticker | Submitted, Under Review, Incomplete/Returned, Approved, Rejected, Completed |
+
+### Roles
+
+| Role         | Can do                                                                                                     |
+| ------------ | ---------------------------------------------------------------------------------------------------------- |
+| **Reviewer** | Review applications, edit applicant details, manage documents, preview and print IDs.                      |
+| **Admin**    | Everything a reviewer can do, plus create admin/reviewer profiles and view the activity log.               |
+
+---
+
+## Key Features
+
+**For applicants**
+
+- Progressive, multi-step forms with a review summary before submitting.
+- Reference number reserved before submission, so it is visible throughout the process.
+- Drafts saved locally and restored for 24 hours.
+- Document uploads (JPG, PNG, PDF, up to 10 MB each), a photo upload, and an on-screen **signature pad** for the Access Pass declaration.
+- **Status check** by reference number plus last name or email, with an optional QR scan (on browsers that support it).
+- Email notifications on submission and on every decision.
+
+**For reviewers and admins**
+
+- Dashboard with totals, pending, approved and rejected counts and a last-7-days view for each form.
+- Separate tables for Access Pass and Vehicle Sticker applications, with search and status badges.
+- Review with remarks, edit applicant information, view and replace documents.
+- **Manual entry** so staff can encode walk-in applications.
+- Admin and reviewer profile management.
+- Activity log: status changes, edits, deletions, manual entries and profile additions.
+
+**ID and decal printing**
+
+- Access Pass preview of front and back, printed at 74 x 105 mm, or as a PVC ID at CR80 size (54 x 85.6 mm).
+- A QR code carries the application's reference number, with the House seal at its center.
+- **Control numbers** assigned on approval (`1AA-1000`, `1AA-1001`, ... for Access Passes; `1000`, `1001`, ... for decals) and never changed on re-print.
+- A **layout editor**: each field sits at a percentage-based position, and individual cards can be tweaked and reset without affecting others.
+- **Batch download**: several Access Passes as one ZIP of PDFs; approved decals packed onto A4 or Letter sheets (up to 60 per batch).
+
+**Security basics**
+
+- Admin routes are protected by Sanctum token authentication and an active-account check.
+- Rate limits on login (5 per minute) and on submissions and status lookups (10 per minute).
+- The public status check returns only the type, status and dates. A wrong reference and a wrong second detail give the identical response, so guesses never confirm a reference exists.
+- Uploaded files are stored on a private disk and served only through authenticated admin routes.
+
+---
+
+## Tech Stack
+
+| Layer       | Stack                                                          | Path           |
+| ----------- | -------------------------------------------------------------- | -------------- |
+| Backend     | Laravel 11, PHP 8.2+, MySQL, Sanctum                           | `/backend`     |
+| Frontend    | React 19, TypeScript, Vite, Tailwind 4, React Query, React Router | `/frontend` |
+| PDF service | Node.js, Puppeteer, Express (Windows Service on port 4488)     | `/pdf-service` |
+| Other       | `endroid/qr-code` (QR codes), Browsershot and Dompdf (PDF rendering) |          |
+
+---
+
+## Setup
+
+**Prerequisites:** PHP 8.2+ and Composer, Node.js 18+ and npm, MySQL. Windows is required only for the PDF service.
+
+### 1. Backend
+
+```bash
 cd backend
 composer install
 cp .env.example .env
 php artisan key:generate
-# create the `smart_portal` MySQL database, set DB_* in .env
+# create the `smart_portal` MySQL database and set DB_* in .env
 php artisan migrate --seed
 php artisan storage:link
+php artisan serve        # http://localhost:8000
 ```
 
-**Extra packages:**
+### 2. Frontend
 
-```
-composer require laravel/sanctum
-php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
-composer require spatie/browsershot
-composer require endroid/qr-code
-composer require dompdf/dompdf
-npm install puppeteer
-```
-
-**Tailwind (pinned to v3 — v4 breaks the build):**
-
-```
-npm uninstall tailwindcss
-npm install -D tailwindcss@3
-npx tailwindcss init
-```
-
-```
-php artisan serve   # → http://localhost:8000
-```
-
----
-
-## 2️⃣ Frontend
-
-```
+```bash
 cd frontend
 npm install
-npm install axios
-npm install lucide-react
-cp .env.example .env   # VITE_API_URL=http://localhost:8000/api
-npm run dev             # → http://localhost:5173
+cp .env.example .env     # VITE_API_URL=http://localhost:8000/api
+npm run dev              # http://localhost:5173
 ```
+
+### 3. PDF render service
+
+Generates Access Pass and sticker PDFs through a warm background service instead of starting Chromium for every request. Install it once per machine. See [`pdf-service/README.md`](pdf-service/README.md).
+
+### Demo accounts
+
+The seeder creates one administrator:
+
+| HREP ID          | Password      |
+| ---------------- | ------------- |
+| `HREP-2024-0001` | `Password123` |
+
+This default exists for local development only. Set `ADMIN_SEED_HREP_ID` and `ADMIN_SEED_PASSWORD` in `.env` before seeding anywhere else (seeding in production refuses to run without a password). **Change the password before any demo or deployment.**
 
 ---
 
-## 3️⃣ PDF Render Service
+## Demo Deployment (shareable link)
 
-- Generates access pass / vehicle sticker PDFs via a background service
-  instead of spawning Chromium per request.
-- For full installation go to [`pdf-service/README.md`](https://github.com/migeltan/LSBForms/blob/main/pdf-service/README.md)
-
----
-
-## 4️⃣ Sharing a demo link (laptop must stay on)
-
-This setup is for **demos and feedback only**, not permanent hosting.
-The frontend lives on Cloudflare Pages, but the backend, MySQL, and the PDF
-service run **on your own Windows laptop** and are exposed through an ngrok
-tunnel. If the laptop is off, asleep, offline, or the PHP/ngrok windows are
-closed, the site loads but nothing works (no login, no lookups, no PDFs).
+For demos and feedback only, not permanent hosting. The frontend runs on **Cloudflare Pages**; the backend, MySQL and PDF service run on your own Windows laptop, exposed through an **ngrok** tunnel. If the laptop is off, asleep or offline, the site loads but nothing works.
 
 ```
-Browser → Cloudflare Pages (React build, static)
-              ↓  VITE_API_URL
+Browser -> Cloudflare Pages (React build)
+              | VITE_API_URL
           ngrok static domain (public HTTPS)
-              ↓
-          Your Windows laptop:
-          Laravel (port 9000) + MySQL + pdf-service (127.0.0.1:4488)
+              |
+          Windows laptop: Laravel + MySQL + pdf-service (127.0.0.1:4488)
 ```
 
-### One-time setup
+**Backend `.env`:** `APP_URL=https://<your-domain>.ngrok-free.dev`, `APP_DEBUG=false`, `FRONTEND_URL=https://<your-project>.pages.dev` (exact match, no trailing slash, or CORS will block API calls). Then run `php artisan config:clear`.
 
-**ngrok**
+**Cloudflare Pages:** root directory `frontend`, build command `npm run build`, output `dist`, and the environment variable `VITE_API_URL=https://<your-domain>.ngrok-free.dev/api` (baked in at build time, so redeploy after changing it).
 
-1. Create a free account at ngrok.com and run `ngrok config add-authtoken <token>`.
-2. In the ngrok dashboard → **Domains**, claim your free static domain
-   (looks like `something.ngrok-free.dev`). It stays the same across restarts.
+**Every time you demo**, keep these running:
 
-**Backend `.env`** (`backend/.env`)
+1. MySQL.
+2. The PDF service (`Get-Service PdfRenderService`).
+3. The backend: `php artisan serve --port=9000`, or the built-in server from `backend/public` if `serve` fails to bind.
+4. The tunnel: `ngrok http --domain=<your-domain>.ngrok-free.dev 9000`.
 
-```
-APP_URL=https://<your-domain>.ngrok-free.dev
-APP_DEBUG=false
-FRONTEND_URL=https://<your-project>.pages.dev
-```
+**Before you present:** use fake applicant data (the system stores uploaded IDs and documents), keep the laptop plugged in with sleep disabled, keep a phone hotspot as backup, and stop the tunnel when you finish.
 
-Then run `php artisan config:clear`. `FRONTEND_URL` must match the Pages
-address exactly (no trailing slash), or the browser will block API calls (CORS).
+**Troubleshooting**
 
-**Already handled in the repo**
-
-- `backend/bootstrap/app.php` trusts the ngrok proxy (`trustProxies`), so
-  generated links use `https://`.
-- `frontend/src/api/client.ts` sends the `ngrok-skip-browser-warning` header so
-  ngrok's interstitial page doesn't break API responses.
-- `frontend/public/_redirects` makes page refreshes work on Cloudflare Pages.
-
-**Cloudflare Pages** (Workers & Pages → Create → Pages → Connect to Git)
-
-| Setting                | Value                                                       |
-| ---------------------- | ----------------------------------------------------------- |
-| Production branch      | `main`                                                      |
-| Root directory         | `frontend`                                                  |
-| Build command          | `npm run build`                                             |
-| Build output directory | `dist`                                                      |
-| Environment variable   | `VITE_API_URL` = `https://<your-domain>.ngrok-free.dev/api` |
-
-`VITE_API_URL` is baked in at build time. If you change it, redeploy the site.
-Every push to `main` redeploys the frontend automatically.
-
-### Every time you want people to test
-
-Keep all of these running, in this order:
-
-1. **MySQL** is running.
-2. **PDF service** is running (Administrator PowerShell):
-   ```
-   Get-Service PdfRenderService
-   ```
-   If missing or broken, re-run `pdf-service/install.ps1`.
-3. **Backend** (window 1):
-   ```
-   cd backend/public
-   php -S 127.0.0.1:9000 ..\vendor\laravel\framework\src\Illuminate\Foundation\resources\server.php
-   ```
-   (`php artisan serve` also works if it can bind a port on your machine; the
-   command above is the fallback when it fails with "Failed to listen".)
-4. **Tunnel** (window 2):
-   ```
-   ngrok http --domain=<your-domain>.ngrok-free.dev 9000
-   ```
-   It should show `Session Status: online`. Inspect traffic at http://127.0.0.1:4040.
-5. Share the `https://<your-project>.pages.dev` link.
-
-Tip: set Windows to not sleep while plugged in during the demo.
-
-### Troubleshooting
-
-| Symptom                                            | Likely cause / fix                                                                                                                             |
-| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Site loads, but login and lookups fail             | ngrok window closed, or PHP server stopped. Restart steps 3 and 4. Check http://127.0.0.1:4040 for incoming requests.                          |
-| `No application encryption key has been specified` | Run `php artisan key:generate` then `php artisan config:clear`.                                                                                |
-| Browser console shows CORS errors                  | `FRONTEND_URL` in `backend/.env` doesn't match the Pages address. Fix it, then `php artisan config:clear`.                                     |
-| API calls go to the wrong address                  | `VITE_API_URL` was wrong at build time. Fix it in Cloudflare and redeploy.                                                                     |
-| Links or images use `http://`                      | Check `APP_URL` is the `https://` ngrok address and `trustProxies` is present in `bootstrap/app.php`.                                          |
-| PDFs fail to generate                              | `PdfRenderService` isn't running on the laptop.                                                                                                |
-| Slow when several people test at once              | The PHP built-in server handles one request at a time on Windows. Run the backend through Laragon/XAMPP (Apache) and point ngrok at that port. |
-| ngrok free limits                                  | About 20,000 requests/month and 1 GB bandwidth. Fine for a small group of reviewers.                                                           |
-
-### Demo safety
-
-- Change the seeded admin login before sharing the link (see below).
-- Tell testers to use **dummy data** — applicants can upload IDs and documents.
-- Keep `APP_DEBUG=false` while the tunnel is public.
-- Stop the tunnel (`Ctrl+C` in the ngrok window) when you're done.
+| Symptom                              | Likely cause / fix                                                              |
+| ------------------------------------ | ------------------------------------------------------------------------------- |
+| Site loads but login/lookups fail    | ngrok or the PHP server stopped. Restart both.                                  |
+| CORS errors in the browser console   | `FRONTEND_URL` does not match the Pages address. Fix it and clear the config.   |
+| API calls go to the wrong address    | `VITE_API_URL` was wrong at build time. Fix it in Cloudflare and redeploy.      |
+| PDFs fail to generate                | `PdfRenderService` is not running on the laptop.                                |
+| Slow with several testers at once    | The PHP built-in server handles one request at a time. Use Laragon/XAMPP instead. |
 
 ---
 
-## 🔑 Default login
+## Project Structure
 
 ```
-admin / Password123
+LSBForms/
+|-- backend/        Laravel API: routes, controllers, models, migrations, PDF/QR services
+|-- frontend/       React SPA: pages, form modules, admin module, styles
+`-- pdf-service/    Local HTML-to-PDF render service used by the backend
 ```
 
-⚠️ **Change this before any demo or deployment.**
+```
+frontend/src/modules/
+|-- feat1-access-pass/     Access Pass application form
+|-- feat2-vehicle-sticker/ Vehicle Sticker application form
+|-- feat3-admin/           Dashboard, tables, review modals, ID preview, layout editor, logs, profiles
+`-- feat4-check-status/    Status lookup and QR scan
+```
 
 ---
 
-## 📦 What's included
+## Known Limitations
 
-- ✅ Full DB schema as Laravel migrations (users, applicants, access pass, vehicle, documents, logs)
-- ✅ Eloquent models with relationships wired up
-- ✅ API routes/controllers: access pass, vehicle sticker, document upload, status lookup, admin review (Sanctum auth)
-- ✅ React shell — `App → AppRoutes → Layout`, with Theme/Query/Auth/Breadcrumb providers + toasts
-- ✅ Pages: Home, Access Pass, Vehicle Sticker, Check Status, Admin
-- ✅ Full SMART Portal design system ported to `theme-smart.css`
-- ✅ Official logos wired into navbar/hero/footer
-- ✅ PDF pipeline: Browsershot + render service, QR codes (`endroid/qr-code`), Dompdf fallback
+This is a prototype. Be aware of the following before any real deployment:
 
-## 🚧 Not included yet
+- **Personal data:** the system stores applicant identities, photos, signatures and ID documents. Any real use needs a review under the Data Privacy Act of 2012 and a retention policy.
+- **Email** needs a configured mailer. Without one, notifications will not be delivered.
+- **PDF service** is a Windows Service. The print pipeline needs a Windows host (or porting).
+- **QR status scan** works only on browsers that support the `BarcodeDetector` API. Typing the reference number always works.
+- **Not a replacement for verification:** approval remains a human decision. The system prepares the print-ready file but does not authenticate documents.
+- **Demo hosting** through a laptop and tunnel is not production hosting.
+- **Testing:** behavior has been verified through manual runs, not an automated test suite.
 
-- ⬜ Multi-step form fields for Access Pass / Vehicle Sticker
-- ⬜ Document upload UI (`POST /api/documents` ready)
-- ⬜ Admin review queue UI (`GET /api/admin/applications` ready)
-- ⬜ 2x2 photo capture/cropping
+---
+
+## Roadmap
+
+- Production hosting with a managed server, backups and monitoring.
+- A security review of authentication, file handling and storage.
+- Direct integration with the PVC printing workflow and card stock.
+- Automated tests for review rules and ID generation.
+
+---
+
+## Credits
+
+Built by **Migel H. Tan** for the **Internal Security Group**, House of Representatives of the Philippines, as part of the **INSPIRE Internship Program**.
