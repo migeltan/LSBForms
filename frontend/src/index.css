@@ -1,3 +1,5 @@
 @import "tailwindcss";
 @import "./styles/theme-smart.css";
 @import "./styles/mobile-fixes.css";
+@import "./styles/header-login.css";
+@import "./styles/status-check.css";

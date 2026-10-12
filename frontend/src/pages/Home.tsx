@@ -1,14 +1,14 @@
 // Home.tsx
-import { useState, type FormEvent, type ReactNode } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
 import {
-  Search,
   ChevronDown,
   ClipboardList,
   FileCheck2,
   ArrowUpRight,
 } from "lucide-react";
 import { FormsSearch } from "../components/FormsSearch";
+import { StatusCheckCard } from "../components/StatusCheckCard";
 import { ContactSection } from "../components/ContactSection";
 import { AVAILABLE_FORMS, type FormDefinition } from "../data/forms";
 import { useInView } from "../hooks/useInView";
@@ -224,55 +224,5 @@ function ApplicationCard({ form }: { form: FormDefinition }) {
         <ArrowUpRight size={16} aria-hidden="true" />
       </Link>
     </div>
-  );
-}
-
-/** Inline reference-number box. Hands off to the /status page (which asks
- *  for the last name or email too) rather than duplicating the lookup here. */
-function StatusCheckCard() {
-  const [reference, setReference] = useState("");
-  const navigate = useNavigate();
-
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    const trimmed = reference.trim();
-    if (!trimmed) return;
-    navigate(`/status?ref=${encodeURIComponent(trimmed)}`);
-  }
-
-  return (
-    <form
-      className="status-check-card form-section-card landing-card corner-accent-yellow"
-      onSubmit={handleSubmit}
-    >
-      <div className="status-check-text">
-        <div className="section-label">Already Applied?</div>
-        <h2>Check Application Status</h2>
-        <p className="mb-0 text-[var(--smart-muted)]">
-          Enter your <strong>application reference number</strong>, then confirm
-          it with your <strong>last name or email</strong> to see where your
-          application stands.
-        </p>
-      </div>
-      <div className="status-check-controls">
-        <div className="status-check-input-wrap">
-          <Search
-            size={16}
-            className="status-check-input-icon"
-            aria-hidden="true"
-          />
-          <input
-            type="text"
-            value={reference}
-            onChange={(e) => setReference(e.target.value)}
-            placeholder="Search Reference..."
-            aria-label="Application reference number"
-          />
-        </div>
-        <button type="submit" className="btn btn-govt-info">
-          Check Application
-        </button>
-      </div>
-    </form>
   );
 }

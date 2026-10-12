@@ -1,0 +1,891 @@
+/* ==========================================================================
+   HEADER + ADMIN LOGIN
+   Loaded LAST from src/index.css, so it wins over theme-smart.css and
+   mobile-fixes.css without touching them. Uses its own `lsb-*` class names.
+   ========================================================================== */
+
+:root {
+  --lsb-header-h: 5.5rem; /* desktop */
+  --lsb-navy-900: #08142e;
+  --lsb-navy-800: #0b2150;
+  --lsb-navy-700: #123071;
+  --lsb-blue-600: #1b4a9b;
+  --lsb-gold: #f5b400;
+  --lsb-ink: #0f172a;
+}
+@media (max-width: 1023.98px) {
+  :root {
+    --lsb-header-h: 5rem;
+  }
+}
+@media (max-width: 639.98px) {
+  :root {
+    --lsb-header-h: 4.25rem;
+  }
+}
+
+/* ==========================================================================
+   1. HEADER
+   ========================================================================== */
+.lsb-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background:
+    radial-gradient(
+      60rem 18rem at 85% -40%,
+      rgba(255, 255, 255, 0.1),
+      transparent 60%
+    ),
+    linear-gradient(105deg, var(--lsb-navy-900) 0%, var(--lsb-navy-700) 52%, var(--lsb-blue-600) 100%);
+  box-shadow: 0 6px 20px rgba(8, 20, 46, 0.22);
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+}
+/* gold accent line */
+.lsb-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--lsb-gold),
+    #ffd75e 50%,
+    var(--lsb-gold)
+  );
+  pointer-events: none;
+}
+.lsb-header.is-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* subtle diagonal texture */
+.lsb-header__pattern {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.035) 0 1px,
+    transparent 1px 14px
+  );
+  pointer-events: none;
+}
+
+.lsb-header__inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: var(--lsb-header-h);
+  max-width: 72rem; /* = Tailwind max-w-6xl, lines up with the page body */
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* ---------- Brand ---------- */
+.lsb-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  min-width: 0;
+  text-decoration: none;
+  color: #fff;
+  border-radius: 0.75rem;
+  outline-offset: 4px;
+}
+.lsb-brand:focus-visible {
+  outline: 2px solid var(--lsb-gold);
+}
+.lsb-brand__seal {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.16),
+    0 6px 14px rgba(0, 0, 0, 0.3);
+}
+.lsb-brand__seal img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.lsb-brand__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+.lsb-brand__title {
+  font-family: "Old English Text MT", serif;
+  font-size: clamp(1rem, 4.6vw, 1.95rem);
+  line-height: 1.1;
+  font-weight: 400;
+  color: #fff;
+  white-space: nowrap;
+}
+.lsb-brand__sub1 {
+  margin-top: 2px;
+  font-family: var(--smart-font-sans);
+  font-size: clamp(0.7rem, 2.9vw, 1.05rem);
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+}
+.lsb-brand__sub2 {
+  font-family: var(--smart-font-sans);
+  font-size: clamp(0.625rem, 2.4vw, 0.85rem);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.82);
+  white-space: nowrap;
+}
+
+/* ---------- Desktop nav ---------- */
+.lsb-nav {
+  display: none;
+}
+.lsb-nav__list {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lsb-nav__link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.6rem 1rem;
+  border: 0;
+  border-radius: 0.6rem;
+  background: transparent;
+  font-family: var(--smart-font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.82);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+.lsb-nav__link::after {
+  content: "";
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 0.2rem;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--lsb-gold);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.2s ease;
+}
+.lsb-nav__link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+.lsb-nav__link:focus-visible {
+  outline: 2px solid var(--lsb-gold);
+  outline-offset: 2px;
+}
+.lsb-nav__link.is-active {
+  color: #fff;
+}
+.lsb-nav__link.is-active::after {
+  transform: scaleX(1);
+}
+
+/* ---------- Forms dropdown ---------- */
+.lsb-forms {
+  position: relative;
+}
+.lsb-forms__chevron {
+  transition: transform 0.2s ease;
+}
+.lsb-forms__chevron.is-open {
+  transform: rotate(180deg);
+}
+.lsb-forms__panel {
+  position: absolute;
+  top: calc(100% + 0.9rem);
+  right: 0;
+  width: 23rem;
+  max-width: calc(100vw - 2rem);
+  padding: 0.5rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.9rem;
+  box-shadow: 0 18px 40px rgba(8, 20, 46, 0.28);
+  animation: lsb-pop 0.16s ease-out;
+  z-index: 60;
+}
+.lsb-forms__panel::before {
+  /* little notch pointing at the trigger */
+  content: "";
+  position: absolute;
+  top: -6px;
+  right: 2.2rem;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-left: 1px solid #e2e8f0;
+  border-top: 1px solid #e2e8f0;
+  transform: rotate(45deg);
+}
+.lsb-forms__label {
+  padding: 0.5rem 0.65rem 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+.lsb-forms__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.65rem;
+  border: 0;
+  border-radius: 0.65rem;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.lsb-forms__item:hover,
+.lsb-forms__item:focus-visible {
+  background: #eef4fd;
+  outline: none;
+}
+.lsb-forms__icon {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.6rem;
+}
+.lsb-forms__icon--blue {
+  background: #e3edfb;
+  color: #1b4a9b;
+}
+.lsb-forms__icon--red {
+  background: #fde8ea;
+  color: #b4232f;
+}
+.lsb-forms__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.lsb-forms__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #123071;
+}
+.lsb-forms__summary {
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: #64748b;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+@keyframes lsb-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- Mobile toggle ---------- */
+.lsb-burger {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 0.7rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.lsb-burger:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+.lsb-burger:focus-visible {
+  outline: 2px solid var(--lsb-gold);
+  outline-offset: 2px;
+}
+
+/* ---------- Mobile / tablet drawer ---------- */
+.lsb-backdrop {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  background: rgba(8, 20, 46, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s;
+}
+.lsb-backdrop.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+.lsb-drawer {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-height: calc(100dvh - var(--lsb-header-h));
+  overflow-y: auto;
+  padding: 0.75rem 1rem 1.1rem;
+  background: linear-gradient(180deg, var(--lsb-navy-800), var(--lsb-navy-900));
+  border-bottom: 3px solid var(--lsb-gold);
+  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.35);
+  transform: translateY(-8px);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    visibility 0.2s;
+}
+.lsb-drawer.is-open {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+}
+.lsb-drawer__label {
+  margin: 0.6rem 0.25rem 0.1rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+.lsb-drawer__divider {
+  height: 1px;
+  margin: 0.5rem 0;
+  background: rgba(255, 255, 255, 0.14);
+}
+.lsb-drawer__link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3rem; /* comfortable tap target */
+  padding: 0.5rem 0.85rem;
+  border-radius: 0.7rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+.lsb-drawer__link:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.lsb-drawer__link.is-active {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  box-shadow: inset 3px 0 0 var(--lsb-gold);
+}
+.lsb-drawer .lsb-forms__icon {
+  width: 2rem;
+  height: 2rem;
+}
+
+/* ---------- Header breakpoints ---------- */
+@media (min-width: 1024px) {
+  .lsb-nav {
+    display: block;
+  }
+  .lsb-burger,
+  .lsb-drawer,
+  .lsb-backdrop {
+    display: none;
+  }
+}
+@media (max-width: 1023.98px) {
+  .lsb-brand__title {
+    font-size: clamp(1rem, 4.6vw, 1.75rem);
+  }
+}
+@media (max-width: 639.98px) {
+  .lsb-brand {
+    gap: 0.65rem;
+  }
+  .lsb-brand__seal {
+    width: 2.9rem;
+    height: 2.9rem;
+  }
+}
+@media (max-width: 379.98px) {
+  .lsb-brand__sub2 {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   2. ADMIN LOGIN
+   ========================================================================== */
+
+/* Centers the card both horizontally and vertically in the space that is
+   left under the sticky header (main has 1.5rem top + bottom padding). */
+.lsb-login {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: calc(100vh - var(--lsb-header-h) - 3rem);
+  min-height: calc(100dvh - var(--lsb-header-h) - 3rem);
+  padding: 0.5rem 0;
+}
+
+.lsb-login__card {
+  display: grid;
+  grid-template-columns: 1fr;
+  width: 100%;
+  max-width: 28rem;
+  margin-inline: auto;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1.25rem;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 24px 50px -12px rgba(15, 23, 42, 0.22);
+}
+
+/* Preferred approach: let <main> fill the space under the header and let
+   the login stretch into it, so centering is exact whatever the page
+   padding / header height is on any screen. */
+@supports selector(:has(a)) {
+  main#mainContent:has(> .lsb-login) {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  .lsb-login {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}
+
+/* ---------- Brand panel ---------- */
+.lsb-login__brand {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem 1.5rem 1.35rem;
+  color: #fff;
+  background:
+    radial-gradient(18rem 14rem at 100% 0%, rgba(245, 180, 0, 0.22), transparent 65%),
+    radial-gradient(16rem 16rem at 0% 100%, rgba(255, 255, 255, 0.1), transparent 65%),
+    linear-gradient(150deg, var(--lsb-navy-900) 0%, var(--lsb-navy-700) 60%, var(--lsb-blue-600) 100%);
+  overflow: hidden;
+}
+.lsb-login__brand::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--lsb-gold), #ffd75e, var(--lsb-gold));
+}
+.lsb-login__logos {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.75rem;
+  padding: 0.5rem 0.9rem;
+  background: #fff;
+  border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+.lsb-login__logos img {
+  display: block;
+  width: 3rem;
+  height: 3rem;
+  object-fit: contain;
+}
+.lsb-login__logos .lsb-login__logo-inspire {
+  width: auto;
+  max-width: 6.5rem;
+}
+.lsb-login__logo-divider {
+  width: 1px;
+  height: 2rem;
+  background: #cbd5e1;
+}
+.lsb-login__brand-copy {
+  position: relative;
+}
+.lsb-login__eyebrow {
+  margin: 0 0 0.35rem;
+  font-family: var(--smart-font-sans);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ffd75e;
+}
+h1.lsb-login__title {
+  margin: 0;
+  font-family: var(--smart-font-sans);
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+.lsb-login__title span {
+  display: block;
+  margin-top: 0.2em;
+  font-size: 0.78em;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+}
+.lsb-login__quote {
+  display: none; /* shown from md up */
+  margin: 0;
+  padding-left: 0.9rem;
+  border-left: 3px solid var(--lsb-gold);
+  font-size: 0.9rem;
+  font-style: italic;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+/* ---------- Form panel ---------- */
+.lsb-login__panel {
+  display: flex;
+  align-items: center;
+  padding: 1.75rem 1.5rem 1.5rem;
+}
+.lsb-login__panel-inner {
+  width: 100%;
+}
+h2.lsb-login__heading {
+  margin: 0;
+  font-family: var(--smart-font-sans);
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--lsb-ink);
+}
+.lsb-login__hint {
+  margin: 0.35rem 0 1.4rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #64748b;
+}
+.lsb-login__error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid #fecaca;
+  border-radius: 0.7rem;
+  background: #fef2f2;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #b91c1c;
+}
+.lsb-login__error svg {
+  flex: none;
+}
+.lsb-login__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+/* ---------- Fields ---------- */
+.lsb-field__label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #334155;
+}
+.lsb-field__control {
+  position: relative;
+}
+.lsb-field__icon {
+  position: absolute;
+  top: 50%;
+  left: 0.9rem;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+  transition: color 0.15s ease;
+}
+.lsb-field__input {
+  display: block;
+  width: 100%;
+  height: 3rem;
+  padding: 0 0.9rem 0 2.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  font-family: inherit;
+  font-size: 1rem; /* 16px — stops iOS from zooming on focus */
+  color: var(--lsb-ink);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+.lsb-field__input::placeholder {
+  color: #94a3b8;
+}
+.lsb-field__input:hover {
+  border-color: #94a3b8;
+}
+.lsb-field__input:focus {
+  outline: none;
+  background: #fff;
+  border-color: var(--lsb-blue-600);
+  box-shadow: 0 0 0 4px rgba(27, 74, 155, 0.16);
+}
+.lsb-field__control:focus-within .lsb-field__icon {
+  color: var(--lsb-blue-600);
+}
+.lsb-field__input--has-action {
+  padding-right: 3rem;
+}
+.lsb-field__action {
+  position: absolute;
+  top: 50%;
+  right: 0.35rem;
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 0.55rem;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+.lsb-field__action:hover {
+  background: #e2e8f0;
+  color: var(--lsb-ink);
+}
+.lsb-field__action:focus-visible {
+  outline: 2px solid var(--lsb-blue-600);
+}
+
+/* ---------- Checkbox ---------- */
+.lsb-check {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.6rem;
+  min-height: 1.75rem;
+  font-size: 0.92rem;
+  color: #475569;
+  cursor: pointer;
+  user-select: none;
+}
+.lsb-check input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--lsb-navy-700);
+  cursor: pointer;
+}
+
+/* ---------- Submit ---------- */
+.lsb-login__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  height: 3.1rem;
+  border: 0;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, var(--lsb-navy-900), var(--lsb-navy-700));
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 8px 18px -6px rgba(8, 20, 46, 0.55);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.15s ease;
+}
+.lsb-login__submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.15);
+  box-shadow: 0 12px 22px -8px rgba(8, 20, 46, 0.6);
+}
+.lsb-login__submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+.lsb-login__submit:focus-visible {
+  outline: 3px solid rgba(27, 74, 155, 0.45);
+  outline-offset: 2px;
+}
+.lsb-login__submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.lsb-spin {
+  animation: lsb-spin 0.8s linear infinite;
+}
+@keyframes lsb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.lsb-login__notice {
+  margin: 1.25rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  text-align: center;
+  color: #94a3b8;
+}
+
+/* ---------- Login: small phones ---------- */
+@media (max-width: 379.98px) {
+  .lsb-login__brand,
+  .lsb-login__panel {
+    padding-left: 1.1rem;
+    padding-right: 1.1rem;
+  }
+  .lsb-login__logos img {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}
+
+/* ---------- Login: tablet portrait / large phones (>= 640px) ---------- */
+@media (min-width: 640px) {
+  .lsb-login__card {
+    max-width: 32rem;
+  }
+  .lsb-login__brand {
+    padding: 1.75rem 2rem 1.5rem;
+  }
+  .lsb-login__panel {
+    padding: 2rem 2rem 1.75rem;
+  }
+  h1.lsb-login__title {
+    font-size: 1.85rem;
+  }
+}
+
+/* ---------- Login: desktop (>= 768px) — two-column card ---------- */
+@media (min-width: 768px) {
+  .lsb-login__card {
+    grid-template-columns: 1fr 1fr;
+    max-width: 62rem;
+    min-height: 30rem;
+  }
+  .lsb-login__brand {
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 2.5rem;
+  }
+  .lsb-login__brand::after {
+    top: 0;
+    right: 0;
+    left: auto;
+    bottom: 0;
+    width: 3px;
+    height: auto;
+  }
+  .lsb-login__logos img {
+    width: 3.75rem;
+    height: 3.75rem;
+  }
+  .lsb-login__logos .lsb-login__logo-inspire {
+    max-width: 8rem;
+  }
+  h1.lsb-login__title {
+    font-size: clamp(2rem, 3.2vw, 2.6rem);
+  }
+  .lsb-login__eyebrow {
+    font-size: 0.85rem;
+  }
+  .lsb-login__quote {
+    display: block;
+  }
+  .lsb-login__panel {
+    padding: 2.5rem;
+  }
+  h2.lsb-login__heading {
+    font-size: 1.75rem;
+  }
+}
+
+/* ---------- Login: short landscape phones — don't force tall cards ---------- */
+@media (max-height: 520px) and (orientation: landscape) {
+  .lsb-login {
+    min-height: 0;
+    padding: 0.5rem 0 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lsb-header,
+  .lsb-drawer,
+  .lsb-backdrop,
+  .lsb-forms__panel,
+  .lsb-login__submit {
+    animation: none;
+    transition: none;
+  }
+  .lsb-spin {
+    animation-duration: 1.6s;
+  }
+}
