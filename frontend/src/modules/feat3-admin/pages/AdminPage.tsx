@@ -4,6 +4,7 @@ import { TOKEN_KEY, useAuth } from "../../../providers/AuthProvider";
 import { BASE } from "../../../hooks/apiConfig";
 import type { ApplicationStatus } from "../../../hooks/types";
 import { EditAdminInfoModal } from "../components/EditAdminInfoModal";
+import { AdminDashboard } from "../components/dashboard/AdminDashboard";
 
 // "Pending" = not yet finalised. This unifies "Pending" and "For Review"
 // (the badge label for "Submitted") into a single UI category.
@@ -126,6 +127,11 @@ export function AdminPage() {
           </div>
         </div>
       </div>
+
+      {/* -----------------------------------------------------------
+       * Dashboard — applications per form, status breakdown, trends
+       * --------------------------------------------------------- */}
+      <AdminDashboard />
 
       {/* -----------------------------------------------------------
        * Application category panels — "View Table" now navigates to
