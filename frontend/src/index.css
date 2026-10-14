@@ -3,3 +3,15 @@
 @import "./styles/mobile-fixes.css";
 @import "./styles/header-login.css";
 @import "./styles/status-check.css";
+
+/* Hide the scrollbar but keep scrolling functional */
+html,
+body {
+  -ms-overflow-style: none; /* old Edge / IE */
+  scrollbar-width: none; /* Firefox */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Edge, Safari */
+}

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
-import { AlertCircle, Eye, EyeOff, Loader2, Lock, User } from "lucide-react";
 import { useAuth } from "../../../providers/AuthProvider";
+import { EyeIcon, EyeOffIcon } from "../../../components/icons/PasswordEyeIcon";
 
 const INSPIRE_LOGO = "/images/inspire-logo.png";
 const LSB_SEAL = "/images/lsb-seal.png";
@@ -17,12 +17,6 @@ export function AdminLogin() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Only auto-focus on larger screens — on phones it pops the keyboard
-  // open immediately and hides the card.
-  const autoFocus =
-    typeof window !== "undefined" &&
-    window.matchMedia("(min-width: 768px)").matches;
-
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
@@ -37,155 +31,162 @@ export function AdminLogin() {
   }
 
   return (
-    <section className="lsb-login" aria-labelledby="lsb-login-title">
-      <div className="lsb-login__card">
-        {/* ------------------------------------------------------------
-         * Brand panel (top on mobile, left on desktop)
-         * ---------------------------------------------------------- */}
-        <aside className="lsb-login__brand">
-          <div className="lsb-login__logos">
-            <img
-              src={LSB_SEAL}
-              alt="Legislative Security Bureau Seal"
-              onError={hideOnError}
-            />
-            <span className="lsb-login__logo-divider" aria-hidden="true" />
-            <img
-              src={INSPIRE_LOGO}
-              alt="INSPIRE Program"
-              onError={hideOnError}
-              className="lsb-login__logo-inspire"
-            />
-          </div>
+    // Fills only the space below the header (6rem ≈ 96px) and centers the card in it
+    <div className="flex items-center justify-center w-full min-h-[calc(100dvh-12rem)] px-4 py-6">
+      <div className="grid w-full max-w-4xl grid-cols-1 mx-auto overflow-hidden bg-white border shadow-xl md:grid-cols-2 rounded-2xl border-slate-200">
+        {/* -----------------------------------------------------------
+         * LEFT — branding panel
+         * --------------------------------------------------------- */}
+        <div className="flex flex-col justify-between p-10 sm:p-12">
+          <div>
+            <div className="flex items-center gap-3 mb-6">
+              <img
+                src={LSB_SEAL}
+                alt="Legislative Security Bureau Seal"
+                onError={hideOnError}
+                className="object-contain w-20 h-20"
+              />
+              <img
+                src={INSPIRE_LOGO}
+                alt="INSPIRE Program"
+                onError={hideOnError}
+                className="object-contain h-20"
+              />
+            </div>
 
-          <div className="lsb-login__brand-copy">
-            <p className="lsb-login__eyebrow">Legislative Security Bureau</p>
-            <h1 className="lsb-login__title">
+            <p
+              className="mb-1 text-lg font-semibold"
+              style={{
+                color: "#245BA6",
+                fontFamily: "var(--smart-font-serif)",
+              }}
+            >
+              Legislative Security Bureau
+            </p>
+
+            <h1
+              className="text-3xl font-black leading-snug"
+              style={{
+                fontFamily: "var(--smart-font-sans-alt)",
+                color: "#0f172a",
+                fontWeight: 800,
+              }}
+            >
               LSBForms:
-              <span>Digital Application Form</span>
+              <br />
+              Digital Application Form
             </h1>
           </div>
 
-          <p className="lsb-login__quote">
-            “We take pride in belonging to the Office of the Sergeant-at-Arms.”
+          <p className="mt-10 text-sm italic leading-relaxed text-slate-500">
+            "We take pride in belonging to the Office of the Sergeant-at-Arms."
           </p>
-        </aside>
+        </div>
 
-        {/* ------------------------------------------------------------
-         * Form panel
-         * ---------------------------------------------------------- */}
-        <div className="lsb-login__panel">
-          <div className="lsb-login__panel-inner">
-            <h2 id="lsb-login-title" className="lsb-login__heading">
-              Administrator Login
-            </h2>
-            <p className="lsb-login__hint">
-              Sign in with your HREP ID to access the admin dashboard.
-            </p>
+        {/* -----------------------------------------------------------
+         * RIGHT — the form
+         * --------------------------------------------------------- */}
+        <div className="p-10 border-t sm:p-12 md:border-t-0 md:border-l border-slate-200">
+          <h2
+            className="mb-6 text-2xl font-bold"
+            style={{ fontFamily: "var(--smart-font-sans)", color: "#0f172a" }}
+          >
+            Administrator Login
+          </h2>
 
-            {error && (
-              <div className="lsb-login__error" role="alert">
-                <AlertCircle size={18} aria-hidden="true" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="lsb-login__form">
-              <div className="lsb-field">
-                <label htmlFor="hrepId" className="lsb-field__label">
-                  HREP ID
-                </label>
-                <div className="lsb-field__control">
-                  <User
-                    size={18}
-                    className="lsb-field__icon"
-                    aria-hidden="true"
-                  />
-                  <input
-                    id="hrepId"
-                    type="text"
-                    autoComplete="username"
-                    autoCapitalize="characters"
-                    spellCheck={false}
-                    required
-                    autoFocus={autoFocus}
-                    placeholder="HREP-2020-0001"
-                    value={hrepId}
-                    onChange={(e) => setHrepId(e.target.value)}
-                    className="lsb-field__input"
-                  />
-                </div>
-              </div>
-
-              <div className="lsb-field">
-                <label htmlFor="password" className="lsb-field__label">
-                  Password
-                </label>
-                <div className="lsb-field__control">
-                  <Lock
-                    size={18}
-                    className="lsb-field__icon"
-                    aria-hidden="true"
-                  />
-                  <input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
-                    required
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="lsb-field__input lsb-field__input--has-action"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="lsb-field__action"
-                    aria-label={
-                      showPassword ? "Hide password" : "Show password"
-                    }
-                    aria-pressed={showPassword}
-                  >
-                    {showPassword ? (
-                      <EyeOff size={18} aria-hidden="true" />
-                    ) : (
-                      <Eye size={18} aria-hidden="true" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <label className="lsb-check" htmlFor="remember">
-                <input type="checkbox" id="remember" />
-                <span>Remember me</span>
-              </label>
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className="lsb-login__submit"
+          {error && (
+            <div
+              role="alert"
+              className="flex items-center gap-2 px-3 py-2 mb-4 text-sm font-medium text-red-700 rounded-lg bg-red-50"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className="w-4 h-4 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
               >
-                {submitting ? (
-                  <>
-                    <Loader2
-                      size={18}
-                      className="lsb-spin"
-                      aria-hidden="true"
-                    />
-                    Signing in…
-                  </>
-                ) : (
-                  "SIGN IN"
-                )}
-              </button>
-            </form>
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 8v5M12 16h.01" />
+              </svg>
+              {error}
+            </div>
+          )}
 
-            <p className="lsb-login__notice">
-              Authorized personnel only. Activity on this system may be logged.
-            </p>
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4 text-sm">
+            <div>
+              <label
+                htmlFor="hrepId"
+                className="block mb-1 font-bold text-slate-700"
+              >
+                HREP ID
+              </label>
+              <input
+                id="hrepId"
+                type="text"
+                autoComplete="username"
+                required
+                autoFocus
+                placeholder="HREP-2020-0001"
+                value={hrepId}
+                onChange={(e) => setHrepId(e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-800"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="password"
+                className="block mb-1 font-bold text-slate-700"
+              >
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-3 py-2 pr-10 border rounded-lg border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-800"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute -translate-y-1/2 right-3 top-1/2 text-slate-400 hover:text-slate-700"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="remember"
+                className="rounded border-slate-300"
+              />
+              <label htmlFor="remember" className="text-slate-600">
+                Remember me
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full px-4 py-3 font-bold tracking-wide text-white rounded-lg bg-slate-900 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {submitting ? "Signing in…" : "SIGN IN"}
+            </button>
+          </form>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
