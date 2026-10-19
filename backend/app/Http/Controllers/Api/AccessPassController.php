@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use App\Mail\ApplicationStatusMail;
+use App\Mail\NewApplicationAdmin;
 use Illuminate\Support\Facades\Mail;
 
 class AccessPassController extends Controller
@@ -194,6 +195,25 @@ class AccessPassController extends Controller
             ));
         } catch (\Throwable $e) {
             logger()->warning('Submission email failed', ['application_id' => $application->application_id, 'error' => $e->getMessage()]);
+        }
+
+        // Notify the admin/reviewer inbox(es). Failure must never block the submission.
+        try {
+            $adminEmails = array_filter(array_map('trim', explode(',', (string) config('services.application_admin_email'))));
+
+            if ($adminEmails) {
+                $applicant = $application->applicant;
+                Mail::to($adminEmails)->send(new NewApplicationAdmin(
+                    $applicant->full_name,
+                    $application->application_id,
+                    'Access Pass',
+                    $applicant->applicant_type,
+                    $applicant->email,
+                    $applicant->contact_number,
+                ));
+            }
+        } catch (\Throwable $e) {
+            logger()->warning('Admin notification email failed', ['application_id' => $application->application_id, 'error' => $e->getMessage()]);
         }
 
         return response()->json([

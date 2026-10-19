@@ -42,4 +42,7 @@ return [
         'chrome_path' => env('BROWSERSHOT_CHROME_PATH'),
     ],
 
+    /** Comma-separated list. Gets a notice when a new application is submitted. */
+    'application_admin_email' => env('ADMIN_NOTIFY_EMAIL'),
+
 ];

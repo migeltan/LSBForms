@@ -5,6 +5,9 @@ import type {
   FamilyBackgroundDraftRow,
 } from "../../../../../hooks/types";
 
+// Must match the family_background.relationship values accepted by the database.
+const FAMILY_RELATIONS = ["Father", "Mother", "Spouse", "Child/Dependent"];
+
 const SERIF = { fontFamily: '"Source Serif 4", Georgia, serif' } as const;
 
 function AmberSectionHeader({
@@ -83,6 +86,48 @@ function AmberInput({
   );
 }
 
+function AmberSelect({
+  label,
+  value,
+  options,
+  onChange,
+  required,
+  className = "",
+}: {
+  label: string;
+  value: string | null;
+  options: string[];
+  onChange: (value: string) => void;
+  required?: boolean;
+  className?: string;
+}) {
+  const current = value ?? "";
+  // Keep an unexpected stored value visible instead of silently blanking it.
+  const choices =
+    current && !options.includes(current) ? [current, ...options] : options;
+
+  return (
+    <div className={`min-w-0 ${className}`}>
+      <div className="mb-2 text-[15px] font-semibold text-gray-900">
+        {label}
+        {required && <span className="text-red-500"> *</span>}
+      </div>
+      <select
+        value={current}
+        onChange={(e) => onChange(e.target.value)}
+        className="min-h-[46px] w-full rounded-2xl border border-gray-300 bg-white px-5 py-3 text-[15px] font-semibold text-gray-800 outline-none transition-colors focus:border-blue-400 focus:ring-2 focus:ring-blue-200"
+      >
+        <option value="">Select&hellip;</option>
+        {choices.map((opt) => (
+          <option key={opt} value={opt}>
+            {opt}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -122,7 +167,7 @@ export function FamilyBackgroundModal({
   onChange: (
     index: number,
     field: keyof FamilyBackgroundDraftRow,
-    value: string,
+    value: string
   ) => void;
   onAdd: () => void;
   onRemove: (index: number) => void;
@@ -163,9 +208,10 @@ export function FamilyBackgroundModal({
                   required
                   className="sm:col-span-3"
                 />
-                <AmberInput
+                <AmberSelect
                   label="Relationship"
                   value={f.relationship}
+                  options={FAMILY_RELATIONS}
                   onChange={(v) => onChange(idx, "relationship", v)}
                   required
                 />

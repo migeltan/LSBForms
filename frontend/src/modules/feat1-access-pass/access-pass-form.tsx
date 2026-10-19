@@ -58,6 +58,23 @@ const emptyFamilyMember = (): FamilyMember => ({
   contactNumber: "",
 });
 
+// year_graduated is VARCHAR(10) in the database, so only short values are offered.
+const GRADUATION_YEAR_OPTIONS: string[] = [
+  "N/A",
+  "Ongoing",
+  ...Array.from({ length: new Date().getFullYear() - 1949 }, (_, i) =>
+    String(new Date().getFullYear() - i)
+  ),
+];
+
+// Must match the family_background.relationship values accepted by the database.
+const FAMILY_RELATIONS = [
+  "Father",
+  "Mother",
+  "Spouse",
+  "Child/Dependent",
+] as const;
+
 const STEPS = [
   { label: "Personal Info", icon: User },
   { label: "Background", icon: Users },
@@ -81,7 +98,7 @@ export function AccessPassForm({
 }) {
   const [applicantType, setApplicantType] = useState("");
   const [applicantTypes, setApplicantTypes] = useState<ApplicantTypeOption[]>(
-    [],
+    []
   );
   const [typesError, setTypesError] = useState(false);
   // Applicant-specific uploads, keyed by "req_{doc_code}"
@@ -116,16 +133,16 @@ export function AccessPassForm({
       doc_valid_id_2: null,
       doc_other: null,
       applicant_photo: null,
-    }),
+    })
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultStatus, setResultStatus] = useState<SubmitResultStatus>(null);
   const [resultMessage, setResultMessage] = useState<string | undefined>(
-    undefined,
+    undefined
   );
   const [applicationId, setApplicationId] = useState<string | undefined>(
-    undefined,
+    undefined
   );
 
   useEffect(() => {
@@ -173,8 +190,26 @@ export function AccessPassForm({
     extra: { applicantType, familyMembers, educationRecords, signature, step },
     onRestore: (d) => {
       if (d.applicantType) setApplicantType(d.applicantType);
-      if (d.familyMembers?.length) setFamilyMembers(d.familyMembers);
-      if (d.educationRecords?.length) setEducationRecords(d.educationRecords);
+      if (d.familyMembers?.length)
+        setFamilyMembers(
+          d.familyMembers.map((m: FamilyMember) => ({
+            ...m,
+            relation: (FAMILY_RELATIONS as readonly string[]).includes(
+              m.relation
+            )
+              ? m.relation
+              : "",
+          }))
+        );
+      if (d.educationRecords?.length)
+        setEducationRecords(
+          d.educationRecords.map((r: EducationRecord) => ({
+            ...r,
+            yearGraduated: GRADUATION_YEAR_OPTIONS.includes(r.yearGraduated)
+              ? r.yearGraduated
+              : "",
+          }))
+        );
       if (d.signature) setSignature(d.signature);
       if (d.step) goTo(d.step);
     },
@@ -215,14 +250,14 @@ export function AccessPassForm({
       .join(" ");
 
     const nameEl = form.elements.namedItem(
-      "declaration_name",
+      "declaration_name"
     ) as HTMLInputElement | null;
     if (nameEl && (!nameEl.value || nameEl.value === autoName.current)) {
       nameEl.value = fullName;
       autoName.current = fullName;
     }
     const dateEl = form.elements.namedItem(
-      "declaration_date",
+      "declaration_date"
     ) as HTMLInputElement | null;
     if (dateEl && !dateEl.value)
       dateEl.value = new Date().toLocaleDateString("en-CA");
@@ -337,7 +372,7 @@ export function AccessPassForm({
           value: dash(
             [m.name, m.occupation && `(${m.occupation})`]
               .filter(Boolean)
-              .join(" "),
+              .join(" ")
           ),
           wide: true,
         })),
@@ -352,7 +387,7 @@ export function AccessPassForm({
           value: dash(
             [r.schoolName, r.yearGraduated && `(${r.yearGraduated})`]
               .filter(Boolean)
-              .join(" "),
+              .join(" ")
           ),
           wide: true,
         })),
@@ -370,7 +405,7 @@ export function AccessPassForm({
           requiredDocs.map((d) => ({
             label: d.name,
             value: reqFiles[`req_${d.code}`]?.name ?? "Not uploaded",
-          })),
+          }))
         ),
     },
   ];
@@ -547,19 +582,31 @@ export function AccessPassForm({
                     )}
                   </div>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-                    <TextFieldInput
-                      label="Relation"
-                      size="compact"
-                      color="amber"
-                      value={member.relation}
-                      onChange={(e) =>
-                        updateFamilyMember(
-                          member.id,
-                          "relation",
-                          e.target.value,
-                        )
-                      }
-                    />
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-slate-500">
+                        Relation{" "}
+                        {member.name && <span className="text-red-600">*</span>}
+                      </label>
+                      <select
+                        value={member.relation}
+                        required={!!member.name}
+                        onChange={(e) =>
+                          updateFamilyMember(
+                            member.id,
+                            "relation",
+                            e.target.value
+                          )
+                        }
+                        className={compactSelectClasses}
+                      >
+                        <option value="">Select&hellip;</option>
+                        {FAMILY_RELATIONS.map((r) => (
+                          <option key={r} value={r}>
+                            {r}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                     <TextFieldInput
                       label="Full Name"
                       size="compact"
@@ -579,7 +626,7 @@ export function AccessPassForm({
                         updateFamilyMember(
                           member.id,
                           "occupation",
-                          e.target.value,
+                          e.target.value
                         )
                       }
                     />
@@ -592,7 +639,7 @@ export function AccessPassForm({
                         updateFamilyMember(
                           member.id,
                           "contactNumber",
-                          e.target.value,
+                          e.target.value
                         )
                       }
                       containerClassName="sm:col-span-2"
@@ -648,7 +695,7 @@ export function AccessPassForm({
                         updateEducationRecord(
                           record.id,
                           "level",
-                          e.target.value,
+                          e.target.value
                         )
                       }
                       placeholder="Elementary / Secondary / College"
@@ -663,25 +710,34 @@ export function AccessPassForm({
                         updateEducationRecord(
                           record.id,
                           "schoolName",
-                          e.target.value,
+                          e.target.value
                         )
                       }
                       containerClassName="sm:col-span-1"
                     />
-                    <TextFieldInput
-                      label="Year Graduated"
-                      size="compact"
-                      color="red"
-                      value={record.yearGraduated}
-                      onChange={(e) =>
-                        updateEducationRecord(
-                          record.id,
-                          "yearGraduated",
-                          e.target.value,
-                        )
-                      }
-                      containerClassName="sm:col-span-1"
-                    />
+                    <div className="sm:col-span-1">
+                      <label className="mb-1.5 block text-xs font-medium text-slate-500">
+                        Year Graduated
+                      </label>
+                      <select
+                        value={record.yearGraduated}
+                        onChange={(e) =>
+                          updateEducationRecord(
+                            record.id,
+                            "yearGraduated",
+                            e.target.value
+                          )
+                        }
+                        className={compactSelectRedClasses}
+                      >
+                        <option value="">Select&hellip;</option>
+                        {GRADUATION_YEAR_OPTIONS.map((y) => (
+                          <option key={y} value={y}>
+                            {y}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -847,6 +903,17 @@ export function AccessPassForm({
 
 const selectClasses =
   "w-full appearance-none rounded-lg border border-slate-300 bg-white bg-[url('data:image/svg+xml;charset=UTF-8,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2020%2020%27%20fill=%27%2364748b%27%3e%3cpath%20fill-rule=%27evenodd%27%20d=%27M5.23%207.21a.75.75%200%20011.06.02L10%2011.168l3.71-3.938a.75.75%200%20111.08%201.04l-4.25%204.5a.75.75%200%2001-1.08%200l-4.25-4.5a.75.75%200%2001.02-1.06z%27%20clip-rule=%27evenodd%27/%3e%3c/svg%3e')] bg-[length:1.1rem] bg-[right_0.65rem_center] bg-no-repeat px-3.5 py-2.5 pr-9 text-sm text-slate-900 shadow-sm transition-all duration-150 hover:border-slate-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10";
+
+// Same look as selectClasses, sized and colored to match the compact repeater rows.
+const compactSelectClasses = selectClasses
+  .replace("rounded-lg", "rounded-md")
+  .replace("px-3.5 py-2.5", "px-3 py-2")
+  .replace("focus:border-blue-500", "focus:border-amber-500")
+  .replace("focus:ring-blue-500/10", "focus:ring-amber-500/10");
+
+const compactSelectRedClasses = compactSelectClasses
+  .replace("focus:border-amber-500", "focus:border-red-500")
+  .replace("focus:ring-amber-500/10", "focus:ring-red-500/10");
 
 function SelectField({
   label,
