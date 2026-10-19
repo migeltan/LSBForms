@@ -212,7 +212,11 @@ export function StatusCheckCard() {
         {...(!expanded ? ({ inert: true } as object) : {})}
       >
         <div className="status-expand__clip">
-          <div className="status-expand__body" ref={resultsRef} aria-live="polite">
+          <div
+            className="status-expand__body"
+            ref={resultsRef}
+            aria-live="polite"
+          >
             {/* Close button */}
             <button
               type="button"
