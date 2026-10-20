@@ -63,7 +63,7 @@ const GRADUATION_YEAR_OPTIONS: string[] = [
   "N/A",
   "Ongoing",
   ...Array.from({ length: new Date().getFullYear() - 1949 }, (_, i) =>
-    String(new Date().getFullYear() - i)
+    String(new Date().getFullYear() - i),
   ),
 ];
 
@@ -98,7 +98,7 @@ export function AccessPassForm({
 }) {
   const [applicantType, setApplicantType] = useState("");
   const [applicantTypes, setApplicantTypes] = useState<ApplicantTypeOption[]>(
-    []
+    [],
   );
   const [typesError, setTypesError] = useState(false);
   // Applicant-specific uploads, keyed by "req_{doc_code}"
@@ -133,16 +133,16 @@ export function AccessPassForm({
       doc_valid_id_2: null,
       doc_other: null,
       applicant_photo: null,
-    })
+    }),
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultStatus, setResultStatus] = useState<SubmitResultStatus>(null);
   const [resultMessage, setResultMessage] = useState<string | undefined>(
-    undefined
+    undefined,
   );
   const [applicationId, setApplicationId] = useState<string | undefined>(
-    undefined
+    undefined,
   );
 
   useEffect(() => {
@@ -195,11 +195,11 @@ export function AccessPassForm({
           d.familyMembers.map((m: FamilyMember) => ({
             ...m,
             relation: (FAMILY_RELATIONS as readonly string[]).includes(
-              m.relation
+              m.relation,
             )
               ? m.relation
               : "",
-          }))
+          })),
         );
       if (d.educationRecords?.length)
         setEducationRecords(
@@ -208,7 +208,7 @@ export function AccessPassForm({
             yearGraduated: GRADUATION_YEAR_OPTIONS.includes(r.yearGraduated)
               ? r.yearGraduated
               : "",
-          }))
+          })),
         );
       if (d.signature) setSignature(d.signature);
       if (d.step) goTo(d.step);
@@ -250,14 +250,14 @@ export function AccessPassForm({
       .join(" ");
 
     const nameEl = form.elements.namedItem(
-      "declaration_name"
+      "declaration_name",
     ) as HTMLInputElement | null;
     if (nameEl && (!nameEl.value || nameEl.value === autoName.current)) {
       nameEl.value = fullName;
       autoName.current = fullName;
     }
     const dateEl = form.elements.namedItem(
-      "declaration_date"
+      "declaration_date",
     ) as HTMLInputElement | null;
     if (dateEl && !dateEl.value)
       dateEl.value = new Date().toLocaleDateString("en-CA");
@@ -372,7 +372,7 @@ export function AccessPassForm({
           value: dash(
             [m.name, m.occupation && `(${m.occupation})`]
               .filter(Boolean)
-              .join(" ")
+              .join(" "),
           ),
           wide: true,
         })),
@@ -387,7 +387,7 @@ export function AccessPassForm({
           value: dash(
             [r.schoolName, r.yearGraduated && `(${r.yearGraduated})`]
               .filter(Boolean)
-              .join(" ")
+              .join(" "),
           ),
           wide: true,
         })),
@@ -405,7 +405,7 @@ export function AccessPassForm({
           requiredDocs.map((d) => ({
             label: d.name,
             value: reqFiles[`req_${d.code}`]?.name ?? "Not uploaded",
-          }))
+          })),
         ),
     },
   ];
@@ -439,34 +439,38 @@ export function AccessPassForm({
             <p className="form-eyebrow text-sm">Section A</p>
             <h2 className="form-heading mt-1 text-xl">Personal Information</h2>
 
-            <div className="grid grid-cols-1 gap-4 mt-5 sm:grid-cols-4 sm:gap-x-4 sm:gap-y-5">
-              <div className="grid grid-cols-1 gap-4 sm:col-span-4 sm:grid-cols-12">
+            <div className="grid grid-cols-1 gap-4 mt-5 xs:grid-cols-2 xs:gap-x-3 sm:grid-cols-4 sm:gap-x-4 sm:gap-y-5">
+              {/* Names: stacked on small phones, 2 + 2 on larger phones, one row on desktop */}
+              <div className="grid grid-cols-1 gap-4 col-span-full xs:grid-cols-6 xs:gap-x-3 sm:grid-cols-12 sm:gap-x-4">
                 <TextFieldInput
                   label="First Name"
                   name="first_name"
+                  placeholder="Juan"
                   required
                   color="blue"
-                  containerClassName="sm:col-span-4"
+                  containerClassName="xs:col-span-3 sm:col-span-4"
                 />
                 <TextFieldInput
                   label="Middle Name"
                   name="middle_name"
+                  placeholder="Santos"
                   color="blue"
-                  containerClassName="sm:col-span-3"
+                  containerClassName="xs:col-span-3 sm:col-span-3"
                 />
                 <TextFieldInput
                   label="Last Name"
                   name="last_name"
+                  placeholder="Dela Cruz"
                   required
                   color="blue"
-                  containerClassName="sm:col-span-3"
+                  containerClassName="xs:col-span-4 sm:col-span-3"
                 />
                 <TextFieldInput
                   label="Suffix"
                   name="suffix"
                   placeholder="Jr."
                   color="blue"
-                  containerClassName="sm:col-span-2"
+                  containerClassName="xs:col-span-2 sm:col-span-2"
                 />
               </div>
 
@@ -481,6 +485,7 @@ export function AccessPassForm({
               <TextFieldInput
                 label="Place of Birth"
                 name="place_of_birth"
+                placeholder="City / Municipality"
                 color="blue"
                 containerClassName="sm:col-span-2"
               />
@@ -501,27 +506,32 @@ export function AccessPassForm({
               <TextFieldInput
                 label="Home Address"
                 name="address"
+                placeholder="House no., Street, Barangay, City"
                 color="blue"
-                containerClassName="sm:col-span-4"
+                containerClassName="col-span-full"
               />
 
               <TextFieldInput
                 label="Contact Number"
                 name="contact_number"
+                type="tel"
+                inputMode="tel"
+                placeholder="09XX XXX XXXX"
                 required
                 color="blue"
-                containerClassName="sm:col-span-2"
+                containerClassName="col-span-full sm:col-span-2"
               />
               <TextFieldInput
                 label="Email Address"
                 name="email"
                 type="email"
+                placeholder="name@example.com"
                 required
                 color="blue"
-                containerClassName="sm:col-span-2"
+                containerClassName="col-span-full sm:col-span-2"
               />
 
-              <div className="sm:col-span-4">
+              <div className="col-span-full">
                 <label className="mb-1.5 block text-sm font-medium text-slate-700">
                   Applicant Type <span className="text-red-600">*</span>
                 </label>
@@ -594,7 +604,7 @@ export function AccessPassForm({
                           updateFamilyMember(
                             member.id,
                             "relation",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         className={compactSelectClasses}
@@ -626,7 +636,7 @@ export function AccessPassForm({
                         updateFamilyMember(
                           member.id,
                           "occupation",
-                          e.target.value
+                          e.target.value,
                         )
                       }
                     />
@@ -639,7 +649,7 @@ export function AccessPassForm({
                         updateFamilyMember(
                           member.id,
                           "contactNumber",
-                          e.target.value
+                          e.target.value,
                         )
                       }
                       containerClassName="sm:col-span-2"
@@ -695,7 +705,7 @@ export function AccessPassForm({
                         updateEducationRecord(
                           record.id,
                           "level",
-                          e.target.value
+                          e.target.value,
                         )
                       }
                       placeholder="Elementary / Secondary / College"
@@ -710,7 +720,7 @@ export function AccessPassForm({
                         updateEducationRecord(
                           record.id,
                           "schoolName",
-                          e.target.value
+                          e.target.value,
                         )
                       }
                       containerClassName="sm:col-span-1"
@@ -725,7 +735,7 @@ export function AccessPassForm({
                           updateEducationRecord(
                             record.id,
                             "yearGraduated",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         className={compactSelectRedClasses}

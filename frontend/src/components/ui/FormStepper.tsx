@@ -23,7 +23,7 @@ export function FormStepper({ steps, current, maxReached, onSelect }: Props) {
     >
       <ol
         className="relative grid"
-        style={{ gridTemplateColumns: `repeat(${n}, 1fr)` }}
+        style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }}
       >
         {/* track + fill, inset so it runs centre-to-centre of the end circles */}
         <div
@@ -42,13 +42,16 @@ export function FormStepper({ steps, current, maxReached, onSelect }: Props) {
           const active = i === current;
           const reachable = i <= maxReached;
           return (
-            <li key={label} className="relative z-10 flex justify-center">
+            <li
+              key={label}
+              className="relative z-10 flex min-w-0 items-start justify-center"
+            >
               <button
                 type="button"
                 disabled={!reachable}
                 onClick={() => onSelect(i)}
                 aria-current={active ? "step" : undefined}
-                className="flex flex-col items-center gap-1.5 focus:outline-none disabled:cursor-not-allowed"
+                className="flex max-w-full flex-col items-center gap-1.5 focus:outline-none disabled:cursor-not-allowed"
               >
                 <span
                   className={`flex h-10 w-10 items-center justify-center rounded-full shadow-md ring-4 transition-all ${
@@ -62,7 +65,7 @@ export function FormStepper({ steps, current, maxReached, onSelect }: Props) {
                   {done ? <Check size={16} /> : <Icon size={16} />}
                 </span>
                 <span
-                  className={`text-xs ${
+                  className={`px-0.5 text-center text-[0.7rem] leading-tight break-words sm:text-xs ${
                     active
                       ? "font-bold text-[var(--smart-blue)]"
                       : done

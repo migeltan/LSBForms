@@ -6,17 +6,23 @@ export function AccessPass() {
   const { reference, error, reserve } = useReservedReference("access-pass");
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-4 px-4 py-8 sm:px-6">
-      <div className="mb-2 flex flex-wrap items-start justify-between gap-3">
+      <div className="mb-3 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-[1fr_auto]">
         <div>
           <p className="form-eyebrow text-sm">Application &middot; 01</p>
           <h1 className="form-heading mt-1 text-2xl">
             Access Pass / ID Application
           </h1>
-          <p className="mt-2 text-sm text-[var(--smart-muted)]">
-            Fields marked <span className="text-red-600">*</span> are required.
-          </p>
         </div>
-        <ReferenceChip reference={reference} error={error} onRetry={reserve} />
+        <div className="sm:col-span-1 sm:col-start-2 sm:row-span-2 sm:row-start-1">
+          <ReferenceChip
+            reference={reference}
+            error={error}
+            onRetry={reserve}
+          />
+        </div>
+        <p className="text-sm text-[var(--smart-muted)] sm:col-start-1">
+          Fields marked <span className="text-red-600">*</span> are required.
+        </p>
       </div>
 
       <AccessPassForm reference={reference} onSubmitted={reserve} />

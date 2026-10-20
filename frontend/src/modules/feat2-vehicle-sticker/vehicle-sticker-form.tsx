@@ -185,21 +185,24 @@ export function VehicleStickerForm({
             <p className="form-eyebrow text-sm">Section A</p>
             <h2 className="form-heading mt-1 text-xl">Personal Information</h2>
 
-            <div className="grid grid-cols-1 gap-4 mt-5 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 mt-5 xs:grid-cols-2 xs:gap-x-3 sm:grid-cols-3 sm:gap-x-4">
               <TextFieldInput
                 label="First Name"
                 name="first_name"
+                placeholder="Juan"
                 required
                 color="blue"
               />
               <TextFieldInput
                 label="Middle Name"
                 name="middle_name"
+                placeholder="Santos"
                 color="blue"
               />
               <TextFieldInput
                 label="Last Name"
                 name="last_name"
+                placeholder="Dela Cruz"
                 required
                 color="blue"
               />
@@ -213,15 +216,21 @@ export function VehicleStickerForm({
               <TextFieldInput
                 label="Contact Number"
                 name="contact_number"
+                type="tel"
+                inputMode="tel"
+                placeholder="09XX XXX XXXX"
                 required
                 color="blue"
+                containerClassName="col-span-full sm:col-span-1"
               />
               <TextFieldInput
                 label="Email Address"
                 name="email"
                 type="email"
+                placeholder="name@example.com"
                 required
                 color="blue"
+                containerClassName="col-span-full sm:col-span-1"
               />
             </div>
           </section>
@@ -263,7 +272,7 @@ export function VehicleStickerForm({
               <TextFieldInput
                 label="Registration Information"
                 name="registration_information"
-                placeholder="Field to be confirmed"
+                placeholder="0001"
                 color="amber"
                 containerClassName="sm:col-span-2"
               />

@@ -109,7 +109,16 @@
 
   /* Section cards: reclaim horizontal space */
   main form:has(> [data-step]) [data-step] > .p-6 {
-    padding: 1.1rem 1rem;
+    padding: 1.4rem 1.25rem; /* more room between card edge and content */
+  }
+  /* Hierarchy: small uppercase eyebrow, bigger title */
+  main form:has(> [data-step]) [data-step] > .p-6 .form-eyebrow {
+    font-size: 0.8125rem; /* sentence case, a notch smaller than the title */
+  }
+  main form:has(> [data-step]) [data-step] > .p-6 .form-heading {
+    margin-top: 0.3rem;
+    font-size: 1.5rem;
+    line-height: 1.2;
   }
   /* Nested cards (Family member / Education record) */
   main form:has(> [data-step]) [data-step] .p-4 {

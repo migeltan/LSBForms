@@ -13,7 +13,7 @@ export function Body() {
         <span className="bg-shape bg-shape-blue bg-shape-4" />
       </div>
 
-      <main id="mainContent" className="max-w-6xl px-4 py-6 mx-auto">
+      <main id="mainContent" className="w-full max-w-6xl px-4 py-6 mx-auto">
         <Outlet />
       </main>
     </>

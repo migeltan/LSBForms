@@ -58,121 +58,116 @@ body {
   }
 }
 
-/* ---------- Burger: frosted glass, morphs into an X (shown below 1024px) ---------- */
+/* ---------- Burger: flat three bars, morphs into an X (shown below 1024px) ---------- */
 @media (max-width: 1023.98px) {
   .lsb-burger {
     position: relative;
-    width: 3rem;
-    height: 3rem;
+    width: 2.75rem; /* 44px tap area */
+    height: 2.75rem;
+    border: 0;
     border-radius: 50%;
-    background: linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.22),
-      rgba(255, 255, 255, 0.06)
-    );
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.4),
-      0 6px 14px -6px rgba(0, 0, 0, 0.5);
-    transition:
-      background 0.25s ease,
-      border-color 0.25s ease,
-      box-shadow 0.25s ease,
-      transform 0.15s ease;
+    background: transparent;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    transition: background-color 0.15s ease;
     -webkit-tap-highlight-color: transparent;
   }
   .lsb-burger:hover {
-    background: linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.3),
-      rgba(255, 255, 255, 0.1)
-    );
+    background: transparent; /* no sticky highlight on touch */
   }
   .lsb-burger:active {
-    transform: scale(0.94);
-  }
-  .lsb-burger.is-open {
-    border-color: rgba(245, 180, 0, 0.75);
-    background: linear-gradient(
-      145deg,
-      rgba(245, 180, 0, 0.32),
-      rgba(245, 180, 0, 0.08)
-    );
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.4),
-      0 0 0 3px rgba(245, 180, 0, 0.18),
-      0 6px 14px -6px rgba(0, 0, 0, 0.5);
+    background: rgba(255, 255, 255, 0.14); /* faint circle only while pressed */
   }
   .lsb-burger__icon {
     position: relative;
     display: block;
-    width: 1.3rem;
+    width: 1.4rem;
     height: 1rem;
   }
   .lsb-burger__icon > span {
     position: absolute;
     left: 0;
+    width: 100%; /* three equal-length bars */
     height: 2px;
     border-radius: 2px;
     background: #fff;
     transition:
       transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1),
-      width 0.3s ease,
       top 0.3s ease,
       opacity 0.2s ease;
   }
   .lsb-burger__icon > span:nth-child(1) {
     top: 0;
-    width: 100%;
   }
   .lsb-burger__icon > span:nth-child(2) {
     top: calc(50% - 1px);
-    width: 70%;
   }
   .lsb-burger__icon > span:nth-child(3) {
     top: calc(100% - 2px);
-    width: 45%;
   }
   .lsb-burger__icon.is-open > span:nth-child(1) {
     top: calc(50% - 1px);
-    width: 100%;
     transform: rotate(45deg);
   }
   .lsb-burger__icon.is-open > span:nth-child(2) {
-    width: 0;
     opacity: 0;
   }
   .lsb-burger__icon.is-open > span:nth-child(3) {
     top: calc(50% - 1px);
-    width: 100%;
     transform: rotate(-45deg);
   }
 
-  /* ---------- Mobile menu: white, like the desktop Forms dropdown ---------- */
+  /* ---------- Mobile menu: floating popup card, same look as the desktop Forms dropdown ---------- */
+  .lsb-backdrop {
+    background: rgba(8, 20, 46, 0.28); /* lighter scrim */
+  }
   .lsb-drawer {
+    top: calc(100% + 0.6rem);
+    left: auto;
+    right: 0.75rem;
+    width: min(24rem, calc(100vw - 1.5rem));
+    gap: 0.15rem;
+    padding: 0.5rem;
     background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.9rem;
     box-shadow: 0 18px 40px rgba(8, 20, 46, 0.28);
   }
+
   .lsb-drawer__label {
+    margin: 0;
+    padding: 0.5rem 0.65rem 0.35rem;
     font-size: 0.72rem;
     letter-spacing: 0.09em;
     color: #64748b;
   }
   .lsb-drawer__divider {
+    height: 1px;
+    margin: 0.3rem 0.65rem;
     background: #e2e8f0;
   }
   .lsb-drawer__link {
-    color: #123071;
+    min-height: 3rem; /* 48px tap target */
+    padding: 0.5rem 0.65rem;
+    border: 0;
+    border-radius: 0.65rem;
+    color: #0b2150;
   }
-  .lsb-drawer__link:hover {
+  .lsb-drawer__link:active {
     background: #eef4fd;
   }
-  .lsb-drawer__link.is-active {
-    background: #eef4fd;
-    color: #123071;
-    box-shadow: inset 3px 0 0 var(--lsb-gold);
+  @media (hover: hover) {
+    .lsb-drawer__link:hover {
+      background: #eef4fd; /* hover only on devices that can hover */
+    }
+  }
+  .lsb-drawer__link.is-active,
+  .lsb-drawer__link.is-active:hover,
+  .lsb-drawer__link.is-active:active {
+    background: #e2ecfb; /* soft blue, a step stronger than hover */
+    color: #0b2150;
+    box-shadow: none;
   }
 }
 

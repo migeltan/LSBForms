@@ -4,3 +4,6 @@
 @import "./styles/header-login.css";
 @import "./styles/status-check.css";
 @import "./styles/landing-mobile.css";
+@theme {
+  --breakpoint-xs: 24rem; /* 384px: phones wide enough for side-by-side fields */
+}
