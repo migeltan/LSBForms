@@ -544,7 +544,7 @@
   background-size: 250% 100%;
   animation: ad-shimmer 1.3s linear infinite;
 }
-.ad-app-skeleton {
+.ad-skeleton-block {
   min-height: 19rem;
   border: 1px solid var(--smart-border);
   border-radius: var(--ad-radius);
