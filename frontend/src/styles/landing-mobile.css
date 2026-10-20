@@ -1,0 +1,441 @@
+/* ==========================================================================
+   LANDING PAGE: phone view (< 768px) + safe areas
+   Loaded LAST (see src/index.css) so it wins over theme-smart.css,
+   mobile-fixes.css and header-login.css. Desktop is untouched: every
+   phone rule sits inside a max-width media query.
+   ========================================================================== */
+
+/* Helpers used by Home.tsx: .m-hide = hidden on phones, .m-only = phones only */
+.m-only {
+  display: none;
+}
+.bb-tabs {
+  display: none;
+}
+.btn-arrow {
+  display: inline-flex;
+  align-items: center;
+}
+
+@keyframes lm-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes lm-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- Safe areas (needs viewport-fit=cover in index.html) ----------
+   Header paints up into the status-bar area; footer paints down to the
+   screen edge. All values are 0 on devices without insets. */
+body {
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+.lsb-header {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.footer-govt {
+  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 767.98px) {
+  :root {
+    --lsb-header-h: 6.25rem; /* was 4.25rem / 5rem: bigger header on phones */
+  }
+}
+
+/* ---------- Burger: frosted glass, morphs into an X (shown below 1024px) ---------- */
+@media (max-width: 1023.98px) {
+  .lsb-burger {
+    position: relative;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.22),
+      rgba(255, 255, 255, 0.06)
+    );
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      0 6px 14px -6px rgba(0, 0, 0, 0.5);
+    transition:
+      background 0.25s ease,
+      border-color 0.25s ease,
+      box-shadow 0.25s ease,
+      transform 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .lsb-burger:hover {
+    background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.3),
+      rgba(255, 255, 255, 0.1)
+    );
+  }
+  .lsb-burger:active {
+    transform: scale(0.94);
+  }
+  .lsb-burger.is-open {
+    border-color: rgba(245, 180, 0, 0.75);
+    background: linear-gradient(
+      145deg,
+      rgba(245, 180, 0, 0.32),
+      rgba(245, 180, 0, 0.08)
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      0 0 0 3px rgba(245, 180, 0, 0.18),
+      0 6px 14px -6px rgba(0, 0, 0, 0.5);
+  }
+  .lsb-burger__icon {
+    position: relative;
+    display: block;
+    width: 1.3rem;
+    height: 1rem;
+  }
+  .lsb-burger__icon > span {
+    position: absolute;
+    left: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: #fff;
+    transition:
+      transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1),
+      width 0.3s ease,
+      top 0.3s ease,
+      opacity 0.2s ease;
+  }
+  .lsb-burger__icon > span:nth-child(1) {
+    top: 0;
+    width: 100%;
+  }
+  .lsb-burger__icon > span:nth-child(2) {
+    top: calc(50% - 1px);
+    width: 70%;
+  }
+  .lsb-burger__icon > span:nth-child(3) {
+    top: calc(100% - 2px);
+    width: 45%;
+  }
+  .lsb-burger__icon.is-open > span:nth-child(1) {
+    top: calc(50% - 1px);
+    width: 100%;
+    transform: rotate(45deg);
+  }
+  .lsb-burger__icon.is-open > span:nth-child(2) {
+    width: 0;
+    opacity: 0;
+  }
+  .lsb-burger__icon.is-open > span:nth-child(3) {
+    top: calc(50% - 1px);
+    width: 100%;
+    transform: rotate(-45deg);
+  }
+
+  /* ---------- Mobile menu: white, like the desktop Forms dropdown ---------- */
+  .lsb-drawer {
+    background: #fff;
+    box-shadow: 0 18px 40px rgba(8, 20, 46, 0.28);
+  }
+  .lsb-drawer__label {
+    font-size: 0.72rem;
+    letter-spacing: 0.09em;
+    color: #64748b;
+  }
+  .lsb-drawer__divider {
+    background: #e2e8f0;
+  }
+  .lsb-drawer__link {
+    color: #123071;
+  }
+  .lsb-drawer__link:hover {
+    background: #eef4fd;
+  }
+  .lsb-drawer__link.is-active {
+    background: #eef4fd;
+    color: #123071;
+    box-shadow: inset 3px 0 0 var(--lsb-gold);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .m-only {
+    display: inline;
+  }
+  .m-hide {
+    display: none;
+  }
+
+  /* Footer colour continues below the page end (covers the strip under
+     Safari's floating toolbar when the page is short). */
+  .footer-govt {
+    box-shadow: 0 100vh 0 0 var(--smart-surface, #fff);
+  }
+
+  /* ---------- Header: more breathing room ---------- */
+  .lsb-header__inner {
+    padding-inline: 1.25rem;
+    gap: 0.75rem;
+  }
+  .lsb-brand {
+    gap: 1rem;
+  }
+  .lsb-brand__seal {
+    width: 4.5rem;
+    height: 4.5rem;
+  }
+  .lsb-brand__text {
+    gap: 0.15rem;
+  }
+  .lsb-brand__title {
+    font-size: clamp(1.05rem, 5vw, 1.8rem);
+  }
+  .lsb-brand__sub1 {
+    margin-top: 0.15rem;
+    font-size: clamp(0.8rem, 3.4vw, 1.05rem);
+  }
+  .lsb-brand__sub2 {
+    font-size: clamp(0.7rem, 2.9vw, 0.88rem);
+  }
+  .lsb-header {
+    box-shadow: 0 8px 24px rgba(8, 20, 46, 0.3);
+  }
+  .lsb-header::after {
+    height: 4px;
+  }
+
+  /* ---------- Hero: fills the screen, no logo, big title ---------- */
+  .hero-landing {
+    min-height: calc(
+      100vh - var(--lsb-header-h) - env(safe-area-inset-top, 0px) - 0.5rem
+    );
+    min-height: calc(
+      100svh - var(--lsb-header-h) - env(safe-area-inset-top, 0px) - 0.5rem
+    );
+    padding: 0.5rem 0 5.5rem; /* extra bottom padding = text sits a little above centre */
+    align-items: center;
+  }
+  .hero-landing-graphic {
+    display: none;
+  }
+  .hero-landing-title-eyebrow {
+    font-size: clamp(1.5rem, 7.5vw, 2.1rem);
+  }
+  .hero-landing-title-main {
+    font-size: clamp(2.75rem, 14vw, 4rem);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+  }
+  .hero-landing-lead {
+    font-size: clamp(1rem, 4.2vw, 1.15rem);
+  }
+  .hero-landing-scroll-cue {
+    display: flex;
+    left: 0;
+    right: 0;
+    bottom: 1.25rem;
+    width: max-content;
+    margin-inline: auto;
+    transform: none;
+  }
+  .hero-landing-title-eyebrow,
+  .hero-landing-title-main,
+  .hero-landing-lead {
+    animation: lm-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  }
+  .hero-landing-title-main {
+    animation-delay: 0.12s;
+  }
+  .hero-landing-lead {
+    animation-delay: 0.26s;
+  }
+  /* quieter corner wedge so it is not clipped awkwardly */
+  .bg-shape-1 {
+    top: -320px;
+    right: -320px;
+    opacity: 0.04;
+  }
+
+  /* ---------- Bento: hidden until scrolled to, then staggered in ---------- */
+  .bento-section.reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .bento-section > :not(.grid),
+  .bento-section > .grid > * {
+    opacity: 0;
+  }
+  .bento-section.is-visible > :not(.grid),
+  .bento-section.is-visible > .grid > * {
+    opacity: 1;
+    animation: lm-rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  }
+  .bento-section.is-visible > :first-child {
+    animation-delay: 0s;
+  }
+  .bento-section.is-visible > .grid > :nth-child(1) {
+    animation-delay: 0.12s;
+  }
+  .bento-section.is-visible > .grid > :nth-child(2) {
+    animation-delay: 0.24s;
+  }
+  .bento-section.is-visible > :last-child {
+    animation-delay: 0.38s;
+  }
+
+  /* ---------- Two application cards side by side ---------- */
+  .bento-section > .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .app-choice-card {
+    display: flex;
+    flex-direction: column;
+    padding: 0.95rem 0.9rem 1rem;
+  }
+  .app-choice-card .card-index {
+    font-size: 0.85rem;
+  }
+  .app-choice-card h3 {
+    font-size: clamp(1.02rem, 4.6vw, 1.2rem);
+    line-height: 1.15;
+  }
+  .app-choice-card p {
+    flex: 1 1 auto;
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+  .app-choice-card:active {
+    transform: scale(0.97);
+  }
+  /* ---------- Buttons: same look as desktop, just smaller ---------- */
+  .app-choice-card .btn,
+  .status-check-controls .btn-govt-info,
+  .before-begin-panel .btn {
+    min-height: 38px;
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease,
+      border-color 0.15s ease,
+      transform 0.15s ease;
+  }
+  .app-choice-card .btn {
+    margin-top: 0.75rem;
+  }
+  .app-choice-card .btn:active,
+  .status-check-controls .btn-govt-info:active,
+  .before-begin-panel .btn:active {
+    transform: scale(0.97);
+  }
+  .status-check-controls .btn-govt-info:disabled {
+    opacity: 0.6;
+    transform: none;
+  }
+
+  /* ---------- Before you begin: two tiles, content opens below ---------- */
+  .before-begin-section {
+    margin-top: 3.5rem;
+  }
+  .bb-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--m-gap, 0.75rem);
+  }
+  .bb-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+    padding: 0.85rem 0.85rem 0.9rem;
+    text-align: left;
+    cursor: pointer;
+    color: var(--smart-blue, #225aa7);
+    background: #fff;
+    border: 1.5px solid var(--smart-border, #dbe3ef);
+    border-radius: var(--m-radius, 14px);
+    box-shadow: 0 2px 10px rgba(22, 61, 115, 0.07);
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      transform 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .bb-tab--red {
+    color: var(--smart-red, #ef3b4c);
+  }
+  .bb-tab__title {
+    margin-top: 0.25rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--smart-ink, #0f172a);
+  }
+  .bb-tab__hint {
+    font-size: 0.78rem;
+    color: var(--smart-muted, #5b6b82);
+  }
+  .bb-tab:active {
+    transform: scale(0.97);
+  }
+  .bb-tab[aria-selected="true"] {
+    border-color: currentColor;
+    box-shadow:
+      0 0 0 3px color-mix(in srgb, currentColor 16%, transparent),
+      0 6px 16px rgba(22, 61, 115, 0.12);
+  }
+  .before-begin-panel:not(.is-active) {
+    display: none;
+  }
+  .before-begin-panel.reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .before-begin-panel.is-active {
+    animation: lm-panel-in 0.4s ease backwards;
+  }
+}
+
+/* very narrow phones: keep the header on one row */
+@media (max-width: 359.98px) {
+  .lsb-brand__seal {
+    width: 3.75rem;
+    height: 3.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-landing-title-eyebrow,
+  .hero-landing-title-main,
+  .hero-landing-lead,
+  .bento-section.is-visible > :not(.grid),
+  .bento-section.is-visible > .grid > *,
+  .before-begin-panel.is-active {
+    animation: none;
+  }
+  .bb-tab,
+  .lsb-burger,
+  .lsb-burger__icon > span {
+    transition: none;
+  }
+}

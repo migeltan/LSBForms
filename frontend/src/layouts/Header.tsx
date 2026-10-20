@@ -1,7 +1,7 @@
 // Header.tsx
 import { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { ChevronDown, FileText, Menu, X } from "lucide-react";
+import { ChevronDown, FileText } from "lucide-react";
 import { AVAILABLE_FORMS } from "../data/forms";
 import { useScrollDirection } from "../hooks/useScrollDirection";
 
@@ -11,7 +11,7 @@ import { useScrollDirection } from "../hooks/useScrollDirection";
 function useDismiss(
   open: boolean,
   onClose: () => void,
-  ref: React.RefObject<HTMLElement | null>
+  ref: React.RefObject<HTMLElement | null>,
 ) {
   useEffect(() => {
     if (!open) return;
@@ -98,7 +98,7 @@ export function Header() {
         {/* ---------- Mobile toggle ---------- */}
         <button
           type="button"
-          className="lsb-burger"
+          className={`lsb-burger${mobileOpen ? " is-open" : ""}`}
           aria-expanded={mobileOpen}
           aria-controls="lsb-mobile-nav"
           onClick={() => setMobileOpen((o) => !o)}
@@ -106,11 +106,14 @@ export function Header() {
           <span className="sr-only">
             {mobileOpen ? "Close navigation" : "Open navigation"}
           </span>
-          {mobileOpen ? (
-            <X size={22} aria-hidden="true" />
-          ) : (
-            <Menu size={22} aria-hidden="true" />
-          )}
+          <span
+            className={`lsb-burger__icon${mobileOpen ? " is-open" : ""}`}
+            aria-hidden="true"
+          >
+            <span />
+            <span />
+            <span />
+          </span>
         </button>
       </div>
 
@@ -138,7 +141,7 @@ function FormsMenu() {
   }, [location.pathname]);
 
   const formsActive = AVAILABLE_FORMS.some((f) =>
-    location.pathname.startsWith(f.href)
+    location.pathname.startsWith(f.href),
   );
 
   return (

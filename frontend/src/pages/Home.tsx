@@ -1,5 +1,5 @@
 // Home.tsx
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import {
   ChevronDown,
@@ -16,7 +16,12 @@ import { useScrollProgress } from "../hooks/useScrollProgress";
 
 export function Home() {
   const [heroRef, heroProgress] = useScrollProgress<HTMLDivElement>();
-  const { ref: bentoRef, inView: bentoInView } = useInView<HTMLDivElement>();
+  const { ref: bentoRef, inView: bentoInView } = useInView<HTMLDivElement>({
+    threshold: 0.05,
+  });
+  const [activePanel, setActivePanel] = useState<"instructions" | "docs">(
+    "instructions",
+  );
   const { ref: beforeBeginRef, inView: beforeBeginInView } =
     useInView<HTMLDivElement>({ threshold: 0.05 });
   const { ref: instructionsPanelRef, inView: instructionsPanelInView } =
@@ -71,7 +76,7 @@ export function Home() {
       >
         <FormsSearch />
 
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-3 sm:gap-5">
           {AVAILABLE_FORMS.map((form) => (
             <ApplicationCard key={form.id} form={form} />
           ))}
@@ -94,8 +99,40 @@ export function Home() {
         </div>
 
         <div className="before-begin-panels">
+          <div className="bb-tabs" role="tablist" aria-label="Before you begin">
+            <button
+              type="button"
+              role="tab"
+              id="bb-tab-instructions"
+              aria-selected={activePanel === "instructions"}
+              aria-controls="bb-panel-instructions"
+              className="bb-tab"
+              onClick={() => setActivePanel("instructions")}
+            >
+              <ClipboardList size={20} aria-hidden="true" />
+              <span className="bb-tab__title">Instructions</span>
+              <span className="bb-tab__hint">How to prepare</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="bb-tab-docs"
+              aria-selected={activePanel === "docs"}
+              aria-controls="bb-panel-docs"
+              className="bb-tab bb-tab--red"
+              onClick={() => setActivePanel("docs")}
+            >
+              <FileCheck2 size={20} aria-hidden="true" />
+              <span className="bb-tab__title">Required Documents</span>
+              <span className="bb-tab__hint">What to bring</span>
+            </button>
+          </div>
+
           <div
-            className={`before-begin-panel form-section-card landing-card corner-accent-blue reveal${instructionsPanelInView ? " is-visible" : ""}`}
+            id="bb-panel-instructions"
+            role="tabpanel"
+            aria-labelledby="bb-tab-instructions"
+            className={`before-begin-panel form-section-card landing-card corner-accent-blue reveal${instructionsPanelInView ? " is-visible" : ""}${activePanel === "instructions" ? " is-active" : ""}`}
             ref={instructionsPanelRef}
           >
             <div className="section-label">
@@ -131,7 +168,10 @@ export function Home() {
           </div>
 
           <div
-            className={`before-begin-panel form-section-card landing-card corner-accent-red reveal${docsPanelInView ? " is-visible" : ""}`}
+            id="bb-panel-docs"
+            role="tabpanel"
+            aria-labelledby="bb-tab-docs"
+            className={`before-begin-panel form-section-card landing-card corner-accent-red reveal${docsPanelInView ? " is-visible" : ""}${activePanel === "docs" ? " is-active" : ""}`}
             ref={docsPanelRef}
           >
             <div className="section-label">
@@ -192,16 +232,26 @@ function ApplicationCardDescription({
   if (form.id === "access-pass") {
     return (
       <>
-        For Congressional Staff, Consultant, Attached Agencies, Concessionaire,
-        etc. Apply for an <strong>Access Pass.</strong>
+        <span className="m-hide">
+          For Congressional Staff, Consultant, Attached Agencies,
+          Concessionaire, etc. Apply for an <strong>Access Pass.</strong>
+        </span>
+        <span className="m-only">
+          For staff, consultants, agencies and more.
+        </span>
       </>
     );
   }
   if (form.id === "vehicle-sticker") {
     return (
       <>
-        For House Employees applying for a <strong>Vehicle Sticker</strong> for
-        their private vehicles in the HRep Premises.
+        <span className="m-hide">
+          For House Employees applying for a <strong>Vehicle Sticker</strong>{" "}
+          for their private vehicles in the HRep Premises.
+        </span>
+        <span className="m-only">
+          For House employees&apos; private vehicles.
+        </span>
       </>
     );
   }
@@ -211,7 +261,10 @@ function ApplicationCardDescription({
 function ApplicationCard({ form }: { form: FormDefinition }) {
   return (
     <div className={`app-choice-card corner-accent-${form.accent}`}>
-      <div className="card-index">{form.index} Application Form</div>
+      <div className="card-index">
+        {form.index}
+        <span className="m-hide"> Application Form</span>
+      </div>
       <h3>{form.title}</h3>
       <p>
         <ApplicationCardDescription form={form} />
@@ -220,8 +273,11 @@ function ApplicationCard({ form }: { form: FormDefinition }) {
         to={form.href}
         className="block btn btn-govt-primary sm:inline-block"
       >
-        Start Application
-        <ArrowUpRight size={16} aria-hidden="true" />
+        <span className="m-hide">Start Application</span>
+        <span className="m-only">Start</span>
+        <span className="btn-arrow">
+          <ArrowUpRight size={16} aria-hidden="true" />
+        </span>
       </Link>
     </div>
   );

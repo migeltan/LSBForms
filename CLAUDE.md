@@ -80,7 +80,27 @@ Gotchas: `php artisan serve` does not bind on his machine (use the `php -S` comm
 
 ## 6. Next (user's queue, one at a time; say "go" before each)
 
-(empty: fill in before the next conversation)
+1. In the burger of the header in phone:
+   Active page
+
+Remove the gold edge on the active row.
+The active row becomes a solid dark navy fill (the header’s navy) with white text.
+Other rows stay white, with the light-blue highlight only on hover or press.
+
+Menu, simpler
+
+Keep it a plain white sheet under the header.
+Replace the second gold line at the bottom with a soft shadow. The header already has its gold line, and the menu’s extra one reads as another accent.
+Use even rows with thin dividers between them.
+Keep the small blue and red icons on the two forms, and tighten the “Application Forms” label.
+Everything stays full-width with 48px tap targets, as it is now.
+
+Burger button, normal style
+
+Drop the glass circle, border and gold ring.
+Use three equal-length bars that turn into an X when open.
+Keep a 44px tap area and a faint circular highlight only while pressed.
+If you meant only the menu and want the glass burger button left alone, tell me and I’ll skip this part.
 
 ## 7. Known risks (state them, do not hide them)
 
