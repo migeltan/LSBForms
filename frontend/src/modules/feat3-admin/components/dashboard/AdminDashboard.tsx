@@ -1,26 +1,12 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-  type ReactNode,
-} from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  ArrowRight,
-  CheckCircle2,
-  Clock3,
-  FileStack,
-  RefreshCw,
-  XCircle,
-} from "lucide-react";
+import { ArrowRight, Clock3, RefreshCw } from "lucide-react";
 import type { ApplicationStatus } from "../../../../hooks/types";
 import {
   STATUS_ORDER,
   useDashboardStats,
   type FormStats,
   type TrendPoint,
-  type TypeSlice,
 } from "../../hooks/useDashboardStats";
 import "../../../../styles/admin-dashboard.css";
 
@@ -87,81 +73,51 @@ const delay = (i: number): CSSProperties => ({
 });
 
 /* ------------------------------------------------------------------ *
- * KPI card
+ * Application panel (Access Pass / Vehicle Sticker)
+ * Banner, status breakdown and the link to the full table in one card.
  * ------------------------------------------------------------------ */
-function KpiCard({
-  tone,
-  label,
-  value,
-  hint,
-  icon,
-  index,
-}: {
-  tone: "blue" | "yellow" | "green" | "red";
-  label: string;
-  value: number;
-  hint: string;
-  icon: ReactNode;
-  index: number;
-}) {
-  return (
-    <div className={`ad-kpi ad-kpi--${tone} ad-rise`} style={delay(index)}>
-      <div className="ad-kpi-icon" aria-hidden="true">
-        {icon}
-      </div>
-      <div className="ad-kpi-body">
-        <div className="ad-kpi-label">{label}</div>
-        <div className="ad-kpi-value">
-          <CountUp value={value} />
-        </div>
-        <div className="ad-kpi-hint">{hint}</div>
-      </div>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ *
- * Per-form card (Access Pass / Vehicle Sticker)
- * ------------------------------------------------------------------ */
-function FormCard({
+function AppPanel({
   tone,
   title,
+  description,
   stats,
   onOpen,
   index,
 }: {
   tone: "red" | "yellow";
   title: string;
+  description: string;
   stats: FormStats;
   onOpen: () => void;
   index: number;
 }) {
   return (
     <section
-      className={`ad-form ad-form--${tone} ad-rise`}
+      className={`ad-app ad-app--${tone} ad-rise`}
       style={delay(index)}
-      aria-label={`${title} summary`}
+      aria-label={`${title} applications`}
     >
-      <header className="ad-form-banner">
-        <div>
-          <h3 className="ad-form-title">{title}</h3>
-          <p className="ad-form-sub">
-            {stats.last7Days.toLocaleString()} new in the last 7 days
-          </p>
-        </div>
-        <div className="ad-form-total" aria-label={`${stats.total} total`}>
+      <header className="ad-app-banner">
+        <h3 className="ad-app-title">
+          {title}
+          <br />
+          Application
+        </h3>
+        <div className="ad-app-total" aria-label={`${stats.total} total`}>
           <CountUp value={stats.total} />
           <span>total</span>
         </div>
+        <div className="ad-app-divider" />
+        <p className="ad-app-desc">{description}</p>
       </header>
 
-      <div className="ad-form-body">
+      <div className="ad-app-body">
         {/* Stacked status bar — segments grow in on load */}
         <div
           className="ad-stack"
           role="img"
           aria-label={STATUS_ORDER.map(
-            (s) => `${STATUS_LABEL[s]}: ${stats.byStatus[s]}`
+            (s) => `${STATUS_LABEL[s]}: ${stats.byStatus[s]}`,
           ).join(", ")}
         >
           {stats.total === 0 ? (
@@ -181,21 +137,29 @@ function FormCard({
           )}
         </div>
 
-        <ul className="ad-legend">
+        <ul className="ad-stats">
           {STATUS_ORDER.map((s) => (
-            <li key={s}>
-              <span className={`ad-dot ad-dot--${STATUS_CLASS[s]}`} />
-              <span className="ad-legend-name">{STATUS_LABEL[s]}</span>
-              <span className="ad-legend-count">{stats.byStatus[s]}</span>
+            <li
+              key={s}
+              className={`ad-stat${stats.byStatus[s] === 0 ? " ad-stat--zero" : ""}`}
+            >
+              <span className="ad-stat-num">
+                {stats.byStatus[s].toLocaleString()}
+              </span>
+              <span className="ad-stat-name">
+                <span className={`ad-dot ad-dot--${STATUS_CLASS[s]}`} />
+                {/* zero-width space lets "Incomplete/Returned" wrap on narrow tiles */}
+                <span>{STATUS_LABEL[s].replace("/", "/\u200b")}</span>
+              </span>
             </li>
           ))}
         </ul>
       </div>
 
-      <footer className="ad-form-footer">
-        <span className="ad-form-pending">
+      <footer className="ad-app-footer">
+        <span className="ad-app-recent">
           <Clock3 size={15} aria-hidden="true" />
-          {stats.pending.toLocaleString()} pending
+          {stats.last7Days.toLocaleString()} new in the last 7 days
         </span>
         <button type="button" className="btn-outline-dark" onClick={onOpen}>
           View Table <ArrowRight size={15} aria-hidden="true" />
@@ -222,7 +186,7 @@ function Donut({
   const vsLen = total ? (vehicle / total) * C : 0;
 
   return (
-    <div className="ad-card ad-rise" style={delay(6)}>
+    <div className="ad-card ad-rise" style={delay(1)}>
       <h3 className="ad-card-title">Share by form</h3>
       <div className="ad-donut-wrap">
         <svg
@@ -261,7 +225,7 @@ function Donut({
           <span>applications</span>
         </div>
       </div>
-      <ul className="ad-legend ad-legend--compact">
+      <ul className="ad-legend">
         <li>
           <span className="ad-dot ad-dot--red" />
           <span className="ad-legend-name">Access Pass</span>
@@ -289,7 +253,7 @@ function TrendChart({ points }: { points: TrendPoint[] }) {
   const sum = points.reduce((n, p) => n + p.accessPass + p.vehicle, 0);
 
   return (
-    <div className="ad-card ad-card--wide ad-rise" style={delay(5)}>
+    <div className="ad-card ad-card--chart ad-rise" style={delay(0)}>
       <div className="ad-card-head">
         <h3 className="ad-card-title">Submissions · last 14 days</h3>
         <div className="ad-chart-legend">
@@ -339,52 +303,13 @@ function TrendChart({ points }: { points: TrendPoint[] }) {
 }
 
 /* ------------------------------------------------------------------ *
- * Applicant type breakdown
- * ------------------------------------------------------------------ */
-function TypeBars({ types }: { types: TypeSlice[] }) {
-  const top = types.slice(0, 6);
-  const max = Math.max(1, ...top.map((t) => t.count));
-
-  return (
-    <div className="ad-card ad-rise" style={delay(7)}>
-      <h3 className="ad-card-title">Top applicant types</h3>
-      {top.length === 0 ? (
-        <p className="ad-empty">No applicants yet.</p>
-      ) : (
-        <ul className="ad-types">
-          {top.map((t, i) => (
-            <li key={t.label}>
-              <div className="ad-types-row">
-                <span className="ad-types-name" title={t.label}>
-                  {t.label}
-                </span>
-                <span className="ad-types-count">{t.count}</span>
-              </div>
-              <div className="ad-types-track">
-                <span
-                  className="ad-types-fill"
-                  style={{
-                    width: `${(t.count / max) * 100}%`,
-                    ["--ad-bar-delay" as string]: `${i * 80}ms`,
-                  }}
-                />
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ *
  * Loading skeleton
  * ------------------------------------------------------------------ */
 function DashboardSkeleton() {
   return (
-    <div className="ad-grid-kpi" aria-hidden="true">
-      {[0, 1, 2, 3].map((i) => (
-        <div key={i} className="ad-kpi ad-skeleton" />
+    <div className="ad-grid-charts" aria-hidden="true">
+      {[0, 1].map((i) => (
+        <div key={i} className="ad-skeleton-block ad-skeleton" />
       ))}
     </div>
   );
@@ -455,65 +380,31 @@ export function AdminDashboard() {
             </div>
           )}
 
-          <div className="ad-grid-kpi">
-            <KpiCard
-              index={0}
-              tone="blue"
-              label="Total Applications"
-              value={stats.total}
-              hint={`${stats.today} submitted today`}
-              icon={<FileStack size={22} />}
-            />
-            <KpiCard
-              index={1}
-              tone="yellow"
-              label="Pending"
-              value={stats.pending}
-              hint={`${pct(stats.pending, stats.total)}% of all`}
-              icon={<Clock3 size={22} />}
-            />
-            <KpiCard
-              index={2}
-              tone="green"
-              label="Approved"
-              value={stats.approved}
-              hint={`${pct(stats.approved, stats.total)}% of all`}
-              icon={<CheckCircle2 size={22} />}
-            />
-            <KpiCard
-              index={3}
-              tone="red"
-              label="Rejected"
-              value={stats.rejected}
-              hint={`${pct(stats.rejected, stats.total)}% of all`}
-              icon={<XCircle size={22} />}
-            />
-          </div>
-
-          <div className="ad-grid-forms">
-            <FormCard
-              index={4}
-              tone="red"
-              title="Access Pass"
-              stats={stats.accessPass}
-              onOpen={() => navigate("/admin/access-pass")}
-            />
-            <FormCard
-              index={5}
-              tone="yellow"
-              title="Vehicle Sticker"
-              stats={stats.vehicle}
-              onOpen={() => navigate("/admin/vehicle-sticker")}
-            />
-          </div>
-
           <div className="ad-grid-charts">
             <TrendChart points={stats.trend} />
             <Donut
               accessPass={stats.accessPass.total}
               vehicle={stats.vehicle.total}
             />
-            <TypeBars types={stats.types} />
+          </div>
+
+          <div className="ad-grid-apps">
+            <AppPanel
+              index={2}
+              tone="red"
+              title="Access Pass"
+              description="Review and approve visitor access pass requests."
+              stats={stats.accessPass}
+              onOpen={() => navigate("/admin/access-pass")}
+            />
+            <AppPanel
+              index={3}
+              tone="yellow"
+              title="Vehicle Sticker"
+              description="Review and approve vehicle sticker requests."
+              stats={stats.vehicle}
+              onOpen={() => navigate("/admin/vehicle-sticker")}
+            />
           </div>
         </>
       )}

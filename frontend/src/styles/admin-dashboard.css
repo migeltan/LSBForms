@@ -104,6 +104,11 @@
     transform 0.25s ease,
     box-shadow 0.25s ease;
 }
+/* Chart cards stretch to the row height; an empty state centers in it. */
+.ad-card--chart {
+  display: flex;
+  flex-direction: column;
+}
 .ad-card-head {
   display: flex;
   align-items: center;
@@ -123,6 +128,9 @@
   margin: 0;
 }
 .ad-empty {
+  flex: 1;
+  display: grid;
+  place-items: center;
   margin: 0;
   padding: var(--smart-space-5) 0;
   text-align: center;
@@ -197,7 +205,7 @@
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.45rem var(--smart-space-4);
   font-size: var(--smart-fs-sm);
 }
@@ -221,9 +229,6 @@
   color: var(--smart-ink);
   font-variant-numeric: tabular-nums;
 }
-.ad-legend--compact {
-  grid-template-columns: minmax(0, 1fr);
-}
 .ad-chart-legend {
   display: flex;
   gap: var(--smart-space-4);
@@ -238,150 +243,62 @@
   gap: 0.4rem;
 }
 
-/* ---------- KPI row ---------- */
-.ad-grid-kpi {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--smart-space-4);
-}
-.ad-kpi {
-  --kpi: var(--smart-blue);
-  --kpi-tint: var(--smart-blue-light);
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  gap: var(--smart-space-4);
-  min-height: 6.25rem;
-  padding: var(--smart-space-5);
-  background: var(--smart-surface);
-  border: 1px solid var(--smart-border);
-  border-radius: var(--ad-radius);
-  box-shadow: var(--smart-shadow-sm);
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease;
-}
-/* Colored top edge with a slow light sweep */
-.ad-kpi::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 4px;
-  background: linear-gradient(
-    90deg,
-    var(--kpi) 0%,
-    var(--kpi) 40%,
-    rgba(255, 255, 255, 0.85) 50%,
-    var(--kpi) 60%,
-    var(--kpi) 100%
-  );
-  background-size: 250% 100%;
-  animation: ad-sweep 5s ease-in-out infinite;
-}
-.ad-kpi--yellow {
-  --kpi: var(--smart-yellow);
-  --kpi-tint: var(--smart-yellow-light);
-}
-.ad-kpi--green {
-  --kpi: var(--smart-green);
-  --kpi-tint: #e6f5ee;
-}
-.ad-kpi--red {
-  --kpi: var(--smart-red);
-  --kpi-tint: var(--smart-red-light);
-}
-.ad-kpi-icon {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 3rem;
-  height: 3rem;
-  border-radius: 14px;
-  background: var(--kpi-tint);
-  color: var(--kpi);
-  animation: ad-float 3.6s ease-in-out infinite;
-}
-.ad-kpi--yellow .ad-kpi-icon {
-  color: var(--smart-yellow-dark);
-}
-.ad-kpi-body {
-  min-width: 0;
-}
-.ad-kpi-label {
-  font-size: var(--smart-fs-xs);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--smart-muted);
-}
-.ad-kpi-value {
-  font-size: clamp(1.7rem, 3.4vw, 2.2rem);
-  line-height: 1.1;
-  font-weight: 800;
-  color: var(--smart-ink);
-  font-variant-numeric: tabular-nums;
-}
-.ad-kpi-hint {
-  font-size: var(--smart-fs-xs);
-  font-weight: 600;
-  color: var(--smart-muted);
-}
-
-/* ---------- Per-form cards ---------- */
-.ad-grid-forms {
+/* ---------- Application panels ----------
+   A coloured banner floats over a white card (the card is the ::before
+   plate, offset down by --ad-app-lift). The status breakdown and the
+   "View Table" link live inside the card. */
+.ad-grid-apps {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--smart-space-5);
 }
-.ad-form {
-  --banner: var(--smart-red);
+.ad-app {
+  --ad-app-tone: var(--smart-red);
+  --ad-app-lift: var(--smart-space-5);
+  position: relative;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  min-width: 0;
+  transition: transform 0.25s ease;
+}
+.ad-app--yellow {
+  --ad-app-tone: var(--smart-yellow);
+}
+.ad-app::before {
+  content: "";
+  position: absolute;
+  inset: var(--ad-app-lift) 0 0 0;
   background: var(--smart-surface);
   border: 1px solid var(--smart-border);
   border-radius: var(--ad-radius);
   box-shadow: var(--smart-shadow-md);
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease;
+  transition: box-shadow 0.25s ease;
 }
-.ad-form--yellow {
-  --banner: var(--smart-yellow);
-}
-.ad-form-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--smart-space-4);
+
+.ad-app-banner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: var(--smart-space-4);
+  margin: 0 var(--smart-space-6); /* equal inset both sides, as in the mockup */
   padding: var(--smart-space-5) var(--smart-space-6);
+  border-radius: 12px;
   color: #fff;
-  background: linear-gradient(
-    110deg,
-    var(--banner) 0%,
-    var(--banner) 45%,
-    rgba(255, 255, 255, 0.22) 50%,
-    var(--banner) 55%,
-    var(--banner) 100%
-  );
-  background-size: 260% 100%;
-  animation: ad-sweep 7s ease-in-out infinite;
+  background: var(--ad-app-tone);
+  box-shadow: var(--smart-shadow-lg);
+  transition: transform 0.25s ease;
 }
-.ad-form-title {
+.ad-app-title {
   margin: 0;
   font-family: var(--smart-font-sans);
-  font-size: clamp(1.1rem, 1.7vw, 1.4rem);
-  font-weight: 800;
+  font-size: clamp(1.15rem, 1.7vw, 1.45rem);
+  font-weight: 700;
+  line-height: 1.15;
   color: #fff;
 }
-.ad-form-sub {
-  margin: 0.2rem 0 0;
-  font-size: var(--smart-fs-sm);
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.92);
-}
-.ad-form-total {
+.ad-app-total {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -390,7 +307,7 @@
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
-.ad-form-total span {
+.ad-app-total span {
   margin-top: 0.25rem;
   font-size: var(--smart-fs-xs);
   font-weight: 700;
@@ -398,16 +315,32 @@
   text-transform: uppercase;
   opacity: 0.9;
 }
-.ad-form-body {
+.ad-app-divider {
+  grid-column: 1 / -1;
+  height: 1.5px;
+  margin: var(--smart-space-4) 0;
+  background: rgba(255, 255, 255, 0.45);
+}
+.ad-app-desc {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: var(--smart-fs-base);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.ad-app-body {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: var(--smart-space-4);
-  padding: var(--smart-space-5) var(--smart-space-6);
+  padding: var(--smart-space-5) var(--smart-space-6) var(--smart-space-4);
 }
 .ad-stack {
   display: flex;
   gap: 2px;
-  height: 14px;
+  height: 12px;
   border-radius: var(--smart-radius-pill);
   overflow: hidden;
   background: var(--smart-bg);
@@ -421,23 +354,68 @@
 .ad-stack-empty {
   flex: 1;
 }
-.ad-form-footer {
+
+/* Six status tiles. Auto-fit gives 3 columns when the card is wide and 2
+   when it is narrow; STATUS_ORDER puts the open states on the first row
+   and the closed ones on the second. */
+.ad-stats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: var(--smart-space-3);
+}
+.ad-stat {
+  min-width: 0;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--smart-radius-md);
+  background: var(--smart-bg);
+}
+.ad-stat-num {
+  display: block;
+  font-size: 1.5rem;
+  line-height: 1.15;
+  font-weight: 800;
+  color: var(--smart-ink);
+  font-variant-numeric: tabular-nums;
+}
+.ad-stat--zero .ad-stat-num {
+  font-weight: 700;
+  color: var(--smart-muted);
+}
+.ad-stat-name {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  font-size: var(--smart-fs-xs);
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--smart-muted);
+}
+
+.ad-app-footer {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: var(--smart-space-3);
-  margin-top: auto;
-  padding: var(--smart-space-3) var(--smart-space-6) var(--smart-space-5);
+  margin: auto var(--smart-space-6) 0;
+  padding: var(--smart-space-4) 0 var(--smart-space-5);
+  border-top: 1px solid var(--smart-border);
 }
-.ad-form-pending {
+.ad-app-recent {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  font-weight: 700;
-  color: var(--smart-ink);
+  font-size: var(--smart-fs-sm);
+  font-weight: 600;
+  color: var(--smart-muted);
 }
-.ad-form-footer .btn-outline-dark {
+.ad-app-footer .btn-outline-dark {
   gap: 0.4rem;
   padding: 0.5rem 1.1rem;
 }
@@ -555,55 +533,6 @@
   color: var(--smart-muted);
 }
 
-/* Applicant types */
-.ad-types {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--smart-space-4) var(--smart-space-6);
-}
-.ad-types-row {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--smart-space-3);
-  margin-bottom: 0.3rem;
-  font-size: var(--smart-fs-sm);
-}
-.ad-types-name {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 600;
-  color: var(--smart-ink);
-}
-.ad-types-count {
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  color: var(--smart-blue-dark);
-}
-.ad-types-track {
-  height: 8px;
-  border-radius: var(--smart-radius-pill);
-  background: var(--smart-blue-light);
-  overflow: hidden;
-}
-.ad-types-fill {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(
-    90deg,
-    var(--smart-blue) 0%,
-    var(--smart-blue-dark) 100%
-  );
-  transform-origin: left;
-  animation: ad-scale-x 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: var(--ad-bar-delay, 0ms);
-}
-
 /* ---------- Skeleton ---------- */
 .ad-skeleton {
   background: linear-gradient(
@@ -615,59 +544,37 @@
   background-size: 250% 100%;
   animation: ad-shimmer 1.3s linear infinite;
 }
-.ad-skeleton::before {
-  display: none;
+.ad-app-skeleton {
+  min-height: 19rem;
+  border: 1px solid var(--smart-border);
+  border-radius: var(--ad-radius);
 }
 
 /* ---------- Hover (pointer devices only) ---------- */
 @media (hover: hover) {
-  .ad-kpi:hover,
   .ad-card:hover {
     transform: translateY(-3px);
     box-shadow: var(--smart-shadow-md);
   }
-  .ad-form:hover {
-    transform: translateY(-4px);
+  /* Card lifts a little; the banner rises a touch more so it floats. */
+  .ad-app:hover {
+    transform: translateY(-3px);
+  }
+  .ad-app:hover::before {
     box-shadow: var(--smart-shadow-lg);
+  }
+  .ad-app:hover .ad-app-banner {
+    transform: translateY(-2px);
   }
 }
 
 /* ---------- Responsive ---------- */
-@media (min-width: 480px) {
-  .ad-grid-kpi {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
 @media (min-width: 768px) {
-  .ad-grid-forms {
+  .ad-grid-apps {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .ad-grid-charts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .ad-card--wide {
-    grid-column: 1 / -1;
-  }
-  .ad-types {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (min-width: 1024px) {
-  .ad-grid-kpi {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-  .ad-grid-charts {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .ad-card--wide {
-    grid-column: span 2;
-  }
-  /* applicant types fills the whole third row */
-  .ad-grid-charts > .ad-card:last-child {
-    grid-column: 1 / -1;
-  }
-  .ad-types {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   }
 }
 @media (max-width: 479px) {
@@ -675,17 +582,17 @@
     width: 100%;
     justify-content: space-between;
   }
-  .ad-form-banner,
-  .ad-form-body {
+  .ad-app-banner {
+    margin: 0 var(--smart-space-3);
+    padding: var(--smart-space-4) var(--smart-space-5);
+  }
+  .ad-app-body {
     padding-left: var(--smart-space-5);
     padding-right: var(--smart-space-5);
   }
-  .ad-form-footer {
-    padding-left: var(--smart-space-5);
-    padding-right: var(--smart-space-5);
-  }
-  .ad-legend {
-    grid-template-columns: minmax(0, 1fr);
+  .ad-app-footer {
+    margin-left: var(--smart-space-5);
+    margin-right: var(--smart-space-5);
   }
   .ad-trend-wk {
     display: none;
@@ -717,32 +624,9 @@
     transform: scaleY(0);
   }
 }
-@keyframes ad-scale-x {
-  from {
-    transform: scaleX(0);
-  }
-}
 @keyframes ad-arc {
   from {
     stroke-dasharray: 0 var(--ad-circ);
-  }
-}
-@keyframes ad-sweep {
-  0%,
-  100% {
-    background-position: 100% 0;
-  }
-  50% {
-    background-position: 0 0;
-  }
-}
-@keyframes ad-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
   }
 }
 @keyframes ad-pulse {
@@ -777,9 +661,9 @@
     animation: none !important;
     transition: none !important;
   }
-  .ad-kpi:hover,
   .ad-card:hover,
-  .ad-form:hover {
+  .ad-app:hover,
+  .ad-app:hover .ad-app-banner {
     transform: none;
   }
 }

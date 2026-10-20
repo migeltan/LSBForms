@@ -26,10 +26,10 @@ Once an application is approved and the applicant's photo and information are va
 
 ## Project Resources
 
-| Resource         | Link                                                                   |
-| ---------------- | ---------------------------------------------------------------------- |
-| Video demo       | _Add link here_                                                        |
-| Project document | _Add link here_                                                        |
+| Resource         | Link                                                                 |
+| ---------------- | -------------------------------------------------------------------- |
+| Video demo       | _Add link here_                                                      |
+| Project document | _Add link here_                                                      |
 | Source code      | [github.com/migeltan/LSBForms](https://github.com/migeltan/LSBForms) |
 
 ---
@@ -69,10 +69,10 @@ _Add screenshots here: landing page, Access Pass form, status check, admin dashb
 4. At any time they open **Check Status** and enter the reference number plus their last name or email to see the status and dates.
 5. They receive an email when the application is approved, rejected or returned for more information.
 
-| Form                | Steps                                                  | Who it is for                                                                                |
-| ------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| **Access Pass**     | Personal Info, Background, Documents, Declaration      | Congressional staff, consultants, attached agencies, concessionaires, contractors and others |
-| **Vehicle Sticker** | Personal Info, Vehicle, Documents                      | House employees applying for a decal for a private vehicle                                   |
+| Form                | Steps                                             | Who it is for                                                                                |
+| ------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **Access Pass**     | Personal Info, Background, Documents, Declaration | Congressional staff, consultants, attached agencies, concessionaires, contractors and others |
+| **Vehicle Sticker** | Personal Info, Vehicle, Documents                 | House employees applying for a decal for a private vehicle                                   |
 
 **Access Pass applicant types:** Congressional Staff, Consultant, House Member Security, Attached Agency, Concessionaire, Contractor, Security, Temporary ID for Secretariat, Auxiliary Service. Some types need extra documents (for example an NBI clearance, a copy of consultancy, a health certificate, or firearm papers and a duty detail order for House Member Security).
 
@@ -86,17 +86,17 @@ _Add screenshots here: landing page, Access Pass form, status check, admin dashb
 
 ### Application statuses
 
-| Form            | Statuses                                                                 |
-| --------------- | ------------------------------------------------------------------------ |
-| Access Pass     | Submitted, Incomplete/Returned, Approved, Rejected                       |
+| Form            | Statuses                                                                    |
+| --------------- | --------------------------------------------------------------------------- |
+| Access Pass     | Submitted, Incomplete/Returned, Approved, Rejected                          |
 | Vehicle Sticker | Submitted, Under Review, Incomplete/Returned, Approved, Rejected, Completed |
 
 ### Roles
 
-| Role         | Can do                                                                                                     |
-| ------------ | ---------------------------------------------------------------------------------------------------------- |
-| **Reviewer** | Review applications, edit applicant details, manage documents, preview and print IDs.                      |
-| **Admin**    | Everything a reviewer can do, plus create admin/reviewer profiles and view the activity log.               |
+| Role         | Can do                                                                                       |
+| ------------ | -------------------------------------------------------------------------------------------- |
+| **Reviewer** | Review applications, edit applicant details, manage documents, preview and print IDs.        |
+| **Admin**    | Everything a reviewer can do, plus create admin/reviewer profiles and view the activity log. |
 
 ---
 
@@ -139,12 +139,12 @@ _Add screenshots here: landing page, Access Pass form, status check, admin dashb
 
 ## Tech Stack
 
-| Layer       | Stack                                                          | Path           |
-| ----------- | -------------------------------------------------------------- | -------------- |
-| Backend     | Laravel 11, PHP 8.2+, MySQL, Sanctum                           | `/backend`     |
-| Frontend    | React 19, TypeScript, Vite, Tailwind 4, React Query, React Router | `/frontend` |
-| PDF service | Node.js, Puppeteer, Express (Windows Service on port 4488)     | `/pdf-service` |
-| Other       | `endroid/qr-code` (QR codes), Browsershot and Dompdf (PDF rendering) |          |
+| Layer       | Stack                                                                | Path           |
+| ----------- | -------------------------------------------------------------------- | -------------- |
+| Backend     | Laravel 11, PHP 8.2+, MySQL, Sanctum                                 | `/backend`     |
+| Frontend    | React 19, TypeScript, Vite, Tailwind 4, React Query, React Router    | `/frontend`    |
+| PDF service | Node.js, Puppeteer, Express (Windows Service on port 4488)           | `/pdf-service` |
+| Other       | `endroid/qr-code` (QR codes), Browsershot and Dompdf (PDF rendering) |                |
 
 ---
 
@@ -159,7 +159,7 @@ cd backend
 composer install
 cp .env.example .env
 php artisan key:generate
-# create the `smart_portal` MySQL database and set DB_* in .env
+# create a MySQL database (this project uses `lsb_forms`) and set DB_DATABASE and the other DB_* values in .env
 php artisan migrate --seed
 php artisan storage:link
 php artisan serve        # http://localhost:8000
@@ -202,28 +202,71 @@ Browser -> Cloudflare Pages (React build)
           Windows laptop: Laravel + MySQL + pdf-service (127.0.0.1:4488)
 ```
 
-**Backend `.env`:** `APP_URL=https://<your-domain>.ngrok-free.dev`, `APP_DEBUG=false`, `FRONTEND_URL=https://<your-project>.pages.dev` (exact match, no trailing slash, or CORS will block API calls). Then run `php artisan config:clear`.
+**Backend `.env`:**
 
-**Cloudflare Pages:** root directory `frontend`, build command `npm run build`, output `dist`, and the environment variable `VITE_API_URL=https://<your-domain>.ngrok-free.dev/api` (baked in at build time, so redeploy after changing it).
+```
+APP_URL=https://gainfully-strum-viewpoint.ngrok-free.dev
+APP_DEBUG=false
+FRONTEND_URL=https://lsbforms.pages.dev
+```
+
+`FRONTEND_URL` must match the Pages address exactly (no trailing slash), or CORS will block API calls. After editing `.env`, run `php artisan config:clear` and restart the backend.
+
+**Cloudflare Pages:** root directory `frontend`, build command `npm run build`, output `dist`, and the environment variable:
+
+```
+VITE_API_URL=https://gainfully-strum-viewpoint.ngrok-free.dev/api
+```
+
+It is baked in at build time, so redeploy after changing it.
 
 **Every time you demo**, keep these running:
 
-1. MySQL.
-2. The PDF service (`Get-Service PdfRenderService`).
-3. The backend: `php artisan serve --port=9000`, or the built-in server from `backend/public` if `serve` fails to bind.
-4. The tunnel: `ngrok http --domain=<your-domain>.ngrok-free.dev 9000`.
+1. **MySQL** and the **PDF service** (both Windows services, so they normally start on their own):
+
+   ```powershell
+   Get-Service MySQL97
+   Get-Service PdfRenderService
+   ```
+
+   If either shows `Stopped`: `Start-Service MySQL97` or `Start-Service PdfRenderService`.
+
+2. **The backend** (terminal 1). `php artisan serve` does not bind on this machine, so use the built-in PHP server from `backend/public`:
+
+   ```powershell
+   cd D:\LSBForms\backend\public
+   php -S 127.0.0.1:9000 ..\vendor\laravel\framework\src\Illuminate\Foundation\resources\server.php
+   ```
+
+3. **The tunnel** (terminal 2). Keep it open:
+
+   ```powershell
+   ngrok http 9000 --url=gainfully-strum-viewpoint.ngrok-free.dev
+   ```
+
+4. **Check both ends.** Each should return `HTTP/1.1 200`:
+
+   ```powershell
+   curl.exe -i http://127.0.0.1:9000/up
+   curl.exe -i https://gainfully-strum-viewpoint.ngrok-free.dev/up
+   ```
+
+   Then open https://lsbforms.pages.dev and sign in.
 
 **Before you present:** use fake applicant data (the system stores uploaded IDs and documents), keep the laptop plugged in with sleep disabled, keep a phone hotspot as backup, and stop the tunnel when you finish.
 
 **Troubleshooting**
 
-| Symptom                              | Likely cause / fix                                                              |
-| ------------------------------------ | ------------------------------------------------------------------------------- |
-| Site loads but login/lookups fail    | ngrok or the PHP server stopped. Restart both.                                  |
-| CORS errors in the browser console   | `FRONTEND_URL` does not match the Pages address. Fix it and clear the config.   |
-| API calls go to the wrong address    | `VITE_API_URL` was wrong at build time. Fix it in Cloudflare and redeploy.      |
-| PDFs fail to generate                | `PdfRenderService` is not running on the laptop.                                |
-| Slow with several testers at once    | The PHP built-in server handles one request at a time. Use Laragon/XAMPP instead. |
+| Symptom                            | Likely cause / fix                                                                |
+| ---------------------------------- | --------------------------------------------------------------------------------- |
+| Site loads but login/lookups fail  | ngrok or the PHP server stopped. Restart both.                                    |
+| Login shows `CORS` with 0 kB       | Backend or tunnel is not running (the request never reached Laravel).             |
+| CORS errors in the browser console | `FRONTEND_URL` does not match the Pages address. Fix it and clear the config.     |
+| ngrok `ERR_NGROK_334`              | An old ngrok session is still open. Run `taskkill /IM ngrok.exe /F`, then retry.  |
+| API calls go to the wrong address  | `VITE_API_URL` was wrong at build time. Fix it in Cloudflare and redeploy.        |
+| PDFs fail to generate              | `PdfRenderService` is not running on the laptop.                                  |
+| Database errors after a `git pull` | Run `php artisan migrate` in `backend`.                                           |
+| Slow with several testers at once  | The PHP built-in server handles one request at a time. Use Laragon/XAMPP instead. |
 
 ---
 
